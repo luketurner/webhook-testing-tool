@@ -5,3 +5,32 @@ block title
 
 block content
   p Webhook Tester is a self-hosted, open-source tool for testing HTTP webhooks.
+  p Rules:
+  each script in scripts
+    form(action="", method="post")
+      div
+        div= script.id
+        select(name="method")
+          option(value="*", selected=(script.method === '*')) *
+          option(value="GET", selected=(script.method === 'GET')) GET
+          option(value="POST", selected=(script.method === 'POST')) POST
+          option(value="PUT", selected=(script.method === 'PUT')) PUT
+          option(value="DELETE", selected=(script.method === 'DELETE')) DELETE
+          option(value="PATCH", selected=(script.method === 'PATCH')) PATCH
+        input(type="text", name="path", value=script.path)
+        textarea(name="code")= script.code
+        button(type="submit" name="updaterule" value=script.id) Update
+        button(type="submit" name="deleterule" value=script.id) Delete
+  p Add new rule:
+  div
+    form(action="", method="post")
+      select(name="method")
+        option(value="*") *
+        option(value="GET") GET
+        option(value="POST") POST
+        option(value="PUT") PUT
+        option(value="DELETE") DELETE
+        option(value="PATCH") PATCH
+      input(type="text", name="path", value="")
+      textarea(name="code")
+      button(type="submit" name="addrule" value="true") Add rule

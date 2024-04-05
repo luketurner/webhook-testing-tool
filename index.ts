@@ -33,6 +33,7 @@ adminRouter.use(basicAuth({
   users: { [ADMIN_USERNAME]: ADMIN_PASSWORD ?? 'admin' },
   challenge: true
 }));
+adminRouter.use(express.urlencoded({ extended: true }))
 
 adminRouter.use(async (req, res, next) => {
   const requests = await db.all(`SELECT id, resp_status, req_timestamp, req_method, req_url FROM requests ORDER BY req_timestamp DESC`);
@@ -41,8 +42,51 @@ adminRouter.use(async (req, res, next) => {
   next();
 });
 adminRouter.use('/__admin', express.static('public'));
+
 adminRouter.get('/__admin', async (req, res) => {
-  res.render('index');
+  const scripts = await db.all(`SELECT * FROM scripts`);
+  res.render('index', {
+    scripts
+  });
+});
+
+adminRouter.post('/__admin', async (req, res) => {
+  console.log(req.body);
+  if (req.body.addrule) {
+    await db.run(`
+      INSERT INTO scripts VALUES (
+        $id,
+        $method,
+        $path,
+        $code
+      )
+    `, { 
+      $id: randomUUID(),
+      $method: req.body.method ?? 'GET',
+      $path: req.body.path ?? '/',
+      $code: req.body.code ?? 'null',
+    });
+  }
+  if (req.body.updaterule) {
+    await db.run(`
+      UPDATE scripts SET
+        method = $method,
+        path = $path,
+        code = $code
+      WHERE id = $id
+    `, { 
+      $id: req.body.updaterule,
+      $method: req.body.method ?? 'GET',
+      $path: req.body.path ?? '/',
+      $code: req.body.code ?? 'null',
+    });
+  }
+  if (req.body.deleterule) {
+    await db.run(`
+      DELETE FROM scripts WHERE id = $id
+    `, { $id: req.body.deleterule })
+  }
+  res.redirect('/__admin');
 });
 
 adminRouter.get('/__admin/request/:id', async (req, res) => {
