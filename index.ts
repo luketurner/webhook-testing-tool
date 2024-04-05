@@ -96,7 +96,7 @@ adminRouter.get('/__admin/request/:id', (req, res) => {
   const request = db.query(`SELECT * FROM requests WHERE id = $id`).get({ $id: req.params.id }) as WttRequest;
   if (!request) res.redirect('/__admin');
   request.req_body = request.req_body ? Buffer.from(request.req_body) : null;
-  request.resp_body = request.req_body ? Buffer.from(request.resp_body) : null;
+  request.resp_body = request.resp_body ? Buffer.from(request.resp_body) : null;
   request.req_headers = JSON.parse(request.req_headers) ?? {};
   request.resp_headers = JSON.parse(request.resp_headers) ?? {};
   res.render('request', {
