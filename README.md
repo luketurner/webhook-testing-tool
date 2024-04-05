@@ -38,6 +38,7 @@ View the UI at http://localhost:3000/__admin (login with user `admin` / password
 # initial setup
 flyctl launch --no-deploy
 flyctl secrets set WTT_ADMIN_PASSWORD=yoursecretpassword
+flyctl volumes create -s 1 -r sea data 
 
 # deploy
 flyctl deploy
