@@ -16,6 +16,7 @@ const NODE_ENV = process.env.NODE_ENV;
 if (!ADMIN_PASSWORD && NODE_ENV === 'production') throw new Error('Must specify WT_ADMIN_PASSWORD');
 
 const app = express();
+app.set('view engine', 'pug');
 app.use(morgan('combined'));
 
 const webhookRouter = express.Router();
@@ -30,13 +31,25 @@ adminRouter.use(basicAuth({
   users: { [ADMIN_USERNAME]: ADMIN_PASSWORD ?? 'admin' },
   challenge: true
 }));
-adminRouter.use('/__ui', express.static('public'));
-adminRouter.get('/__api/logs', async (req, res) => {
-  const rows = await db.all(`SELECT * FROM requests`);
-  res.send(rows);
+
+adminRouter.use(async (req, res, next) => {
+  const requests = await db.all(`SELECT * FROM requests`);
+  res.locals.requests = requests;
+  next();
+})
+// adminRouter.use('/__admin', express.static('public'));
+adminRouter.get('/__admin', async (req, res) => {
+  res.render('index');
 });
 
-app.use('^(?!/__ui|/__api|/favicon.*)', webhookRouter);
+adminRouter.get('/__admin/request/:id', async (req, res) => {
+  const request = await db.get(`SELECT * FROM requests WHERE id = $id`, { $id: req.params.id });
+  res.render('request', {
+    request
+  });
+});
+
+app.use('^(?!/__admin|/favicon.*)', webhookRouter);
 app.use(adminRouter);
 
 
