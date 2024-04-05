@@ -1,0 +1,25 @@
+{
+  "name": "webhook-tester",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "start": "bun run index.ts",
+    "dev": "bun --watch run index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Luke Turner",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^20.12.4",
+    "body-parser": "^1.20.2",
+    "express": "^4.18.3",
+    "luxon": "^3.4.4",
+    "morgan": "^1.10.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@flydotio/dockerfile": "^0.5.2"
+  }
+}
