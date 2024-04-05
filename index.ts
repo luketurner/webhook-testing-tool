@@ -1,12 +1,11 @@
 import express from 'express';
 import morgan from 'morgan';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
 import bodyParser from 'body-parser';
 import { randomUUID } from 'crypto';
 import basicAuth from 'express-basic-auth';
 import { DateTime } from 'luxon';
 import { runInNewContext } from 'vm';
+import { Database } from 'bun:sqlite';
 
 // global configuration
 const PORT = 3000;
@@ -24,8 +23,8 @@ app.use(morgan('combined'));
 const webhookRouter = express.Router();
 webhookRouter.use(bodyParser.raw({ type: '*/*' }));
 webhookRouter.use(requestLogger);
-webhookRouter.all('*', async (req, res) => {
-  await runResponderScript(req, res);
+webhookRouter.all('*', (req, res) => {
+  runResponderScript(req, res);
 });
 
 const adminRouter = express.Router();
@@ -35,31 +34,31 @@ adminRouter.use(basicAuth({
 }));
 adminRouter.use(express.urlencoded({ extended: true }))
 
-adminRouter.use(async (req, res, next) => {
-  const requests = await db.all(`SELECT id, resp_status, req_timestamp, req_method, req_url FROM requests ORDER BY req_timestamp DESC`);
+adminRouter.use((req, res, next) => {
+  const requests = db.query(`SELECT id, resp_status, req_timestamp, req_method, req_url FROM requests ORDER BY req_timestamp DESC`).all() as Partial<WttRequest>;
   res.locals.requests = requests;
   res.locals.DateTime = DateTime;
   next();
 });
 adminRouter.use('/__admin', express.static('public'));
 
-adminRouter.get('/__admin', async (req, res) => {
-  const scripts = await db.all(`SELECT * FROM scripts`);
+adminRouter.get('/__admin', (req, res) => {
+  const scripts = db.query(`SELECT * FROM scripts`).all() as WttScript[];
   res.render('index', {
     scripts
   });
 });
 
-adminRouter.post('/__admin', async (req, res) => {
+adminRouter.post('/__admin', (req, res) => {
   if (req.body.addrule) {
-    await db.run(`
+    db.query(`
       INSERT INTO scripts VALUES (
         $id,
         $method,
         $path,
         $code
       )
-    `, { 
+    `).run({ 
       $id: randomUUID(),
       $method: req.body.method ?? 'GET',
       $path: req.body.path ?? '/',
@@ -67,13 +66,13 @@ adminRouter.post('/__admin', async (req, res) => {
     });
   }
   if (req.body.updaterule) {
-    await db.run(`
+    db.query(`
       UPDATE scripts SET
         method = $method,
         path = $path,
         code = $code
       WHERE id = $id
-    `, { 
+    `).run({ 
       $id: req.body.updaterule,
       $method: req.body.method ?? 'GET',
       $path: req.body.path ?? '/',
@@ -81,23 +80,26 @@ adminRouter.post('/__admin', async (req, res) => {
     });
   }
   if (req.body.deleterule) {
-    await db.run(`
+    db.query(`
       DELETE FROM scripts WHERE id = $id
-    `, { $id: req.body.deleterule })
+    `).run({ $id: req.body.deleterule })
   }
   if (req.body.clearrequests) {
-    await db.run(`
+    db.query(`
       DELETE FROM requests;
-    `);
+    `).run();
   }
   res.redirect('/__admin');
 });
 
-adminRouter.get('/__admin/request/:id', async (req, res) => {
-  const request = await db.get(`SELECT * FROM requests WHERE id = $id`, { $id: req.params.id });
+adminRouter.get('/__admin/request/:id', (req, res) => {
+  const request = db.query(`SELECT * FROM requests WHERE id = $id`).get({ $id: req.params.id }) as WttRequest;
   if (!request) res.redirect('/__admin');
+  request.req_body = Buffer.from(request.req_body);
+  request.resp_body = Buffer.from(request.resp_body);
   request.req_headers = JSON.parse(request.req_headers) ?? {};
   request.resp_headers = JSON.parse(request.resp_headers) ?? {};
+  console.log(request)
   res.render('request', {
     request
   });
@@ -109,12 +111,9 @@ app.use(adminRouter);
 
 console.log(`Using database: ${DB_FILE}`);
 
-const db = await open({
-  filename: DB_FILE,
-  driver: sqlite3.Database
-});
+const db = new Database(DB_FILE, { create: true });
 
-await db.exec(`
+db.run(`
   CREATE TABLE IF NOT EXISTS requests (
     id TEXT PRIMARY KEY,
     req_method TEXT,
@@ -141,10 +140,10 @@ app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
 
-async function runResponderScript(req, res) {
-  const scripts = await db.all(`
+function runResponderScript(req, res) {
+  const scripts = db.query(`
     SELECT id, method, path FROM scripts;
-  `);
+  `).all() as WttScript[];
 
   const matchingScript = scripts.filter(s =>
     (s.method === req.method || s.method === '*') &&
@@ -161,9 +160,9 @@ async function runResponderScript(req, res) {
     return 0;
   })[0];
 
-  const script = matchingScript?.id ? await db.get(`
+  const script = matchingScript?.id ? db.query(`
     SELECT code FROM scripts WHERE id = $id;
-  `, { $id: matchingScript.id }) : null;
+  `).get({ $id: matchingScript.id }) as Partial<WttScript> : null;
 
   const code = script?.code ?? 'null';
   const result = runInNewContext(code, {
@@ -185,11 +184,11 @@ async function runResponderScript(req, res) {
   res.send(result?.body === undefined ? { status: responseStatus } : result.body);
 }
 
-async function requestLogger(req, res, next) {
+function requestLogger(req, res, next) {
 
   const id = randomUUID();
   
-  await db.run(`
+  db.query(`
     INSERT INTO requests (
       id,
       req_method,
@@ -205,7 +204,7 @@ async function requestLogger(req, res, next) {
       $body,
       $timestamp
     )
-  `, {
+  `).run({
     $id: id,
     $method: req.method,
     $url: req.originalUrl,
@@ -234,7 +233,7 @@ async function requestLogger(req, res, next) {
     const body = Buffer.concat(chunks);
     oldEnd.apply(res, restArgs);
 
-    db.run(`
+    db.query(`
       UPDATE requests
       SET
         resp_status = $status,
@@ -243,15 +242,36 @@ async function requestLogger(req, res, next) {
         resp_body = $body,
         resp_timestamp = $timestamp
       WHERE id = $id
-    `, {
+    `).run({
       $id: id,
       $status: res.statusCode,
       $statusMessage: res.statusMessage,
       $headers: JSON.stringify(res.getHeaders()),
       $body: body,
       $timestamp: Date.now(),
-    }).catch(e => console.log(e));
+    });
   };
 
   next();
+}
+
+interface WttScript {
+  id: string;
+  method: string;
+  path: string;
+  code: string;
+}
+
+interface WttRequest {
+  id: string;
+  req_method: string;
+  req_url: string;
+  req_headers: string;
+  req_body: Uint8Array;
+  req_timestamp: number;
+  resp_status: string;
+  resp_statusmessage: string;
+  resp_headers: string;
+  resp_body: Uint8Array;
+  resp_timestamp: number;
 }
