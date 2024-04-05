@@ -1,4 +1,3 @@
-ul
-  each req in requests
-    li
-      a(href="/__admin/request/" + req.id)= req.id
+each req in requests
+  .sidebar-item
+    a(href="/__admin/request/" + req.id)= req.id

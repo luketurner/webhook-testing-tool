@@ -5,8 +5,11 @@ html(lang="en")
       title Webhook Tester
     link(rel="stylesheet", href="/__admin/style.css")
   body
-    block sidebar
-      include includes/sidebar.pug
-    block content
-    footer
-      p Copyright 2024 Luke Turner
+    nav
+      a(href="/__admin") Webhook Tester
+    .sidebar
+      block sidebar
+        include includes/sidebar.pug
+    main
+      block content
+    footer Copyright 2024 Luke Turner - <a href="https://github.com/luketurner/webhook-tester">source</a>
