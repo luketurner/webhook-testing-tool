@@ -10,7 +10,7 @@ import { runInNewContext } from 'vm';
 
 // global configuration
 const PORT = 3000;
-const DB_FILE = 'local/data.sqlite';
+const DB_FILE = process.env.WTT_DB_FILE || 'local/data.sqlite';
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = process.env.WTT_ADMIN_PASSWORD;
 const NODE_ENV = process.env.NODE_ENV;

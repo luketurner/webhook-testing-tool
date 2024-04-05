@@ -1,7 +1,19 @@
-app = 'webhook-tester'
+# fly.toml app configuration file generated for lt-wtt on 2024-04-05T13:48:34-07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'lt-wtt'
 primary_region = 'sea'
 
 [build]
+
+[env]
+  WTT_DB_FILE = '/data/data.sqlite'
+
+[[mounts]]
+  source = 'data'
+  destination = '/data'
 
 [http_service]
   internal_port = 3000
