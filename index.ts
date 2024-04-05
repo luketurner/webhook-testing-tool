@@ -34,7 +34,7 @@ adminRouter.use(basicAuth({
 }));
 
 adminRouter.use(async (req, res, next) => {
-  const requests = await db.all(`SELECT * FROM requests`);
+  const requests = await db.all(`SELECT id, resp_status, req_timestamp, req_method, req_url FROM requests ORDER BY req_timestamp DESC`);
   res.locals.requests = requests;
   res.locals.DateTime = DateTime;
   next();
@@ -46,6 +46,7 @@ adminRouter.get('/__admin', async (req, res) => {
 
 adminRouter.get('/__admin/request/:id', async (req, res) => {
   const request = await db.get(`SELECT * FROM requests WHERE id = $id`, { $id: req.params.id });
+  if (!request) res.redirect('/__admin');
   request.req_headers = JSON.parse(request.req_headers) ?? {};
   request.resp_headers = JSON.parse(request.resp_headers) ?? {};
   res.render('request', {
@@ -71,12 +72,12 @@ await db.run(`
     req_url TEXT,
     req_headers TEXT,
     req_body BLOB,
-    req_timestamp TEXT,
+    req_timestamp INTEGER,
     resp_status TEXT,
     resp_statusmessage TEXT,
     resp_headers TEXT,
     resp_body BLOB,
-    resp_timestamp TEXT
+    resp_timestamp INTEGER
   ) WITHOUT ROWID
 `);
 
