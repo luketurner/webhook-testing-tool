@@ -99,7 +99,6 @@ adminRouter.get('/__admin/request/:id', (req, res) => {
   request.resp_body = Buffer.from(request.resp_body);
   request.req_headers = JSON.parse(request.req_headers) ?? {};
   request.resp_headers = JSON.parse(request.resp_headers) ?? {};
-  console.log(request)
   res.render('request', {
     request
   });
