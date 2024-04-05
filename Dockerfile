@@ -4,7 +4,7 @@ WORKDIR /app
 ENV NODE_ENV="production"
 
 # Install node modules
-COPY --link package-lock.json package.json bun.lockb ./
+COPY --link package.json bun.lockb ./
 RUN bun install --production --frozen-lockfile
 
 # Copy application code
