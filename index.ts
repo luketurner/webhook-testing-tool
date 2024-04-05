@@ -12,10 +12,10 @@ import { runInNewContext } from 'vm';
 const PORT = 3000;
 const DB_FILE = 'local/data.sqlite';
 const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = process.env.WT_ADMIN_PASSWORD;
+const ADMIN_PASSWORD = process.env.WTT_ADMIN_PASSWORD;
 const NODE_ENV = process.env.NODE_ENV;
 
-if (!ADMIN_PASSWORD && NODE_ENV === 'production') throw new Error('Must specify WT_ADMIN_PASSWORD');
+if (!ADMIN_PASSWORD && NODE_ENV === 'production') throw new Error('Must specify WTT_ADMIN_PASSWORD');
 
 const app = express();
 app.set('view engine', 'pug');
