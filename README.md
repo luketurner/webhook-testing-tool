@@ -1,6 +1,6 @@
-# wtt
+# Webhook Testing Tool (wtt)
 
-`wtt` (Webhook Testing Tool) is an open-source, self-hosted alternative to webhook testing tools like https://webhook.site.
+`wtt` is an open-source, self-hosted alternative to webhook testing tools like https://webhook.site.
 
 How it works:
 
