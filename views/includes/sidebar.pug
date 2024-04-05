@@ -2,7 +2,7 @@ each req in requests
   a.sidebar-item(href="/__admin/request/" + req.id)
     .sidebar-item-id
       span= req.id.slice(0, 8)
-      span.sidebar-item-timestamp= DateTime.fromMillis(req.req_timestamp).diffNow().negate().normalize().rescale().toHuman({ unitDisplay: "narrow", trailingZeroDisplay: "stripIfInteger" })
+      span.sidebar-item-timestamp= DateTime.fromMillis(req.req_timestamp).diffNow().negate().normalize().rescale().toHuman({ unitDisplay: "narrow" })
     .sidebar-item-method= req.req_method
     .sidebar-item-url= req.req_url
     .sidebar-item-status= req.resp_status

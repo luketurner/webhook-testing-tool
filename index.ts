@@ -72,7 +72,7 @@ await db.run(`
     req_url TEXT,
     req_headers TEXT,
     req_body BLOB,
-    req_timestamp INTEGER,
+    req_timestamp INTEGER NOT NULL,
     resp_status TEXT,
     resp_statusmessage TEXT,
     resp_headers TEXT,
