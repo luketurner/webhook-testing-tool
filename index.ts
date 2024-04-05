@@ -35,7 +35,7 @@ adminRouter.use(basicAuth({
 adminRouter.use(express.urlencoded({ extended: true }))
 
 adminRouter.use((req, res, next) => {
-  const requests = db.query(`SELECT id, resp_status, req_timestamp, req_method, req_url FROM requests ORDER BY req_timestamp DESC`).all() as Partial<WttRequest>;
+  const requests = db.query(`SELECT id, resp_status, req_timestamp, req_method, req_url FROM requests ORDER BY req_timestamp DESC`).all() as Partial<WttRequest>[];
   res.locals.requests = requests;
   res.locals.DateTime = DateTime;
   next();
