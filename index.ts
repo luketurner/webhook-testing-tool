@@ -5,6 +5,7 @@ import { open } from 'sqlite';
 import bodyParser from 'body-parser';
 import { randomUUID } from 'crypto';
 import basicAuth from 'express-basic-auth';
+import { DateTime } from 'luxon';
 
 // global configuration
 const PORT = 3000;
@@ -35,15 +36,18 @@ adminRouter.use(basicAuth({
 adminRouter.use(async (req, res, next) => {
   const requests = await db.all(`SELECT * FROM requests`);
   res.locals.requests = requests;
+  res.locals.DateTime = DateTime;
   next();
-})
-// adminRouter.use('/__admin', express.static('public'));
+});
+adminRouter.use('/__admin', express.static('public'));
 adminRouter.get('/__admin', async (req, res) => {
   res.render('index');
 });
 
 adminRouter.get('/__admin/request/:id', async (req, res) => {
   const request = await db.get(`SELECT * FROM requests WHERE id = $id`, { $id: req.params.id });
+  request.req_headers = JSON.parse(request.req_headers) ?? {};
+  request.resp_headers = JSON.parse(request.resp_headers) ?? {};
   res.render('request', {
     request
   });

@@ -4,4 +4,35 @@ block title
   title Webhook Tester
 
 block content
-  p= request.id
+
+  div= request.id
+
+  div
+    p #{request.req_method} #{request.req_url}
+    p= DateTime.now() 
+
+  div
+    p Request headers
+    dl
+      each v, k in request.req_headers
+        dt= k
+        dd= v
+
+  div
+    p #{request.resp_status} #{request.resp_statusmessage}
+    p= request.resp_timestamp
+  
+  div
+    p Response headers
+    dl
+      each v, k in request.resp_headers
+        dt= k
+        dd= v
+
+  div 
+    p Request body
+    textarea= request.req_body
+
+  div 
+    p Response body 
+    textarea= request.resp_body
