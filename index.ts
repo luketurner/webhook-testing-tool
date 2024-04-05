@@ -51,7 +51,6 @@ adminRouter.get('/__admin', async (req, res) => {
 });
 
 adminRouter.post('/__admin', async (req, res) => {
-  console.log(req.body);
   if (req.body.addrule) {
     await db.run(`
       INSERT INTO scripts VALUES (
@@ -85,6 +84,11 @@ adminRouter.post('/__admin', async (req, res) => {
     await db.run(`
       DELETE FROM scripts WHERE id = $id
     `, { $id: req.body.deleterule })
+  }
+  if (req.body.clearrequests) {
+    await db.run(`
+      DELETE FROM requests;
+    `);
   }
   res.redirect('/__admin');
 });
