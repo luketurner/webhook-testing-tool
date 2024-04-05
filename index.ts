@@ -9,9 +9,6 @@ import { randomUUID } from 'crypto';
 const PORT = 3000;
 const DB_FILE = 'local/data.sqlite';
 
-// request index counter
-let index = 1;
-
 const app = express();
 app.use(morgan('combined'));
 
@@ -22,22 +19,18 @@ app.use('^(?!/__ui|/__api|/favicon.*)', webhookRouter);
 webhookRouter.use(bodyParser.raw({ type: '*/*' }));
 webhookRouter.use(requestLogger);
 
+webhookRouter.all('*', async (req, res) => {
+  res.status(200).send({ status: 200 });
+});
+
 app.use('/__ui', express.static('public'));
 
 app.get('/__api/logs', async (req, res) => {
   const rows = await db.all(`SELECT * FROM requests`);
   res.send(rows);
-})
-
-webhookRouter.all('*', async (req, res) => {
-  const status = singleParam(req, 'responseStatus') ?? 200;
-
-  const respBody = { status };
-
-  res.status(status).send(respBody);
 });
 
-console.log(`Using database: ${DB_FILE}`)
+console.log(`Using database: ${DB_FILE}`);
 
 const db = await open({
   filename: DB_FILE,
@@ -47,12 +40,15 @@ const db = await open({
 await db.run(`
   CREATE TABLE IF NOT EXISTS requests (
     id TEXT PRIMARY KEY,
-    req_body BLOB,
+    req_method TEXT,
+    req_url TEXT,
     req_headers TEXT,
+    req_body BLOB,
     req_timestamp TEXT,
-    resp_body BLOB,
-    resp_headers TEXT,
     resp_status TEXT,
+    resp_statusmessage TEXT,
+    resp_headers TEXT,
+    resp_body BLOB,
     resp_timestamp TEXT
   ) WITHOUT ROWID
 `);
@@ -61,38 +57,33 @@ app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
 
-// helper functions
-
-function singleParam(req, p) {
-  const v = req?.query?.[p];
-  if (Array.isArray(v) && v.length > 0) { return v[0]; }
-  return v || null;
-}
-
 async function requestLogger(req, res, next) {
 
   const id = randomUUID();
   
   await db.run(`
-    INSERT INTO requests VALUES (
+    INSERT INTO requests (
+      id,
+      req_method,
+      req_url,
+      req_headers,
+      req_body,
+      req_timestamp
+    ) VALUES (
       $id,
-      $req_body,
-      $req_headers,
-      $resp_body,
-      $resp_headers,
-      $resp_status,
-      $req_timestamp,
-      $resp_timestamp
+      $method,
+      $url,
+      $headers,
+      $body,
+      $timestamp
     )
   `, {
     $id: id,
-    $req_body: req.body instanceof Buffer ? req.body : undefined,
-    $req_headers: JSON.stringify(req.headers),
-    $req_timestamp: new Date(Date.now()).toString(),
-    $resp_body: null,
-    $resp_headers: null,
-    $resp_status: null,
-    $resp_timestamp: null,
+    $method: req.method,
+    $url: req.originalUrl,
+    $headers: JSON.stringify(req.headers),
+    $body: req.body instanceof Buffer ? req.body : undefined,
+    $timestamp: Date.now(),
   });
 
   // intercept response write so we can log the response info
@@ -117,15 +108,21 @@ async function requestLogger(req, res, next) {
 
     db.run(`
       UPDATE requests
-      SET resp_body = $body, resp_headers = $headers, resp_status = $status, resp_timestamp = $timestamp
+      SET
+        resp_status = $status,
+        resp_statusmessage = $statusMessage,
+        resp_headers = $headers,
+        resp_body = $body,
+        resp_timestamp = $timestamp
       WHERE id = $id
     `, {
       $id: id,
-      $body: body,
-      $headers: JSON.stringify(res.getHeaders()),
       $status: res.statusCode,
-      $timestamp: new Date(Date.now()).toString(),
-    });
+      $statusMessage: res.statusMessage,
+      $headers: JSON.stringify(res.getHeaders()),
+      $body: body,
+      $timestamp: Date.now(),
+    }).catch(e => console.log(e));
   };
 
   next();
