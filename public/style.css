@@ -12,7 +12,18 @@ body {
 
 nav { grid-area: header; margin: 1rem; vertical-align: middle; }
 footer { grid-area: footer; margin: 1rem; text-align: center; }
-.sidebar { grid-area: sidebar; margin-left: 1rem; }
-.sidebar-item { margin: 0.5rem 0 0.5rem 0; }
+.sidebar { grid-area: sidebar; padding: 1rem; overflow-y: auto; }
+.sidebar-item {
+  display: grid;
+  padding: 0.5rem 0 0.5rem 0;
+  gap: 0.25rem;
+  grid-template:
+    'id id id' 1fr
+    'method url status' 1fr / min-content 1fr 3rem;
+}
+.sidebar-item-id { grid-area: id; display: flex; flex-flow: row nowrap; justify-content: space-between; }
+.sidebar-item-method { grid-area: method; }
+.sidebar-item-url { grid-area: url; }
+.sidebar-item-status { grid-area: status; text-align: right; }
 main { grid-area: main; margin: 1rem; }
 a { color: inherit; text-decoration: inherit; }
