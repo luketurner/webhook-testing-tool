@@ -6,6 +6,7 @@ import bodyParser from 'body-parser';
 import { randomUUID } from 'crypto';
 import basicAuth from 'express-basic-auth';
 import { DateTime } from 'luxon';
+import { runInNewContext } from 'vm';
 
 // global configuration
 const PORT = 3000;
@@ -24,7 +25,7 @@ const webhookRouter = express.Router();
 webhookRouter.use(bodyParser.raw({ type: '*/*' }));
 webhookRouter.use(requestLogger);
 webhookRouter.all('*', async (req, res) => {
-  res.status(200).send({ status: 200 });
+  await runResponderScript(req, res);
 });
 
 const adminRouter = express.Router();
@@ -65,7 +66,7 @@ const db = await open({
   driver: sqlite3.Database
 });
 
-await db.run(`
+await db.exec(`
   CREATE TABLE IF NOT EXISTS requests (
     id TEXT PRIMARY KEY,
     req_method TEXT,
@@ -78,12 +79,63 @@ await db.run(`
     resp_headers TEXT,
     resp_body BLOB,
     resp_timestamp INTEGER
-  ) WITHOUT ROWID
+  ) WITHOUT ROWID;
+
+  CREATE TABLE IF NOT EXISTS scripts (
+    id TEXT PRIMARY KEY,
+    method TEXT,
+    path TEXT,
+    code TEXT
+  ) WITHOUT ROWID;
 `);
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
+
+async function runResponderScript(req, res) {
+  const scripts = await db.all(`
+    SELECT id, method, path FROM scripts;
+  `);
+
+  const matchingScript = scripts.filter(s =>
+    (s.method === req.method || s.method === '*') &&
+    (req.originalUrl.startsWith(s.path) || s.path === '*')
+  ).sort((s1, s2) => {
+    if (s1.path === '*' && s2.path !== '*') return 1;
+    if (s1.path !== '*' && s2.path === '*') return -1;
+
+    if (s1.path.length < s2.path.length) return 1;
+    if (s1.path.length > s2.path.length) return -1;
+
+    if (s1.method === '*' && s2.method !== '*') return 1;
+    if (s1.method !== '*' && s2.method === '*') return -1;
+    return 0;
+  })[0];
+
+  const script = matchingScript?.id ? await db.get(`
+    SELECT code FROM scripts WHERE id = $id;
+  `, { $id: matchingScript.id }) : null;
+
+  const code = script?.code ?? 'null';
+  const result = runInNewContext(code, {
+    // JSON,
+    req: {
+      params: req.params,
+      query: req.query,
+      headers: req.headers,
+      body: req.body,
+      originalUrl: req.originalUrl,
+      method: req.method
+    }
+  });
+  const responseStatus = typeof result?.status === 'number' ? result.status : 200;
+  res.status(responseStatus);
+  for (const [k, v] of Object.entries(result?.headers ?? {})) {
+    res.setHeader(k, v);
+  }
+  res.send(result?.body === undefined ? { status: responseStatus } : result.body);
+}
 
 async function requestLogger(req, res, next) {
 
