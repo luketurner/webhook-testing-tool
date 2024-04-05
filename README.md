@@ -35,11 +35,12 @@ View the UI at http://localhost:3000/__admin (login with user `admin` / password
 `wtt` is designed for deployment on [Fly](https://fly.io):
 
 ```bash
-# initial setup
+# initial setup -- run once
 flyctl launch --no-deploy
 flyctl secrets set WTT_ADMIN_PASSWORD=yoursecretpassword
 flyctl volumes create -s 1 -r sea data 
 
-# deploy
+# deploy -- rerun after code changes
 flyctl deploy
 ```
+
