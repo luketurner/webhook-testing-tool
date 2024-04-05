@@ -95,8 +95,8 @@ adminRouter.post('/__admin', (req, res) => {
 adminRouter.get('/__admin/request/:id', (req, res) => {
   const request = db.query(`SELECT * FROM requests WHERE id = $id`).get({ $id: req.params.id }) as WttRequest;
   if (!request) res.redirect('/__admin');
-  request.req_body = Buffer.from(request.req_body);
-  request.resp_body = Buffer.from(request.resp_body);
+  request.req_body = request.req_body ? Buffer.from(request.req_body) : null;
+  request.resp_body = request.req_body ? Buffer.from(request.resp_body) : null;
   request.req_headers = JSON.parse(request.req_headers) ?? {};
   request.resp_headers = JSON.parse(request.resp_headers) ?? {};
   res.render('request', {
@@ -266,11 +266,11 @@ interface WttRequest {
   req_method: string;
   req_url: string;
   req_headers: string;
-  req_body: Uint8Array;
+  req_body: Uint8Array | null;
   req_timestamp: number;
   resp_status: string;
   resp_statusmessage: string;
   resp_headers: string;
-  resp_body: Uint8Array;
+  resp_body: Uint8Array | null;
   resp_timestamp: number;
 }
