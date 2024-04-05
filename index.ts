@@ -4,31 +4,41 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import bodyParser from 'body-parser';
 import { randomUUID } from 'crypto';
+import basicAuth from 'express-basic-auth';
 
 // global configuration
 const PORT = 3000;
 const DB_FILE = 'local/data.sqlite';
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = process.env.WT_ADMIN_PASSWORD;
+const NODE_ENV = process.env.NODE_ENV;
+
+if (!ADMIN_PASSWORD && NODE_ENV === 'production') throw new Error('Must specify WT_ADMIN_PASSWORD');
 
 const app = express();
 app.use(morgan('combined'));
 
 const webhookRouter = express.Router();
-
-app.use('^(?!/__ui|/__api|/favicon.*)', webhookRouter);
-
 webhookRouter.use(bodyParser.raw({ type: '*/*' }));
 webhookRouter.use(requestLogger);
-
 webhookRouter.all('*', async (req, res) => {
   res.status(200).send({ status: 200 });
 });
 
-app.use('/__ui', express.static('public'));
-
-app.get('/__api/logs', async (req, res) => {
+const adminRouter = express.Router();
+adminRouter.use(basicAuth({
+  users: { [ADMIN_USERNAME]: ADMIN_PASSWORD ?? 'admin' },
+  challenge: true
+}));
+adminRouter.use('/__ui', express.static('public'));
+adminRouter.get('/__api/logs', async (req, res) => {
   const rows = await db.all(`SELECT * FROM requests`);
   res.send(rows);
 });
+
+app.use('^(?!/__ui|/__api|/favicon.*)', webhookRouter);
+app.use(adminRouter);
+
 
 console.log(`Using database: ${DB_FILE}`);
 

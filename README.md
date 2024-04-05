@@ -13,12 +13,15 @@ mkdir local
 bun run dev
 ```
 
+View the UI at http://localhost:3000/__ui (login with user `admin` / password `admin` for local development)
+
 ## Deployment
 
 ```bash
 # initial setup
-flyctl launch
+flyctl launch --no-deploy
+flyctl secrets set WT_ADMIN_PASSWORD=yoursecretpassword
 
-# deploy updates
+# deploy
 flyctl deploy
 ```
