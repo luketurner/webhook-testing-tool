@@ -100,7 +100,8 @@ adminRouter.get('/__admin/request/:id', (req, res) => {
   request.req_headers = JSON.parse(request.req_headers) ?? {};
   request.resp_headers = JSON.parse(request.resp_headers) ?? {};
   res.render('request', {
-    request
+    request,
+    statusCode: request.resp_status ? parseInt(request.resp_status, 10) : 0
   });
 });
 

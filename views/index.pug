@@ -1,33 +1,69 @@
 extends layout.pug
 
 block content
-  p Webhook Testing Tool (WTT) is a self-hosted, open-source tool for testing HTTP webhooks.
-  p Rules:
+  .content
+    p Webhook Testing Tool (WTT) is a self-hosted, open-source tool for testing HTTP webhooks.
+    p By default, WTT will respond with a 200 OK to any request. You can configure response behavior on a per-route basis by adding responder scripts below.
   each script in scripts
     form(action="", method="post")
-      div
-        div= script.id
-        select(name="method")
-          option(value="*", selected=(script.method === '*')) *
-          option(value="GET", selected=(script.method === 'GET')) GET
-          option(value="POST", selected=(script.method === 'POST')) POST
-          option(value="PUT", selected=(script.method === 'PUT')) PUT
-          option(value="DELETE", selected=(script.method === 'DELETE')) DELETE
-          option(value="PATCH", selected=(script.method === 'PATCH')) PATCH
-        input(type="text", name="path", value=script.path)
-        textarea(name="code")= script.code
-        button(type="submit" name="updaterule" value=script.id) Update
-        button(type="submit" name="deleterule" value=script.id) Delete
-  p Add new rule:
+      .card
+        .card-header
+          .card-header-title= script.id
+        .card-content
+          .field.is-horizontal 
+            .field-label.is-normal
+              label.label Route
+            .field-body
+              .field.has-addons.has-addons-right
+                .control
+                  .select
+                    select(name="method")
+                      option(value="*", selected=(script.method === '*')) *
+                      option(value="GET", selected=(script.method === 'GET')) GET
+                      option(value="POST", selected=(script.method === 'POST')) POST
+                      option(value="PUT", selected=(script.method === 'PUT')) PUT
+                      option(value="DELETE", selected=(script.method === 'DELETE')) DELETE
+                      option(value="PATCH", selected=(script.method === 'PATCH')) PATCH
+                .control.is-expanded
+                  input.input(type="text", name="path", value=script.path)
+          .field.is-horizontal
+            .field-label.is-normal
+              label.label Code
+            .field-body
+              .field
+                .control.is-expanded
+                  textarea.textarea(name="code")= script.code
+        .card-footer 
+          button.card-footer-item(type="submit" name="updaterule" value=script.id) Update
+          button.card-footer-item(type="submit" name="deleterule" value=script.id) Delete
   div
     form(action="", method="post")
-      select(name="method")
-        option(value="*") *
-        option(value="GET") GET
-        option(value="POST") POST
-        option(value="PUT") PUT
-        option(value="DELETE") DELETE
-        option(value="PATCH") PATCH
-      input(type="text", name="path", value="")
-      textarea(name="code")
-      button(type="submit" name="addrule" value="true") Add rule
+      .card
+        header.card-header
+          .card-header-title Add new rule...
+        .card-content
+          .field.is-horizontal 
+            .field-label.is-normal
+              label.label Route
+            .field-body
+              .field.has-addons.has-addons-right
+                .control
+                  .select
+                    select(name="method")
+                      option(value="*") *
+                      option(value="GET") GET
+                      option(value="POST") POST
+                      option(value="PUT") PUT
+                      option(value="DELETE") DELETE
+                      option(value="PATCH") PATCH
+                .control.is-expanded
+                  input.input(type="text", name="path", value="")
+          .field.is-horizontal
+            .field-label.is-normal
+              label.label Code
+            .field-body
+              .field
+                .control.is-expanded
+                  textarea.textarea(name="code")
+        .card-footer 
+          button.card-footer-item(type="submit" name="addrule" value="true") Add new rule

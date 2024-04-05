@@ -2,34 +2,38 @@ extends layout.pug
 
 block content
 
-  div= request.id
-
-  div
-    p #{request.req_method} #{request.req_url}
-    p= DateTime.now() 
-
-  div
-    p Request headers
-    dl
-      each v, k in request.req_headers
-        dt= k
-        dd= v
-
-  div
-    p #{request.resp_status} #{request.resp_statusmessage}
-    p= request.resp_timestamp
   
-  div
-    p Response headers
-    dl
-      each v, k in request.resp_headers
-        dt= k
-        dd= v
 
-  div 
-    p Request body
-    textarea= request.req_body
+  .level
+    .level-left
+      .level-item= DateTime.fromMillis(request.req_timestamp).toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS)
+      .level-item
+        .tag(class=(statusCode >= 500 ? "is-danger" : statusCode >= 400 ? "is-warning" : statusCode >= 300 ? "is-link" : statusCode >= 200 ? "is-success" : "is-dark")) #{request.resp_status} #{request.resp_statusmessage}
+      .level-item.is-size-5= request.req_method
+      .level-item.is-size-5= request.req_url
+    .level-right
+      .level-item= request.id
 
-  div 
-    p Response body 
-    textarea= request.resp_body
+  .columns
+    .column
+      h5.title.is-5 Request
+      table.table.is-bordered.is-fullwidth
+        tbody
+          each v, k in request.req_headers
+            tr
+              th= k
+              td= v
+  
+    .column
+      h5.title.is-5 Response
+      table.table.is-bordered.is-fullwidth
+        tbody
+          each v, k in request.resp_headers
+            tr
+              th= k
+              td= v
+  .columns
+    .column 
+      textarea.textarea(readonly)= request.req_body
+    .column
+      textarea.textarea(readonly)= request.resp_body
