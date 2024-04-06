@@ -4,6 +4,11 @@ block content
   .content
     p Webhook Testing Tool (WTT) is a self-hosted, open-source tool for testing HTTP webhooks.
     p By default, WTT will respond with a 200 OK to any request. You can configure response behavior on a per-route basis by adding responder scripts below.
+    p 
+      | Responder scripts have access to a <code>req</code> object with
+      | <code>params</code>, <code>query</code>, <code>headers</code>, <code>body</code>, <code>method</code>, and <code>originalUrl</code> properties.
+      | The last expression evaluated in the script should be an object with any of the following properties: <code>status</code>, <code>headers</code>, and <code>body</code>,
+      | which will be used to construct the HTTP response for the request.
   each script in scripts
     form(action="", method="post")
       .card
