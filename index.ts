@@ -166,23 +166,30 @@ function runResponderScript(req, res) {
   `).get({ $id: matchingScript.id }) as Partial<WttScript> : null;
 
   const code = script?.code ?? 'null';
-  const result = runInNewContext(code, {
-    // JSON,
-    req: {
-      params: req.params,
-      query: req.query,
-      headers: req.headers,
-      body: req.body,
-      originalUrl: req.originalUrl,
-      method: req.method
-    }
-  });
+  let result;
+  try {
+    result = runInNewContext(code, {
+      // JSON,
+      req: {
+        params: req.params,
+        query: req.query,
+        headers: req.headers,
+        body: req.body,
+        originalUrl: req.originalUrl,
+        method: req.method
+      }
+    });
+  } catch (e) {
+    console.error('Error running script', e);
+    result = { status: 500, body: { error: 'Error running responder script. See application logs for more details.' } };
+  }
   const responseStatus = typeof result?.status === 'number' ? result.status : 200;
   res.status(responseStatus);
   for (const [k, v] of Object.entries(result?.headers ?? {})) {
     res.setHeader(k, v);
   }
   res.send(result?.body === undefined ? { status: responseStatus } : result.body);
+  
 }
 
 function requestLogger(req, res, next) {
