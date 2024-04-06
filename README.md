@@ -13,6 +13,13 @@ How it works:
 3. The full headers, raw payloads, etc. for all requests and responses are stored in a SQLite database.
 4. You visit the special `/__admin` URL in your browser to open a (password-protected) UI to view the requests and responses.
 
+## Responder scripts
+
+One special feature is the ability to configure how `wtt` responds to requests. This is available in the admin UI:
+
+![Screenshot of responder script configuration](./docs/responder.png)
+
+
 ## Local testing
 
 Requirements:

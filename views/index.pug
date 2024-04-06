@@ -3,12 +3,24 @@ extends layout.pug
 block content
   .content
     p Webhook Testing Tool (WTT) is a self-hosted, open-source tool for testing HTTP webhooks.
-    p By default, WTT will respond with a 200 OK to any request. You can configure response behavior on a per-route basis by adding responder scripts below.
+    p By default, WTT will respond with a 200 OK to any request. You can configure response behavior on a per-route basis by adding <strong>responder scripts</strong> below.
     p 
       | Responder scripts have access to a <code>req</code> object with
       | <code>params</code>, <code>query</code>, <code>headers</code>, <code>body</code>, <code>method</code>, and <code>originalUrl</code> properties.
       | The last expression evaluated in the script should be an object with any of the following properties: <code>status</code>, <code>headers</code>, and <code>body</code>,
       | which will be used to construct the HTTP response for the request.
+    p For example, to return a JSON response if the request has a JSON payload with <code>foo</code> property and a <code>400</code> response if it doesn't, you could write: 
+    pre
+      | const body = JSON.parse(req.body);
+      | body && body.foo ? { body: { gotFoo: body.foo }} : { status: 400 };
+    p 
+      | Responder scripts are only run when the request matches the configured <strong>Route</strong> (HTTP method and path) for that script.
+      | The path can be a wildcard <code>*</code> indicating that any path matches, or it can be a value like <code>/foo</code> which would match
+      | any request where the path <em>starts with</em> <code>/foo</code>.
+    p 
+      | Scripts are matched in order of specificity, meaning if you have multiple scripts that match the request, only the most specific will be executed.
+      | For example, if one script's route has the wildcard path, another matches the beginning of the path, and a third matches the full path exactly, the third
+      | one will be chosen to be executed.
   each script in scripts
     form(action="", method="post")
       .card
