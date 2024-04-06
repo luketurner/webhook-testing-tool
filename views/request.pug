@@ -1,9 +1,6 @@
 extends layout.pug
 
 block content
-
-  
-
   .level
     .level-left
       .level-item= DateTime.fromMillis(request.req_timestamp).toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS)
@@ -13,7 +10,6 @@ block content
       .level-item.is-size-5= request.req_url
     .level-right
       .level-item= request.id
-
   .columns
     .column
       h5.title.is-5 Request
@@ -23,7 +19,6 @@ block content
             tr
               th= k
               td= v
-  
     .column
       h5.title.is-5 Response
       table.table.is-bordered.is-fullwidth

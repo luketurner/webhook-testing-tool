@@ -3,7 +3,7 @@ import morgan from 'morgan';
 import bodyParser from 'body-parser';
 import { randomUUID } from 'crypto';
 import basicAuth from 'express-basic-auth';
-import { DateTime } from 'luxon';
+import { DateTime, Duration } from 'luxon';
 import { runInNewContext } from 'vm';
 import { Database } from 'bun:sqlite';
 
@@ -38,6 +38,7 @@ adminRouter.use((req, res, next) => {
   const requests = db.query(`SELECT id, resp_status, req_timestamp, req_method, req_url FROM requests ORDER BY req_timestamp DESC`).all() as Partial<WttRequest>[];
   res.locals.requests = requests;
   res.locals.DateTime = DateTime;
+  res.locals.Duration = Duration;
   next();
 });
 adminRouter.use('/__admin', express.static('public'));
