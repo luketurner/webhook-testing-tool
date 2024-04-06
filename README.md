@@ -2,6 +2,8 @@
 
 `wtt` is an open-source, self-hosted alternative to webhook testing tools like https://webhook.site.
 
+![Screenshot of the app](./docs/screenshot.png)
+
 How it works:
 
 1. You deploy a copy of `wtt` for your personal use.
