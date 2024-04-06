@@ -13,6 +13,11 @@ const DB_FILE = process.env.WTT_DB_FILE || 'local/data.sqlite';
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = process.env.WTT_ADMIN_PASSWORD;
 const NODE_ENV = process.env.NODE_ENV;
+const EXCLUDE_HEADERS = process.env.WTT_EXCLUDE_HEADERS ?? '';
+const EXCLUDE_HEADER_MAP = EXCLUDE_HEADERS.split(',').reduce((obj, k) => {
+  if (k) obj[k] = true;
+  return obj;
+}, {});
 
 if (!ADMIN_PASSWORD && NODE_ENV === 'production') throw new Error('Must specify WTT_ADMIN_PASSWORD');
 
@@ -195,6 +200,11 @@ function runResponderScript(req, res) {
 function requestLogger(req, res, next) {
 
   const id = randomUUID();
+
+  const headers = { ...req.headers };
+  for (const header of Object.keys(headers)) {
+    if (EXCLUDE_HEADER_MAP[header]) delete headers[header];
+  }
   
   db.query(`
     INSERT INTO requests (
@@ -216,7 +226,7 @@ function requestLogger(req, res, next) {
     $id: id,
     $method: req.method,
     $url: req.originalUrl,
-    $headers: JSON.stringify(req.headers),
+    $headers: JSON.stringify(headers),
     $body: req.body instanceof Buffer ? req.body : undefined,
     $timestamp: Date.now(),
   });

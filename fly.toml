@@ -5,6 +5,7 @@ primary_region = 'sea'
 
 [env]
   WTT_DB_FILE = '/data/data.sqlite'
+  WTT_EXCLUDE_HEADERS = 'x-request-start,fly-client-ip,x-forwarded-for,fly-forwarded-proto,x-forwarded-proto,fly-forwarded-ssl,x-forwarded-ssl,fly-forwarded-port,x-forwarded-port,fly-region,fly-request-id,fly-tracestate,fly-traceparent,via'
 
 [[mounts]]
   source = 'data'
