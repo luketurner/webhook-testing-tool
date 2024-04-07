@@ -50,3 +50,4 @@ flyctl volumes create -s 1 -r sea data
 flyctl deploy
 ```
 
+See http://blog.luketurner.org/posts/hosting-your-own-webhook-testing-service-on-fly/ for a more detailed explanation about deploying `wtt` on Fly.
