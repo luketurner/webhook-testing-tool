@@ -6,29 +6,30 @@ html(lang="en", data-theme="dark")
     link(rel="stylesheet", href="/__admin/style.css")
     link(rel="stylesheet", href="/__admin/bulma.min.css")
   body.container.is-fullhd
-    nav.navbar
-      .navbar-brand
-        a.navbar-item(href="/__admin") Webhook Testing Tool
-    .sidebar
-      .panel
-        .panel-heading Requests
-        each req in requests
-          -
-            const statusCode = parseInt(req.resp_status, 10)
-            const timeDiff = DateTime.fromMillis(req.req_timestamp).diffNow().negate().normalize().rescale().toObject()
-            delete timeDiff.milliseconds;
-          a.panel-block(href="/__admin/request/" + req.id)
-            .level(style="width: 100%;")
-              .level-left
-                .level-item.tag(class=(statusCode >= 500 ? "is-danger" : statusCode >= 400 ? "is-warning" : statusCode >= 300 ? "is-link" : statusCode >= 200 ? "is-success" : "is-dark"))= req.resp_status
-                .level-item= req.req_method
-                .level-item= req.req_url
-              .level-right
-                .level-item= Duration.fromObject(timeDiff).toHuman({ unitDisplay: "narrow" })
-            
-        form.panel-block(action="/__admin/", method="post")
-          button.button.is-outlined.is-fullwidth.is-danger(type="submit" name="clearrequests" value="true") Clear Requests
-    main
-      block content
-    footer.footer
-      .content.has-text-centered Copyright 2024 Luke Turner - <a href="https://github.com/luketurner/webhook-testing-tool">source</a>
+    .layout
+      nav.navbar
+        .navbar-brand
+          a.navbar-item(href="/__admin") Webhook Testing Tool
+      .sidebar
+        .panel
+          .panel-heading Requests
+          each req in requests
+            -
+              const statusCode = parseInt(req.resp_status, 10)
+              const timeDiff = DateTime.fromMillis(req.req_timestamp).diffNow().negate().normalize().rescale().toObject()
+              delete timeDiff.milliseconds;
+            a.panel-block(href="/__admin/request/" + req.id)
+              .level(style="width: 100%;")
+                .level-left
+                  .level-item.tag(class=(statusCode >= 500 ? "is-danger" : statusCode >= 400 ? "is-warning" : statusCode >= 300 ? "is-link" : statusCode >= 200 ? "is-success" : "is-dark"))= req.resp_status
+                  .level-item= req.req_method
+                  .level-item= req.req_url
+                .level-right
+                  .level-item= Duration.fromObject(timeDiff).toHuman({ unitDisplay: "narrow" })
+              
+          form.panel-block(action="/__admin/", method="post")
+            button.button.is-outlined.is-fullwidth.is-danger(type="submit" name="clearrequests" value="true") Clear Requests
+      main
+        block content
+      footer.footer
+        .content.has-text-centered Copyright 2024 Luke Turner - <a href="https://github.com/luketurner/webhook-testing-tool">source</a>

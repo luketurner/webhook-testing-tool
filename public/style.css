@@ -1,6 +1,6 @@
 li { list-style: none; }
 
-body {
+.layout {
   display: grid;
   grid-template:
     'header header' min-content
