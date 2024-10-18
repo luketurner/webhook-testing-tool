@@ -7,7 +7,10 @@ import { DateTime, Duration } from 'luxon';
 import { runInNewContext } from 'vm';
 import { Database } from 'bun:sqlite';
 
+//
 // global configuration
+//
+
 const PORT = 3000;
 const DB_FILE = process.env.WTT_DB_FILE || 'local/data.sqlite';
 const ADMIN_USERNAME = 'admin';
@@ -21,9 +24,18 @@ const EXCLUDE_HEADER_MAP = EXCLUDE_HEADERS.split(',').reduce((obj, k) => {
 
 if (!ADMIN_PASSWORD && NODE_ENV === 'production') throw new Error('Must specify WTT_ADMIN_PASSWORD');
 
+//
+// Shared Express setup
+//
+
 const app = express();
 app.set('view engine', 'pug');
 app.use(morgan('combined'));
+
+//
+// Webhook router
+// Used for responding to generic HTTP requests
+//
 
 const webhookRouter = express.Router();
 webhookRouter.use(bodyParser.raw({ type: '*/*' }));
@@ -31,6 +43,11 @@ webhookRouter.use(requestLogger);
 webhookRouter.all('*', (req, res) => {
   runResponderScript(req, res);
 });
+
+//
+// Admin router
+// Used for rendering the admin config pages
+//
 
 const adminRouter = express.Router();
 adminRouter.use(basicAuth({
@@ -55,6 +72,7 @@ adminRouter.get('/__admin', (req, res) => {
   });
 });
 
+// "Server action" form handler
 adminRouter.post('/__admin', (req, res) => {
   if (req.body.addrule) {
     db.query(`
@@ -111,9 +129,13 @@ adminRouter.get('/__admin/request/:id', (req, res) => {
   });
 });
 
+// Connect routers
 app.use('^(?!/__admin|/favicon.*)', webhookRouter);
 app.use(adminRouter);
 
+//
+// Program startup
+//
 
 console.log(`Using database: ${DB_FILE}`);
 
@@ -146,6 +168,16 @@ app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
 
+//
+// helper functions
+//
+
+/**
+ * Given an Express request and response, this function looks up whether there are
+ * any responder scripts that can be used to generate the response. If there are no
+ * matching scripts, a simple 200 response is returned. If multiple scripts match,
+ * the more specific one is executed.
+ */
 function runResponderScript(req, res) {
   const scripts = db.query(`
     SELECT id, method, path FROM scripts;
@@ -197,8 +229,16 @@ function runResponderScript(req, res) {
   
 }
 
+/**
+ * Function that implements logging of HTTP requests to the database. (Note that
+ * logging to console is already handled by Morgan middleware).
+ * 
+ * Before the request is sent, a row is added to the requests table. When we receive
+ * a response, then the table is updated with response information.
+ */
 function requestLogger(req, res, next) {
 
+  // unique "trace ID"
   const id = randomUUID();
 
   const headers = { ...req.headers };
