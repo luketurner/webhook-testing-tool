@@ -41,6 +41,7 @@ block content
                       option(value="PUT", selected=(script.method === 'PUT')) PUT
                       option(value="DELETE", selected=(script.method === 'DELETE')) DELETE
                       option(value="PATCH", selected=(script.method === 'PATCH')) PATCH
+                      option(value="OPTIONS", selected=(script.method === 'OPTIONS')) OPTIONS
                 .control.is-expanded
                   input.input(type="text", name="path", value=script.path)
           .field.is-horizontal
@@ -73,6 +74,7 @@ block content
                       option(value="PUT") PUT
                       option(value="DELETE") DELETE
                       option(value="PATCH") PATCH
+                      option(value="OPTIONS") OPTIONS
                 .control.is-expanded
                   input.input(type="text", name="path", value="")
           .field.is-horizontal
