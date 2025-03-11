@@ -7,12 +7,16 @@ block content
     p 
       | Responder scripts have access to a <code>req</code> object with
       | <code>params</code>, <code>query</code>, <code>headers</code>, <code>body</code>, <code>method</code>, and <code>originalUrl</code> properties.
-      | The last expression evaluated in the script should be an object with any of the following properties: <code>status</code>, <code>headers</code>, and <code>body</code>,
-      | which will be used to construct the HTTP response for the request.
+      | They also have access to a <code>res</code> object which will be used to construct the HTTP response for the request.
+      | The <code>res</code> object can have any of the following properties: <code>status</code>, <code>headers</code>, and <code>body</code>.
     p For example, to return a JSON response if the request has a JSON payload with <code>foo</code> property and a <code>400</code> response if it doesn't, you could write: 
     pre
       | const body = JSON.parse(req.body);
-      | body && body.foo ? { body: { gotFoo: body.foo }} : { status: 400 };
+      | if (body?.foo) {
+      |   res.body = { gotFoo: body.foo };
+      | } else {
+      |   res.status = 400;
+      | }
     p 
       | Responder scripts are only run when the request matches the configured <strong>Route</strong> (HTTP method and path) for that script.
       | The path can be a wildcard <code>*</code> indicating that any path matches, or it can be a value like <code>/foo</code> which would match
