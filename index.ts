@@ -205,7 +205,11 @@ function runResponderScript(req, res) {
   const code = script?.code ?? 'null';
   let result;
   try {
-    result = runInNewContext(code, {
+    result = {
+      headers: {},
+      status: 200,
+    };
+    runInNewContext(code, {
       // JSON,
       req: {
         params: req.params,
@@ -214,7 +218,8 @@ function runResponderScript(req, res) {
         body: req.body,
         originalUrl: req.originalUrl,
         method: req.method
-      }
+      },
+      res: result
     });
   } catch (e) {
     console.error('Error running script', e);
