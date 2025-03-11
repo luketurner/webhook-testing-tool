@@ -223,7 +223,7 @@ function runResponderScript(req, res) {
   const responseStatus = typeof result?.status === 'number' ? result.status : 200;
   res.status(responseStatus);
   for (const [k, v] of Object.entries(result?.headers ?? {})) {
-    res.setHeader(k, v);
+    res.set(k, v);
   }
   res.send(result?.body === undefined ? { status: responseStatus } : result.body);
   
