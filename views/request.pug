@@ -43,5 +43,19 @@ block content
   .columns
     .column 
       textarea.textarea(readonly)= request.req_body
+      if prettyRequest
+        pre
+          code
+            | // Prettified request
+            |
+            |
+            = prettyRequest
     .column
       textarea.textarea(readonly)= request.resp_body
+      if prettyResponse
+        pre
+          code
+            | // Prettified response
+            |
+            |
+            = prettyResponse

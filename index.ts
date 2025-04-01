@@ -124,10 +124,24 @@ adminRouter.get('/__admin/request/:id', (req, res) => {
   request.req_headers = JSON.parse(request.req_headers) ?? {};
   request.resp_headers = JSON.parse(request.resp_headers) ?? {};
   const parsedJwt = parseJwtBearer(request.req_headers?.['authorization'] ?? '');
+  let prettyRequest: string | null = null;
+  try {
+    if (request.req_body) {
+      prettyRequest = JSON.stringify(JSON.parse(request.req_body), null, 2)
+    }
+  } catch (e) { }
+  let prettyResponse: string | null = null;
+  try {
+    if (request.resp_body) {
+      prettyResponse = JSON.stringify(JSON.parse(request.resp_body), null, 2)
+    }
+  } catch (e) { }
   res.render('request', {
     request,
     statusCode: request.resp_status ? parseInt(request.resp_status, 10) : 0,
     parsedJwt,
+    prettyRequest,
+    prettyResponse
   });
 });
 
