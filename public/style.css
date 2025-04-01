@@ -12,7 +12,7 @@ li { list-style: none; }
 
 nav { grid-area: header; margin: 1rem; vertical-align: middle; }
 footer { grid-area: footer; }
-.sidebar { grid-area: sidebar; padding: 1rem; overflow-y: auto; }
+.sidebar { grid-area: sidebar; margin: 1rem; overflow-y: auto; max-height: 80vh; }
 .sidebar-item {
   display: grid;
   padding: 0.5rem 0 0.5rem 0;
@@ -27,3 +27,4 @@ footer { grid-area: footer; }
 .sidebar-item-status { grid-area: status; text-align: right; }
 main { grid-area: main; margin: 1rem; }
 .sidebar a, nav a { color: inherit; text-decoration: inherit; }
+.header-table td { word-break: break-all; }
