@@ -1,39 +1,40 @@
-import express from 'express';
-import morgan from 'morgan';
-import bodyParser from 'body-parser';
-import { randomUUID } from 'crypto';
-import basicAuth from 'express-basic-auth';
-import { DateTime, Duration } from 'luxon';
-import { runInNewContext } from 'vm';
-import { Database } from 'bun:sqlite';
-import hljs from 'highlight.js/lib/core';
-import javascript from 'highlight.js/lib/languages/javascript';
-hljs.registerLanguage('javascript', javascript);
+import express from "express";
+import morgan from "morgan";
+import bodyParser from "body-parser";
+import { randomUUID } from "crypto";
+import basicAuth from "express-basic-auth";
+import { DateTime, Duration } from "luxon";
+import { runInNewContext } from "vm";
+import { Database } from "bun:sqlite";
+import hljs from "highlight.js/lib/core";
+import javascript from "highlight.js/lib/languages/javascript";
+hljs.registerLanguage("javascript", javascript);
 
 //
 // global configuration
 //
 
 const PORT = 3000;
-const DB_FILE = process.env.WTT_DB_FILE || 'local/data.sqlite';
-const ADMIN_USERNAME = 'admin';
+const DB_FILE = process.env.WTT_DB_FILE || "local/data.sqlite";
+const ADMIN_USERNAME = "admin";
 const ADMIN_PASSWORD = process.env.WTT_ADMIN_PASSWORD;
 const NODE_ENV = process.env.NODE_ENV;
-const EXCLUDE_HEADERS = process.env.WTT_EXCLUDE_HEADERS ?? '';
-const EXCLUDE_HEADER_MAP = EXCLUDE_HEADERS.split(',').reduce((obj, k) => {
+const EXCLUDE_HEADERS = process.env.WTT_EXCLUDE_HEADERS ?? "";
+const EXCLUDE_HEADER_MAP = EXCLUDE_HEADERS.split(",").reduce((obj, k) => {
   if (k) obj[k] = true;
   return obj;
 }, {});
 
-if (!ADMIN_PASSWORD && NODE_ENV === 'production') throw new Error('Must specify WTT_ADMIN_PASSWORD');
+if (!ADMIN_PASSWORD && NODE_ENV === "production")
+  throw new Error("Must specify WTT_ADMIN_PASSWORD");
 
 //
 // Shared Express setup
 //
 
 const app = express();
-app.set('view engine', 'pug');
-app.use(morgan('combined'));
+app.set("view engine", "pug");
+app.use(morgan("combined"));
 
 //
 // Webhook router
@@ -41,9 +42,9 @@ app.use(morgan('combined'));
 //
 
 const webhookRouter = express.Router();
-webhookRouter.use(bodyParser.raw({ type: '*/*' }));
+webhookRouter.use(bodyParser.raw({ type: "*/*" }));
 webhookRouter.use(requestLogger);
-webhookRouter.all('*', (req, res) => {
+webhookRouter.all("*", (req, res) => {
   runResponderScript(req, res);
 });
 
@@ -53,104 +54,131 @@ webhookRouter.all('*', (req, res) => {
 //
 
 const adminRouter = express.Router();
-adminRouter.use(basicAuth({
-  users: { [ADMIN_USERNAME]: ADMIN_PASSWORD ?? 'admin' },
-  challenge: true
-}));
-adminRouter.use(express.urlencoded({ extended: true }))
+adminRouter.use(
+  basicAuth({
+    users: { [ADMIN_USERNAME]: ADMIN_PASSWORD ?? "admin" },
+    challenge: true,
+  })
+);
+adminRouter.use(express.urlencoded({ extended: true }));
 
 adminRouter.use((req, res, next) => {
-  const requests = db.query(`SELECT id, resp_status, req_timestamp, req_method, req_url FROM requests ORDER BY req_timestamp DESC`).all() as Partial<WttRequest>[];
+  const requests = db
+    .query(
+      `SELECT id, resp_status, req_timestamp, req_method, req_url FROM requests ORDER BY req_timestamp DESC`
+    )
+    .all() as Partial<WttRequest>[];
   res.locals.requests = requests;
   res.locals.DateTime = DateTime;
   res.locals.Duration = Duration;
   next();
 });
-adminRouter.use('/__admin', express.static('public'));
+adminRouter.use("/__admin", express.static("public"));
 
-adminRouter.get('/__admin', (req, res) => {
+adminRouter.get("/__admin", (req, res) => {
   const scripts = db.query(`SELECT * FROM scripts`).all() as WttScript[];
-  res.render('index', {
-    scripts
+  res.render("index", {
+    scripts,
   });
 });
 
 // "Server action" form handler
-adminRouter.post('/__admin', (req, res) => {
+adminRouter.post("/__admin", (req, res) => {
   if (req.body.addrule) {
-    db.query(`
+    db.query(
+      `
       INSERT INTO scripts VALUES (
         $id,
         $method,
         $path,
         $code
       )
-    `).run({ 
+    `
+    ).run({
       $id: randomUUID(),
-      $method: req.body.method ?? 'GET',
-      $path: req.body.path ?? '/',
-      $code: req.body.code ?? 'null',
+      $method: req.body.method ?? "GET",
+      $path: req.body.path ?? "/",
+      $code: req.body.code ?? "null",
     });
   }
   if (req.body.updaterule) {
-    db.query(`
+    db.query(
+      `
       UPDATE scripts SET
         method = $method,
         path = $path,
         code = $code
       WHERE id = $id
-    `).run({ 
+    `
+    ).run({
       $id: req.body.updaterule,
-      $method: req.body.method ?? 'GET',
-      $path: req.body.path ?? '/',
-      $code: req.body.code ?? 'null',
+      $method: req.body.method ?? "GET",
+      $path: req.body.path ?? "/",
+      $code: req.body.code ?? "null",
     });
   }
   if (req.body.deleterule) {
-    db.query(`
+    db.query(
+      `
       DELETE FROM scripts WHERE id = $id
-    `).run({ $id: req.body.deleterule })
+    `
+    ).run({ $id: req.body.deleterule });
   }
   if (req.body.clearrequests) {
-    db.query(`
+    db.query(
+      `
       DELETE FROM requests;
-    `).run();
+    `
+    ).run();
   }
-  res.redirect('/__admin');
+  res.redirect("/__admin");
 });
 
-adminRouter.get('/__admin/request/:id', (req, res) => {
-  const request = db.query(`SELECT * FROM requests WHERE id = $id`).get({ $id: req.params.id }) as WttRequest;
-  if (!request) res.redirect('/__admin');
+adminRouter.get("/__admin/request/:id", (req, res) => {
+  const request = db
+    .query(`SELECT * FROM requests WHERE id = $id`)
+    .get({ $id: req.params.id }) as WttRequest;
+  if (!request) res.redirect("/__admin");
   request.req_body = request.req_body ? Buffer.from(request.req_body) : null;
   request.resp_body = request.resp_body ? Buffer.from(request.resp_body) : null;
   request.req_headers = JSON.parse(request.req_headers) ?? {};
   request.resp_headers = JSON.parse(request.resp_headers) ?? {};
-  const parsedJwt = parseJwtBearer(request.req_headers?.['authorization'] ?? '');
+  const parsedJwt = parseJwtBearer(
+    request.req_headers?.["authorization"] ?? ""
+  );
   let prettyRequest: string | null = null;
   try {
     if (request.req_body) {
-      prettyRequest = highlight(formatJson(request.req_body, 'Prettified request'));
+      prettyRequest = highlight(
+        formatJson(request.req_body, "Prettified request")
+      );
     }
-  } catch (e) { }
+  } catch (e) {}
   let prettyResponse: string | null = null;
   try {
     if (request.resp_body) {
-      prettyResponse = highlight(formatJson(request.resp_body, 'Prettified response'));
+      prettyResponse = highlight(
+        formatJson(request.resp_body, "Prettified response")
+      );
     }
-  } catch (e) { }
-  
-  res.render('request', {
+  } catch (e) {}
+
+  res.render("request", {
     request,
     statusCode: request.resp_status ? parseInt(request.resp_status, 10) : 0,
-    parsedJwt: parsedJwt ? highlight(formatJson(parsedJwt.header, 'JWT header') + formatJson(parsedJwt.payload, 'JWT payload')) : null,
+    parsedJwt: parsedJwt
+      ? highlight(
+          formatJson(parsedJwt.header, "JWT header") +
+            formatJson(parsedJwt.payload, "JWT payload")
+        )
+      : null,
     prettyRequest,
-    prettyResponse
+    prettyResponse,
   });
 });
 
 // Connect routers
-app.use('^(?!/__admin|/favicon.*)', webhookRouter);
+app.use("^(?!/__admin|/favicon.*)", webhookRouter);
 app.use(adminRouter);
 
 //
@@ -193,26 +221,39 @@ app.listen(PORT, () => {
 //
 
 function formatJson(json: string, comment: string) {
-  return (comment ? `// ${comment}\n` : '') + JSON.stringify(JSON.parse(json), null, 2);
+  return (
+    (comment ? `// ${comment}\n` : "") +
+    JSON.stringify(JSON.parse(json), null, 2)
+  );
 }
 
 function highlight(s: string) {
-  return hljs.highlight(s, {language: 'javascript'}).value
+  return hljs.highlight(s, { language: "javascript" }).value;
 }
 
 function parseJwtBearer(bearer: string) {
-  const match = bearer?.match(/^Bearer ([a-zA-Z0-9+/=]+)\.([a-zA-Z0-9+/=]+)\.(.+)$/)
+  const match = bearer?.match(
+    /^Bearer ([a-zA-Z0-9+/=]+)\.([a-zA-Z0-9+/=]+)\.(.+)$/
+  );
   if (!match) return null;
   const parsed = {
     header: "Couldn't parse header",
     payload: "Couldn't parse payload",
   };
   try {
-    parsed.header = JSON.stringify(JSON.parse(Buffer.from(match[1], 'base64').toString('utf8')), null, 2)
-  } catch (e) { }
+    parsed.header = JSON.stringify(
+      JSON.parse(Buffer.from(match[1], "base64").toString("utf8")),
+      null,
+      2
+    );
+  } catch (e) {}
   try {
-    parsed.payload = JSON.stringify(JSON.parse(Buffer.from(match[2], 'base64').toString('utf8')), null, 2)
-  } catch (e) { }
+    parsed.payload = JSON.stringify(
+      JSON.parse(Buffer.from(match[2], "base64").toString("utf8")),
+      null,
+      2
+    );
+  } catch (e) {}
   return parsed;
 }
 
@@ -223,30 +264,43 @@ function parseJwtBearer(bearer: string) {
  * the more specific one is executed.
  */
 function runResponderScript(req, res) {
-  const scripts = db.query(`
+  const scripts = db
+    .query(
+      `
     SELECT id, method, path FROM scripts;
-  `).all() as WttScript[];
+  `
+    )
+    .all() as WttScript[];
 
-  const matchingScript = scripts.filter(s =>
-    (s.method === req.method || s.method === '*') &&
-    (req.originalUrl.startsWith(s.path) || s.path === '*')
-  ).sort((s1, s2) => {
-    if (s1.path === '*' && s2.path !== '*') return 1;
-    if (s1.path !== '*' && s2.path === '*') return -1;
+  const matchingScript = scripts
+    .filter(
+      (s) =>
+        (s.method === req.method || s.method === "*") &&
+        (req.originalUrl.startsWith(s.path) || s.path === "*")
+    )
+    .sort((s1, s2) => {
+      if (s1.path === "*" && s2.path !== "*") return 1;
+      if (s1.path !== "*" && s2.path === "*") return -1;
 
-    if (s1.path.length < s2.path.length) return 1;
-    if (s1.path.length > s2.path.length) return -1;
+      if (s1.path.length < s2.path.length) return 1;
+      if (s1.path.length > s2.path.length) return -1;
 
-    if (s1.method === '*' && s2.method !== '*') return 1;
-    if (s1.method !== '*' && s2.method === '*') return -1;
-    return 0;
-  })[0];
+      if (s1.method === "*" && s2.method !== "*") return 1;
+      if (s1.method !== "*" && s2.method === "*") return -1;
+      return 0;
+    })[0];
 
-  const script = matchingScript?.id ? db.query(`
+  const script = matchingScript?.id
+    ? (db
+        .query(
+          `
     SELECT code FROM scripts WHERE id = $id;
-  `).get({ $id: matchingScript.id }) as Partial<WttScript> : null;
+  `
+        )
+        .get({ $id: matchingScript.id }) as Partial<WttScript>)
+    : null;
 
-  const code = script?.code ?? 'null';
+  const code = script?.code ?? "null";
   let result;
   try {
     result = {
@@ -261,32 +315,39 @@ function runResponderScript(req, res) {
         headers: req.headers,
         body: req.body,
         originalUrl: req.originalUrl,
-        method: req.method
+        method: req.method,
       },
-      res: result
+      res: result,
     });
   } catch (e) {
-    console.error('Error running script', e);
-    result = { status: 500, body: { error: 'Error running responder script. See application logs for more details.' } };
+    console.error("Error running script", e);
+    result = {
+      status: 500,
+      body: {
+        error:
+          "Error running responder script. See application logs for more details.",
+      },
+    };
   }
-  const responseStatus = typeof result?.status === 'number' ? result.status : 200;
+  const responseStatus =
+    typeof result?.status === "number" ? result.status : 200;
   res.status(responseStatus);
   for (const [k, v] of Object.entries(result?.headers ?? {})) {
     res.set(k, v);
   }
-  res.send(result?.body === undefined ? { status: responseStatus } : result.body);
-  
+  res.send(
+    result?.body === undefined ? { status: responseStatus } : result.body
+  );
 }
 
 /**
  * Function that implements logging of HTTP requests to the database. (Note that
  * logging to console is already handled by Morgan middleware).
- * 
+ *
  * Before the request is sent, a row is added to the requests table. When we receive
  * a response, then the table is updated with response information.
  */
 function requestLogger(req, res, next) {
-
   // unique "trace ID"
   const id = randomUUID();
 
@@ -294,8 +355,9 @@ function requestLogger(req, res, next) {
   for (const header of Object.keys(headers)) {
     if (EXCLUDE_HEADER_MAP[header]) delete headers[header];
   }
-  
-  db.query(`
+
+  db.query(
+    `
     INSERT INTO requests (
       id,
       req_method,
@@ -311,7 +373,8 @@ function requestLogger(req, res, next) {
       $body,
       $timestamp
     )
-  `).run({
+  `
+  ).run({
     $id: id,
     $method: req.method,
     $url: req.originalUrl,
@@ -340,7 +403,8 @@ function requestLogger(req, res, next) {
     const body = Buffer.concat(chunks);
     oldEnd.apply(res, restArgs);
 
-    db.query(`
+    db.query(
+      `
       UPDATE requests
       SET
         resp_status = $status,
@@ -349,7 +413,8 @@ function requestLogger(req, res, next) {
         resp_body = $body,
         resp_timestamp = $timestamp
       WHERE id = $id
-    `).run({
+    `
+    ).run({
       $id: id,
       $status: res.statusCode,
       $statusMessage: res.statusMessage,
