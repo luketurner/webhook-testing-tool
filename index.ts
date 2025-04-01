@@ -123,9 +123,11 @@ adminRouter.get('/__admin/request/:id', (req, res) => {
   request.resp_body = request.resp_body ? Buffer.from(request.resp_body) : null;
   request.req_headers = JSON.parse(request.req_headers) ?? {};
   request.resp_headers = JSON.parse(request.resp_headers) ?? {};
+  const parsedJwt = parseJwtBearer(request.req_headers?.['authorization'] ?? '');
   res.render('request', {
     request,
-    statusCode: request.resp_status ? parseInt(request.resp_status, 10) : 0
+    statusCode: request.resp_status ? parseInt(request.resp_status, 10) : 0,
+    parsedJwt,
   });
 });
 
@@ -171,6 +173,22 @@ app.listen(PORT, () => {
 //
 // helper functions
 //
+
+function parseJwtBearer(bearer: string) {
+  const match = bearer?.match(/^Bearer ([a-zA-Z0-9+/=]+)\.([a-zA-Z0-9+/=]+)\.(.+)$/)
+  if (!match) return null;
+  const parsed = {
+    header: "Couldn't parse header",
+    payload: "Couldn't parse payload",
+  };
+  try {
+    parsed.header = JSON.stringify(JSON.parse(Buffer.from(match[1], 'base64').toString('utf8')), null, 2)
+  } catch (e) { }
+  try {
+    parsed.payload = JSON.stringify(JSON.parse(Buffer.from(match[2], 'base64').toString('utf8')), null, 2)
+  } catch (e) { }
+  return parsed;
+}
 
 /**
  * Given an Express request and response, this function looks up whether there are

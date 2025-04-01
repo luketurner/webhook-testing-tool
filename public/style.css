@@ -28,3 +28,4 @@ footer { grid-area: footer; }
 main { grid-area: main; margin: 1rem; }
 .sidebar a, nav a { color: inherit; text-decoration: inherit; }
 .header-table td { word-break: break-all; }
+pre { white-space: pre-wrap; }

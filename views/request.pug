@@ -18,7 +18,20 @@ block content
           each v, k in request.req_headers
             tr
               th= k
-              td= v
+              td
+                = v
+                if k === 'authorization'
+                  pre
+                    code
+                      | // JWT header
+                      |
+                      = parsedJwt.header
+                      |
+                      |
+                      | // JWT payload
+                      |
+                      = parsedJwt.payload
+                  
     .column
       h5.title.is-5 Response
       table.table.is-bordered.is-fullwidth.header-table
