@@ -6,6 +6,9 @@ import basicAuth from 'express-basic-auth';
 import { DateTime, Duration } from 'luxon';
 import { runInNewContext } from 'vm';
 import { Database } from 'bun:sqlite';
+import hljs from 'highlight.js/lib/core';
+import javascript from 'highlight.js/lib/languages/javascript';
+hljs.registerLanguage('javascript', javascript);
 
 //
 // global configuration
@@ -127,19 +130,20 @@ adminRouter.get('/__admin/request/:id', (req, res) => {
   let prettyRequest: string | null = null;
   try {
     if (request.req_body) {
-      prettyRequest = JSON.stringify(JSON.parse(request.req_body), null, 2)
+      prettyRequest = highlight(formatJson(request.req_body, 'Prettified request'));
     }
   } catch (e) { }
   let prettyResponse: string | null = null;
   try {
     if (request.resp_body) {
-      prettyResponse = JSON.stringify(JSON.parse(request.resp_body), null, 2)
+      prettyResponse = highlight(formatJson(request.resp_body, 'Prettified response'));
     }
   } catch (e) { }
+  
   res.render('request', {
     request,
     statusCode: request.resp_status ? parseInt(request.resp_status, 10) : 0,
-    parsedJwt,
+    parsedJwt: parsedJwt ? highlight(formatJson(parsedJwt.header, 'JWT header') + formatJson(parsedJwt.payload, 'JWT payload')) : null,
     prettyRequest,
     prettyResponse
   });
@@ -187,6 +191,14 @@ app.listen(PORT, () => {
 //
 // helper functions
 //
+
+function formatJson(json: string, comment: string) {
+  return (comment ? `// ${comment}\n` : '') + JSON.stringify(JSON.parse(json), null, 2);
+}
+
+function highlight(s: string) {
+  return hljs.highlight(s, {language: 'javascript'}).value
+}
 
 function parseJwtBearer(bearer: string) {
   const match = bearer?.match(/^Bearer ([a-zA-Z0-9+/=]+)\.([a-zA-Z0-9+/=]+)\.(.+)$/)

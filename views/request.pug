@@ -22,15 +22,7 @@ block content
                 = v
                 if k === 'authorization'
                   pre
-                    code
-                      | // JWT header
-                      |
-                      = parsedJwt.header
-                      |
-                      |
-                      | // JWT payload
-                      |
-                      = parsedJwt.payload
+                    code!= parsedJwt
                   
     .column
       h5.title.is-5 Response
@@ -45,17 +37,9 @@ block content
       textarea.textarea(readonly)= request.req_body
       if prettyRequest
         pre
-          code
-            | // Prettified request
-            |
-            |
-            = prettyRequest
+          code!= prettyRequest
     .column
       textarea.textarea(readonly)= request.resp_body
       if prettyResponse
         pre
-          code
-            | // Prettified response
-            |
-            |
-            = prettyResponse
+          code!= prettyResponse
