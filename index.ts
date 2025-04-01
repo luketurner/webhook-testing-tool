@@ -169,6 +169,7 @@ adminRouter.get("/__admin/request/:id", (req, res) => {
     parsedJwt: parsedJwt
       ? highlight(
           formatJson(parsedJwt.header, "JWT header") +
+            "\n\n" +
             formatJson(parsedJwt.payload, "JWT payload")
         )
       : null,
