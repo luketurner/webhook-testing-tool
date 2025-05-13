@@ -67,6 +67,13 @@ bun run dev
 
 View the UI at http://localhost:3000/\_\_admin (login with user `admin` / password `admin` for local development)
 
+Other useful commands:
+
+```bash
+# install new components
+bunx --bun shadcn@canary add accordion
+```
+
 ## Deployment
 
 `wtt` is designed for deployment on [Fly](https://fly.io):
