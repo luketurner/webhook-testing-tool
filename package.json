@@ -11,6 +11,8 @@
   "author": "Luke Turner",
   "license": "MIT",
   "dependencies": {
+    "@blueprintjs/core": "^5.19.0",
+    "@blueprintjs/icons": "^5.22.0",
     "@types/basic-auth": "^1.1.8",
     "@types/bun": "^1.2.13",
     "@types/node": "^20.12.4",
@@ -18,20 +20,13 @@
     "@types/react-dom": "^19.1.5",
     "basic-auth": "^2.0.1",
     "body-parser": "^1.20.2",
-    "bun-plugin-tailwind": "^0.0.15",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
     "express": "^4.18.3",
     "highlight.js": "^11.11.1",
-    "lucide-react": "^0.510.0",
     "luxon": "^3.4.4",
     "morgan": "^1.10.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "swr": "^2.3.3",
-    "tailwind-merge": "^3.3.0",
-    "tailwindcss": "^4.1.6",
-    "tw-animate-css": "^1.2.9"
+    "swr": "^2.3.3"
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.5.2"
