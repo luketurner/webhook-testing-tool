@@ -9,13 +9,6 @@ function apiController<Request extends BunRequest>(
 ) {
   return (req: Request) => {
     const creds = basicAuth.parse(req.headers.get("authorization"));
-    console.log(
-      "creds",
-      req.headers.get("authorization"),
-      JSON.stringify(creds),
-      ADMIN_USERNAME,
-      ADMIN_PASSWORD
-    );
     if (
       !creds ||
       creds.name !== ADMIN_USERNAME ||
@@ -40,7 +33,7 @@ export const startAdminServer = () =>
       "/request/:id": adminPage,
 
       // api routes
-      "/api/request": apiController((req) => {
+      "/api/requests": apiController((req) => {
         const requests = db
           .query(
             `SELECT id, resp_status, req_timestamp, req_method, req_url FROM requests ORDER BY req_timestamp DESC`
@@ -49,15 +42,15 @@ export const startAdminServer = () =>
 
         return Response.json(requests);
       }),
-      "/api/request/:id": apiController((req) => {
+      "/api/requests/:id": apiController((req) => {
         const request = db
           .query(`SELECT * FROM requests WHERE id = $id`)
           .get({ $id: req.params.id }) as WttRequest;
         request.req_body = request.req_body
-          ? Buffer.from(request.req_body)
+          ? request.req_body.toBase64()
           : null;
         request.resp_body = request.resp_body
-          ? Buffer.from(request.resp_body)
+          ? request.resp_body.toBase64()
           : null;
         request.req_headers = JSON.parse(request.req_headers) ?? {};
         request.resp_headers = JSON.parse(request.resp_headers) ?? {};
