@@ -1,8 +1,17 @@
 import {
+  Alignment,
+  Button,
   Card,
   CardList,
   Divider,
   HTMLTable,
+  Menu,
+  MenuItem,
+  Navbar,
+  NavbarDivider,
+  NavbarGroup,
+  NavbarHeading,
+  Popover,
   Section,
   SectionCard,
   Spinner,
@@ -40,24 +49,50 @@ const Layout = ({
   children: React.ReactNode;
 }) => {
   const { data: requests, isLoading } = useSWR<WttRequest[]>("/requests");
+  const handleDownloadDatabase = React.useCallback(() => {
+    window.location.href = "/api/db/export";
+  }, []);
   return (
-    <div style={{ display: "flex" }}>
-      <Section title="Requests">
-        <CardList>
-          {requests ? (
-            requests.map((request) => (
-              <RequestCard
-                key={request.id}
-                request={request}
-                openRequest={openRequest}
-              />
-            ))
-          ) : (
-            <Spinner />
-          )}
-        </CardList>
-      </Section>
-      {children}
+    <div>
+      <Navbar>
+        <NavbarGroup align={Alignment.START}>
+          <NavbarHeading>Webhook Testing Tool</NavbarHeading>
+          <NavbarDivider />
+          <Popover
+            content={
+              <Menu>
+                <MenuItem
+                  onClick={handleDownloadDatabase}
+                  text="Export database: SQLite"
+                  icon="cloud-download"
+                />
+              </Menu>
+            }
+            placement="bottom-start"
+            minimal
+          >
+            <Button className="bp5-minimal" text="Tools" />
+          </Popover>
+        </NavbarGroup>
+      </Navbar>
+      <div style={{ display: "flex" }}>
+        <Section title="Requests">
+          <CardList>
+            {requests ? (
+              requests.map((request) => (
+                <RequestCard
+                  key={request.id}
+                  request={request}
+                  openRequest={openRequest}
+                />
+              ))
+            ) : (
+              <Spinner />
+            )}
+          </CardList>
+        </Section>
+        {children}
+      </div>
     </div>
   );
 };
@@ -129,11 +164,15 @@ const AdminRequestView = () => {
   );
 };
 
+function fetchApi(resource: string, init?: RequestInit) {
+  return fetch("/api" + resource, init);
+}
+
 const App = () => (
   <SWRConfig
     value={{
       fetcher: (resource, init) =>
-        fetch("/api" + resource, init).then((res) => res.json()),
+        fetchApi(resource, init).then((res) => res.json()),
     }}
   >
     <BrowserRouter>
