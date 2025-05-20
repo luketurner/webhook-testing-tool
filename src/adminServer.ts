@@ -7,8 +7,9 @@ import {
   DEV,
 } from "./config";
 import adminPage from "./admin.html";
-import { db, WttRequest } from "./db";
 import { BunRequest } from "bun";
+import { getInboundRequests, getRequest } from "./models/request";
+import { getAllHandlers, insertHandler, updateHandler } from "./models/handler";
 
 function apiController<Request extends BunRequest>(
   controller: (req: Request) => Response | Promise<Response>
@@ -41,30 +42,35 @@ export const startAdminServer = () =>
       // api routes
       "/api/requests": {
         GET: apiController((req) => {
-          const requests = db
-            .query(
-              `SELECT id, resp_status, req_timestamp, req_method, req_url FROM requests ORDER BY req_timestamp DESC`
-            )
-            .all() as Partial<WttRequest>[];
-
-          return Response.json(requests);
+          return Response.json(getInboundRequests());
         }),
       },
       "/api/requests/:id": {
         GET: apiController((req) => {
-          const request = db
-            .query(`SELECT * FROM requests WHERE id = $id`)
-            .get({ $id: req.params.id }) as WttRequest;
-          request.req_body = request.req_body
-            ? request.req_body.toBase64()
-            : null;
-          request.resp_body = request.resp_body
-            ? request.resp_body.toBase64()
-            : null;
-          request.req_headers = JSON.parse(request.req_headers) ?? {};
-          request.resp_headers = JSON.parse(request.resp_headers) ?? {};
+          const request = getRequest(req.params.id);
+
+          if (!request) {
+            return new Response(null, { status: 404 });
+          }
 
           return Response.json(request);
+        }),
+      },
+      "/api/handlers": {
+        GET: apiController((req) => {
+          return Response.json(getAllHandlers());
+        }),
+        POST: apiController(async (req) => {
+          const body = await req.json();
+          insertHandler(body);
+          return Response.json({ status: "ok" });
+        }),
+      },
+      "/api/handlers/:id": {
+        PUT: apiController(async (req) => {
+          const body = await req.json();
+          updateHandler(body);
+          return Response.json({ status: "ok" });
         }),
       },
       "/api/db/export": {
