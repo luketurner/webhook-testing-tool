@@ -29,6 +29,20 @@ export interface RequestEvent {
   response?: Response;
 }
 
+export interface RequestClient extends Omit<Request, "body"> {
+  body: string | null;
+}
+
+export interface ResponseClient extends Omit<Response, "body"> {
+  body: string | null;
+}
+
+export interface RequestEventClient
+  extends Omit<RequestEvent, "request" | "response"> {
+  request: RequestClient;
+  response?: ResponseClient;
+}
+
 export interface RequestEventMetadata {
   id: string;
   type: RequestEventType;

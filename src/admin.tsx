@@ -11,6 +11,7 @@ import {
   NavbarDivider,
   NavbarGroup,
   NavbarHeading,
+  OverlaysProvider,
   Popover,
   Section,
   SectionCard,
@@ -18,17 +19,10 @@ import {
 } from "@blueprintjs/core";
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import {
-  BrowserRouter,
-  NavLink,
-  redirect,
-  Route,
-  Routes,
-  useParams,
-} from "react-router";
+import { BrowserRouter, NavLink, Route, Routes, useParams } from "react-router";
 import useSWR, { SWRConfig } from "swr";
-import { WttRequest } from "./db";
 import { headerNameDisplay } from "./utils";
+import { RequestEventClient, RequestEventMetadata } from "./models/request";
 
 const RequestCard = ({ request, openRequest }) => {
   const selected = request.id === openRequest;
@@ -48,7 +42,7 @@ const Layout = ({
   openRequest?: string;
   children: React.ReactNode;
 }) => {
-  const { data: requests, isLoading } = useSWR<WttRequest[]>("/requests");
+  const { data: requests } = useSWR<RequestEventMetadata[]>("/requests");
   const handleDownloadDatabase = React.useCallback(() => {
     window.location.href = "/api/db/export";
   }, []);
@@ -107,9 +101,11 @@ const AdminMainView = () => {
 
 const AdminRequestView = () => {
   const { id } = useParams();
-  const { data: request, isLoading } = useSWR<WttRequest>(`/requests/${id}`);
-  const requestBody = atob(request?.req_body ?? "");
-  const responseBody = atob(request?.resp_body ?? "");
+  const { data: request, isLoading } = useSWR<RequestEventClient>(
+    `/requests/${id}`
+  );
+  const requestBody = atob(request?.request?.body ?? "");
+  const responseBody = atob(request?.response?.body ?? "");
   return (
     <Layout openRequest={id}>
       {isLoading ? (
@@ -118,14 +114,19 @@ const AdminRequestView = () => {
         <>
           <Section title="Request">
             <SectionCard>
+              {request?.request?.method} {request?.request?.url}
+            </SectionCard>
+            <SectionCard>
               <HTMLTable compact striped>
                 <tbody>
-                  {Object.entries(request.req_headers ?? {}).map(([k, v]) => (
-                    <tr>
-                      <td>{headerNameDisplay(k)}</td>
-                      <td>{v}</td>
-                    </tr>
-                  ))}
+                  {Object.entries(request?.request?.headers ?? {}).map(
+                    ([k, v]) => (
+                      <tr>
+                        <td>{headerNameDisplay(k)}</td>
+                        <td>{v}</td>
+                      </tr>
+                    )
+                  )}
                 </tbody>
               </HTMLTable>
             </SectionCard>
@@ -141,12 +142,14 @@ const AdminRequestView = () => {
             <SectionCard>
               <HTMLTable compact striped>
                 <tbody>
-                  {Object.entries(request.resp_headers ?? {}).map(([k, v]) => (
-                    <tr>
-                      <td>{headerNameDisplay(k)}</td>
-                      <td>{v}</td>
-                    </tr>
-                  ))}
+                  {Object.entries(request?.response?.headers ?? {}).map(
+                    ([k, v]) => (
+                      <tr>
+                        <td>{headerNameDisplay(k)}</td>
+                        <td>{v}</td>
+                      </tr>
+                    )
+                  )}
                 </tbody>
               </HTMLTable>
             </SectionCard>
@@ -175,12 +178,14 @@ const App = () => (
         fetchApi(resource, init).then((res) => res.json()),
     }}
   >
-    <BrowserRouter>
-      <Routes>
-        <Route index element={<AdminMainView />} />
-        <Route path="/request/:id" element={<AdminRequestView />} />
-      </Routes>
-    </BrowserRouter>
+    <OverlaysProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route index element={<AdminMainView />} />
+          <Route path="/request/:id" element={<AdminRequestView />} />
+        </Routes>
+      </BrowserRouter>
+    </OverlaysProvider>
   </SWRConfig>
 );
 
