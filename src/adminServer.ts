@@ -15,7 +15,7 @@ function apiController<Request extends BunRequest>(
   controller: (req: Request) => Response | Promise<Response>
 ) {
   return (req: Request) => {
-    const creds = basicAuth.parse(req.headers.get("authorization"));
+    const creds = basicAuth.parse(req.headers.get("authorization")!);
     if (
       !creds ||
       creds.name !== ADMIN_USERNAME ||

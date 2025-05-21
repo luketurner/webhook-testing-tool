@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db } from "../db";
 import Router from "router";
 import { runInNewContext } from "vm";
 import { RequestEvent, Response } from "./request";
@@ -54,7 +54,7 @@ function deserializeHandler(handler: HandlerRaw): Handler {
 
 export function getAllHandlers() {
   const data = db
-    .query("SELECT * FROM handlers ORDER BY order ASC")
+    .query('SELECT * FROM handlers ORDER BY "order" ASC')
     .all() as HandlerRaw[];
   return data.map(deserializeHandler);
 }
@@ -86,15 +86,15 @@ export function getRouter() {
 
 export async function handleRequest(
   requestEvent: RequestEvent
-): Promise<[Error, Partial<Response>]> {
+): Promise<[Error | null, Partial<Response>]> {
   const router = getRouter();
   const response: Partial<Response> = {
     headers: {},
     status: 200,
   };
-  let error: Error;
+  let error: Error | null = null;
   router(requestEvent.request, response, (err) => {
-    console.error("err", err);
+    if (err) error = err;
   });
   return [error, response];
 }
@@ -108,14 +108,14 @@ export function insertHandler(handler: Handler) {
       method,
       path,
       code,
-      order
+      "order"
     ) VALUES (
       $id,
       $version_id,
       $method,
       $path,
       $code,
-      $order,
+      $order
     )
   `
   ).run({
@@ -131,7 +131,7 @@ export function updateHandler(handler: Handler) {
         method = $method,
         path = $path,
         code = $code,
-        order = $order
+        "order" = $order
       WHERE id = $id AND version_id = $version_id
     `
   ).run({
@@ -147,8 +147,8 @@ export function handlerTableSchema() {
     method TEXT,
     path TEXT,
     code TEXT,
-    order INTEGER,
-    PRIMARY KEY handlersPk (id, version_id)
+    "order" INTEGER,
+    PRIMARY KEY (id, version_id)
   ) WITHOUT ROWID;
   `;
 }
