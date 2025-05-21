@@ -139,6 +139,10 @@ export function updateHandler(handler: Handler) {
   });
 }
 
+export function clearHandlers() {
+  db.run(`DELETE FROM handlers`);
+}
+
 export function handlerTableSchema() {
   return `
   CREATE TABLE IF NOT EXISTS handlers (
