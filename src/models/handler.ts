@@ -59,16 +59,21 @@ export function getAllHandlers() {
   return data.map(deserializeHandler);
 }
 
-export function getRouter() {
+export async function handleRequest(
+  requestEvent: RequestEvent
+): Promise<[Error | null, Partial<Response>]> {
   const handlers = getAllHandlers();
   const router = Router();
   for (const handler of handlers) {
     router[handler.method === "*" ? "use" : handler.method.toLowerCase()](
       handler.path,
       async (req, resp, next) => {
+        const handlerExecution = { handler: handler.id, timestamp: Date.now() };
         try {
           await runInNewContext(handler.code, { req, resp });
+          requestEvent.handlers.push(handlerExecution);
           next();
+          console.log("afterNext", handler.id);
         } catch (e) {
           console.error("Error running script", e);
           resp.status = 500;
@@ -76,27 +81,24 @@ export function getRouter() {
             error:
               "Error running responder script. See application logs for more details.",
           };
+          requestEvent.handlers.push(handlerExecution);
           next(e);
         }
       }
     );
   }
-  return router;
-}
-
-export async function handleRequest(
-  requestEvent: RequestEvent
-): Promise<[Error | null, Partial<Response>]> {
-  const router = getRouter();
   const response: Partial<Response> = {
     headers: {},
     status: 200,
   };
   let error: Error | null = null;
-  router(requestEvent.request, response, (err) => {
-    if (err) error = err;
+  requestEvent.handlers = [];
+  return new Promise((resolve) => {
+    router(requestEvent.request, response, (err) => {
+      if (err) error = err;
+      resolve([error, response]);
+    });
   });
-  return [error, response];
 }
 
 export function insertHandler(handler: Handler) {

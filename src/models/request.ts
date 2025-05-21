@@ -21,12 +21,18 @@ export interface Response {
 export type RequestEventType = "inbound" | "outbound";
 export type RequestEventStatus = "running" | "complete" | "error";
 
+export interface HandlerExecution {
+  handler: string;
+  timestamp: number;
+}
+
 export interface RequestEvent {
   id: string;
   type: RequestEventType;
   status: RequestEventStatus;
   request: Request;
   response?: Response;
+  handlers: HandlerExecution[];
 }
 
 export interface RequestClient extends Omit<Request, "body"> {
@@ -65,6 +71,7 @@ export interface RequestEventRaw {
   response_headers?: string;
   response_body?: Uint8Array | null;
   response_timestamp?: number;
+  handlers: string;
 }
 
 function deserializeRequestMetadata(
@@ -83,7 +90,7 @@ function deserializeRequestMetadata(
       ? {
           response: {
             status: parseInt(raw.response_status, 10),
-            timestamp: new Date(raw.response_timestamp),
+            timestamp: new Date(raw.response_timestamp!),
           },
         }
       : null),
@@ -111,6 +118,7 @@ function deserializeRequest(raw: RequestEventRaw): RequestEvent {
           },
         }
       : null),
+    handlers: raw.handlers ? JSON.parse(raw.handlers) : [],
   };
 }
 
@@ -125,6 +133,7 @@ function serializeRequest(request: RequestEvent): RequestEventRaw {
     request_timestamp: request.request.timestamp.getTime(),
     request_url: request.request.url,
     ...(request.response ? serializeResponse(request.response) : null),
+    handlers: JSON.stringify(request.handlers ?? []),
   };
 }
 
@@ -181,13 +190,14 @@ export function startRequest(req: Omit<RequestEvent, "response">) {
 }
 
 export function completeRequest(
-  req: Pick<RequestEvent, "id" | "status" | "response">
+  req: Pick<RequestEvent, "id" | "status" | "response" | "handlers">
 ) {
   db.query(
     `
       UPDATE requests
       SET
         status = $status,
+        handlers = $handlers,
         response_status = $response_status,
         response_status_message = $response_status_message,
         response_headers = $response_headers,
@@ -196,9 +206,10 @@ export function completeRequest(
       WHERE id = $id
     `
   ).run({
-    ...serializeResponse(req.response),
+    ...serializeResponse(req.response!),
     status: req.status || "complete",
     id: req.id,
+    handlers: JSON.stringify(req.handlers ?? []),
   });
 }
 
@@ -208,6 +219,7 @@ export function requestTableSchema() {
     id TEXT PRIMARY KEY,
     type TEXT,
     status TEXT,
+    handlers TEXT,
     request_method TEXT,
     request_url TEXT,
     request_headers TEXT,
