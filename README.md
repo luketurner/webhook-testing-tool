@@ -1,5 +1,9 @@
 # Webhook Testing Tool (wtt)
 
+> **Note:** This README is for `v2` of webhook-testing-tool, which is a full rewrite and under active development.
+>
+> The README and code for `v1` are available at: https://github.com/luketurner/webhook-testing-tool/releases/tag/v1.
+
 `wtt` is an open-source, self-hosted alternative to webhook testing tools like https://webhook.site.
 
 ![Screenshot of the app](./docs/screenshot.png)
@@ -11,7 +15,7 @@ How it works:
 2. You make arbitrary HTTP requests to your `wtt` instance, with any method and URL, and it returns a 200 OK response.
    - (optional) You write _responder scripts_ to configure how `wtt` responds to requests.
 3. The full headers, raw payloads, etc. for all requests and responses are stored in a SQLite database.
-4. You visit the special `/__admin` URL in your browser to open a (password-protected) UI to view the requests and responses.
+4. You visit the admin URL in your browser to open a (password-protected) UI to view the requests and responses.
 
 ## Features
 
@@ -63,16 +67,12 @@ mkdir local
 
 # run the server
 bun run dev
+
+# run automated tests
+bun run test
 ```
 
-View the UI at http://localhost:3000/\_\_admin (login with user `admin` / password `admin` for local development)
-
-Other useful commands:
-
-```bash
-# install new components
-bunx --bun shadcn@canary add accordion
-```
+View the UI at http://localhost:3001/ (login with user `admin` / password `admin` for local development)
 
 ## Deployment
 
