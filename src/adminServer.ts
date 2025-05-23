@@ -37,7 +37,8 @@ export const startAdminServer = () =>
     routes: {
       // page routes
       "/": adminPage,
-      "/request/:id": adminPage,
+      "/requests/:id": adminPage,
+      "/handlers/:id": adminPage,
 
       // api routes
       "/api/requests": {
