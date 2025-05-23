@@ -8,7 +8,11 @@ import {
 } from "./config";
 import adminPage from "./admin.html";
 import { BunRequest } from "bun";
-import { getInboundRequests, getRequest } from "./models/request";
+import {
+  getInboundRequests,
+  getRequest,
+  RequestEventClient,
+} from "./models/request";
 import { getAllHandlers, insertHandler, updateHandler } from "./models/handler";
 
 function apiController<Request extends BunRequest>(
@@ -54,7 +58,23 @@ export const startAdminServer = () =>
             return new Response(null, { status: 404 });
           }
 
-          return Response.json(request);
+          const requestForClient: RequestEventClient = {
+            ...request,
+            request: {
+              ...request.request,
+              body: request.request.body?.toBase64() ?? null,
+            },
+            ...(request.response
+              ? {
+                  response: {
+                    ...request.response,
+                    body: request.response.body?.toBase64() ?? null,
+                  },
+                }
+              : null),
+          };
+
+          return Response.json(requestForClient);
         }),
       },
       "/api/handlers": {

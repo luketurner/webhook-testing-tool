@@ -30,7 +30,7 @@ app.all("*", async (req, res) => {
       url: req.originalUrl,
       method: req.method,
       timestamp: new Date(),
-      body: req.body ?? null,
+      body: Buffer.isBuffer(req.body) ? req.body : null,
       headers,
     },
   };
@@ -64,7 +64,7 @@ app.all("*", async (req, res) => {
         status: res.statusCode,
         statusMessage: res.statusMessage,
         headers: res.getHeaders(),
-        body: body as Uint8Array,
+        body: body.length > 0 ? body : null,
         timestamp: new Date(),
       },
     });

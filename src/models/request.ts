@@ -6,7 +6,7 @@ export interface Request {
   method: string;
   url: string;
   headers: Headers;
-  body: Uint8Array | null;
+  body: Uint8Array | Buffer | null;
   timestamp: Date;
 }
 
@@ -14,7 +14,7 @@ export interface Response {
   status: number;
   statusMessage: string;
   headers: Headers;
-  body: Uint8Array | null;
+  body: Uint8Array | Buffer | null;
   timestamp: Date;
 }
 
@@ -159,7 +159,7 @@ export function getInboundRequests(): RequestEventMetadata[] {
 export function getRequest(id: string): RequestEvent | null {
   const data = db
     .query("SELECT * FROM requests WHERE id = $id")
-    .get({ $id: id }) as RequestEventRaw | null;
+    .get({ id }) as RequestEventRaw | null;
   return data ? deserializeRequest(data) : null;
 }
 
