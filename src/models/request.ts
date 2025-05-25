@@ -212,24 +212,3 @@ export function completeRequest(
     handlers: JSON.stringify(req.handlers ?? []),
   });
 }
-
-export function requestTableSchema() {
-  return `
-  CREATE TABLE IF NOT EXISTS requests (
-    id TEXT PRIMARY KEY,
-    type TEXT,
-    status TEXT,
-    handlers TEXT,
-    request_method TEXT,
-    request_url TEXT,
-    request_headers TEXT,
-    request_body BLOB,
-    request_timestamp INTEGER NOT NULL,
-    response_status TEXT,
-    response_status_message TEXT,
-    response_headers TEXT,
-    response_body BLOB,
-    response_timestamp INTEGER
-  ) WITHOUT ROWID;
-  `;
-}

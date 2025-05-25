@@ -6,7 +6,8 @@
   "scripts": {
     "start": "bun run src/server.ts",
     "dev": "NODE_ENV=development bun --watch run src/server.ts",
-    "test": "NODE_ENV=test bun test"
+    "test": "NODE_ENV=test bun test",
+    "migrate:create": "bun run src/db/createMigration.ts"
   },
   "author": "Luke Turner",
   "license": "MIT",

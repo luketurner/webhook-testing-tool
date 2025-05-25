@@ -144,17 +144,3 @@ export function updateHandler(handler: Handler) {
 export function clearHandlers() {
   db.run(`DELETE FROM handlers`);
 }
-
-export function handlerTableSchema() {
-  return `
-  CREATE TABLE IF NOT EXISTS handlers (
-    id TEXT,
-    version_id TEXT,
-    method TEXT,
-    path TEXT,
-    code TEXT,
-    "order" INTEGER,
-    PRIMARY KEY (id, version_id)
-  ) WITHOUT ROWID;
-  `;
-}

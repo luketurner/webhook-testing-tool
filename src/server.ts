@@ -4,7 +4,7 @@ import { migrateDb } from "./db";
 import { startWebhookServer } from "./webhookServer";
 
 console.log(`Using database: ${DB_FILE}`);
-migrateDb();
+await migrateDb();
 
 startAdminServer();
 console.log(`Admin server listening on port ${ADMIN_PORT}`);
