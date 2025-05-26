@@ -1,4 +1,5 @@
 import basicAuth from "basic-auth";
+import type { BunRequest } from "bun";
 import {
   ADMIN_PASSWORD,
   ADMIN_PORT,
@@ -6,19 +7,18 @@ import {
   DB_FILE,
   DEV,
 } from "./config";
-import adminPage from "./admin.html";
-import { BunRequest } from "bun";
-import {
-  getInboundRequests,
-  getRequest,
-  RequestEventClient,
-} from "./models/request";
+import indexPage from "./index.html";
 import {
   getAllHandlers,
   getHandler,
   insertHandler,
   updateHandler,
 } from "./models/handler";
+import {
+  getInboundRequests,
+  getRequest,
+  type RequestEventClient,
+} from "./models/request";
 
 function apiController<Request extends BunRequest>(
   controller: (req: Request) => Response | Promise<Response>
@@ -42,12 +42,16 @@ function apiController<Request extends BunRequest>(
 export const startAdminServer = () =>
   Bun.serve({
     port: ADMIN_PORT,
-    development: DEV,
+    development: DEV && {
+      hmr: true,
+      console: true,
+    },
+
     routes: {
       // page routes
-      "/": adminPage,
-      "/requests/:id": adminPage,
-      "/handlers/:id": adminPage,
+      "/": indexPage,
+      "/requests/:id": indexPage,
+      "/handlers/:id": indexPage,
 
       // api routes
       "/api/requests": {

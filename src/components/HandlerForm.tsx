@@ -10,7 +10,7 @@ import {
 } from "@blueprintjs/core";
 import { Handler } from "../models/handler";
 import { ChangeEvent, useCallback, useState } from "react";
-import { HTTP_METHODS } from "../utils";
+import { HTTP_METHODS } from "../lib/utils";
 import { useImmer } from "use-immer";
 
 export interface HandlerFormProps {

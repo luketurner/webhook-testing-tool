@@ -2,7 +2,7 @@ import { Spinner, Section, SectionCard, HTMLTable } from "@blueprintjs/core";
 import { useParams } from "react-router";
 import useSWR from "swr";
 import { RequestEventClient } from "../models/request";
-import { headerNameDisplay } from "../utils";
+import { headerNameDisplay } from "../lib/utils";
 import { Layout } from "./Layout";
 
 export const RequestPage = () => {
