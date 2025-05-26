@@ -13,7 +13,12 @@ import {
   getRequest,
   RequestEventClient,
 } from "./models/request";
-import { getAllHandlers, insertHandler, updateHandler } from "./models/handler";
+import {
+  getAllHandlers,
+  getHandler,
+  insertHandler,
+  updateHandler,
+} from "./models/handler";
 
 function apiController<Request extends BunRequest>(
   controller: (req: Request) => Response | Promise<Response>
@@ -88,6 +93,9 @@ export const startAdminServer = () =>
         }),
       },
       "/api/handlers/:id": {
+        GET: apiController((req) => {
+          return Response.json(getHandler(req.params.id));
+        }),
         PUT: apiController(async (req) => {
           const body = await req.json();
           updateHandler(body);

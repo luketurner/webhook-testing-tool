@@ -25,7 +25,8 @@ const App = () => (
         <Routes>
           <Route index element={<HomePage />} />
           <Route path="/requests/:id" element={<RequestPage />} />
-          <Route path="/handlers/:id" element={<HandlerPage />} />
+          <Route path="/handlers/new" element={<CreateHandlerPage />} />
+          <Route path="/handlers/:id" element={<EditHandlerPage />} />
         </Routes>
       </BrowserRouter>
     </OverlaysProvider>

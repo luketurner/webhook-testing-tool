@@ -14,9 +14,10 @@ import {
   Card,
 } from "@blueprintjs/core";
 import React from "react";
-import useSWR from "swr";
 import { NavLink } from "react-router";
 import { RequestEventMetadata } from "../models/request";
+import { useResourceList } from "../hooks";
+import { handlerMetadata } from "../models/handler";
 
 const RequestCard = ({ request, openRequest }) => {
   const selected = request.id === openRequest;
@@ -54,13 +55,19 @@ export const Layout = ({
           <Popover
             content={
               <Menu>
-                <NavLink to="/handlers/create">
+                <NavLink
+                  style={{ color: "inherit", textDecoration: "inherit" }}
+                  to="/handlers/new"
+                >
                   <MenuItem text="New handler" />
                 </NavLink>
                 <MenuItem text="Edit handler" disabled={handlers?.length < 1}>
                   {handlers?.map((handler) => (
-                    <NavLink to={`/handlers/${handler.id}`}>
-                      <MenuItem text={handler.id} />
+                    <NavLink
+                      style={{ color: "inherit", textDecoration: "inherit" }}
+                      to={`/handlers/${handler.id}`}
+                    >
+                      <MenuItem text={handler.name || handler.id} />
                     </NavLink>
                   ))}
                 </MenuItem>

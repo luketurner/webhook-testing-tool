@@ -59,6 +59,13 @@ export function getAllHandlers() {
   return data.map(deserializeHandler);
 }
 
+export function getHandler(id: string) {
+  const data = db
+    .query("SELECT * FROM handlers WHERE id = $id")
+    .get({ id }) as HandlerRaw;
+  return deserializeHandler(data);
+}
+
 export async function handleRequest(
   requestEvent: RequestEvent
 ): Promise<[Error | null, Partial<Response>]> {
@@ -73,7 +80,6 @@ export async function handleRequest(
           await runInNewContext(handler.code, { req, resp });
           requestEvent.handlers.push(handlerExecution);
           next();
-          console.log("afterNext", handler.id);
         } catch (e) {
           console.error("Error running script", e);
           resp.status = 500;
@@ -110,14 +116,16 @@ export function insertHandler(handler: Handler) {
       method,
       path,
       code,
-      "order"
+      "order",
+      name
     ) VALUES (
       $id,
       $version_id,
       $method,
       $path,
       $code,
-      $order
+      $order,
+      $name
     )
   `
   ).run({
@@ -133,7 +141,8 @@ export function updateHandler(handler: Handler) {
         method = $method,
         path = $path,
         code = $code,
-        "order" = $order
+        "order" = $order,
+        name = $name
       WHERE id = $id AND version_id = $version_id
     `
   ).run({
