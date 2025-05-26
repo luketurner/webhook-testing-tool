@@ -1,7 +1,7 @@
 import { db } from "../db";
 import Router from "router";
 import { runInNewContext } from "vm";
-import { RequestEvent, Response } from "./request";
+import { type RequestEvent, type Response } from "./request";
 
 export interface Handler {
   id: string;
@@ -13,7 +13,7 @@ export interface Handler {
   order: number;
 }
 
-export type handlerMetadata = Pick<
+export type HandlerMetadata = Pick<
   Handler,
   "id" | "versionId" | "name" | "path" | "method" | "order"
 >;

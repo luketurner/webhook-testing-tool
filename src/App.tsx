@@ -7,10 +7,6 @@ import { RequestPage } from "./components/RequestPage";
 import { resourceFetcher } from "./hooks";
 import { BrowserRouter, Routes, Route } from "react-router";
 
-import "normalize.css/normalize.css";
-import "@blueprintjs/core/lib/css/blueprint.css";
-import "@blueprintjs/icons/lib/css/blueprint-icons.css";
-
 export function App() {
   return (
     <SWRConfig

@@ -1,5 +1,5 @@
 import { expect, test, describe, beforeEach } from "bun:test";
-import { RequestEvent } from "./request";
+import { type RequestEvent } from "./request";
 import { randomUUID } from "crypto";
 import { clearHandlers, handleRequest, insertHandler } from "./handler";
 

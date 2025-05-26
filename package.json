@@ -16,8 +16,7 @@
   "author": "Luke Turner",
   "license": "MIT",
   "dependencies": {
-    "@blueprintjs/core": "^5.19.0",
-    "@blueprintjs/icons": "^5.22.0",
+    "@radix-ui/react-menubar": "^1.1.15",
     "@types/basic-auth": "^1.1.8",
     "@types/bun": "^1.2.13",
     "@types/node": "^20.12.4",

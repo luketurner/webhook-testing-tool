@@ -1,15 +1,5 @@
-import {
-  Spinner,
-  Section,
-  FormGroup,
-  InputGroup,
-  ControlGroup,
-  HTMLSelect,
-  TextArea,
-  Button,
-} from "@blueprintjs/core";
-import { Handler } from "../models/handler";
-import { ChangeEvent, useCallback, useState } from "react";
+import { type Handler } from "../models/handler";
+import { type ChangeEvent, useCallback, useState } from "react";
 import { HTTP_METHODS } from "../lib/utils";
 import { useImmer } from "use-immer";
 
@@ -60,45 +50,47 @@ export const HandlerForm = ({
     setHandler(initialValues);
   }
 
-  return isLoading ? (
-    <Spinner />
-  ) : (
-    <>
-      <Section>
-        <FormGroup label="Name">
-          <InputGroup
-            type="text"
-            placeholder="Enter handler name..."
-            value={handler?.name ?? ""}
-            onValueChange={handleNameChange}
-          />
-        </FormGroup>
-        <FormGroup label="Route">
-          <ControlGroup>
-            <HTMLSelect
-              options={HTTP_METHODS}
-              value={handler?.method ?? ""}
-              onChange={handleMethodChange}
-            />
-            <InputGroup
-              type="text"
-              placeholder="e.g. /recipe/:id"
-              value={handler?.path ?? ""}
-              onChange={handlePathChange}
-            />
-          </ControlGroup>
-        </FormGroup>
-        <FormGroup label="Code">
-          <TextArea
-            className="mono"
-            value={handler?.code ?? ""}
-            onChange={handleCodeChange}
-          />
-        </FormGroup>
-        <Button intent="primary" onClick={handleSaveChanges}>
-          Save handler
-        </Button>
-      </Section>
-    </>
-  );
+  return null;
+
+  // return isLoading ? (
+  //   <Spinner />
+  // ) : (
+  //   <>
+  //     <Section>
+  //       <FormGroup label="Name">
+  //         <InputGroup
+  //           type="text"
+  //           placeholder="Enter handler name..."
+  //           value={handler?.name ?? ""}
+  //           onValueChange={handleNameChange}
+  //         />
+  //       </FormGroup>
+  //       <FormGroup label="Route">
+  //         <ControlGroup>
+  //           <HTMLSelect
+  //             options={HTTP_METHODS}
+  //             value={handler?.method ?? ""}
+  //             onChange={handleMethodChange}
+  //           />
+  //           <InputGroup
+  //             type="text"
+  //             placeholder="e.g. /recipe/:id"
+  //             value={handler?.path ?? ""}
+  //             onChange={handlePathChange}
+  //           />
+  //         </ControlGroup>
+  //       </FormGroup>
+  //       <FormGroup label="Code">
+  //         <TextArea
+  //           className="mono"
+  //           value={handler?.code ?? ""}
+  //           onChange={handleCodeChange}
+  //         />
+  //       </FormGroup>
+  //       <Button intent="primary" onClick={handleSaveChanges}>
+  //         Save handler
+  //       </Button>
+  //     </Section>
+  //   </>
+  // );
 };

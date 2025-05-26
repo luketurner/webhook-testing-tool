@@ -1,6 +1,6 @@
 import { useParams } from "react-router";
 import { Layout } from "./Layout";
-import { Handler } from "../models/handler";
+import { type Handler } from "../models/handler";
 import { useCallback } from "react";
 import { useResource, useResourceUpdater } from "../hooks";
 import { HandlerForm } from "./HandlerForm";
