@@ -10,17 +10,14 @@ import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 import "./global.css";
 import { HomePage } from "./components/HomePage";
 import { RequestPage } from "./components/RequestPage";
-import { HandlerPage } from "./components/HandlerPage";
-
-function fetchApi(resource: string, init?: RequestInit) {
-  return fetch("/api" + resource, init);
-}
+import { resourceFetcher } from "./hooks";
+import { EditHandlerPage } from "./components/EditHandlerPage";
+import { CreateHandlerPage } from "./components/CreateHandlerPage";
 
 const App = () => (
   <SWRConfig
     value={{
-      fetcher: (resource, init) =>
-        fetchApi(resource, init).then((res) => res.json()),
+      fetcher: resourceFetcher,
     }}
   >
     <OverlaysProvider>

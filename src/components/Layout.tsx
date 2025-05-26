@@ -36,8 +36,8 @@ export const Layout = ({
   openRequest?: string;
   children: React.ReactNode;
 }) => {
-  const { data: requests } = useSWR<RequestEventMetadata[]>("/requests");
-  const { data: handlers } = useSWR<RequestEventMetadata[]>("/handlers");
+  const { data: requests } = useResourceList<RequestEventMetadata>("requests");
+  const { data: handlers } = useResourceList<handlerMetadata>("handlers");
   const handleDownloadDatabase = React.useCallback(() => {
     window.location.href = "/api/db/export";
   }, []);
