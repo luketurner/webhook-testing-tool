@@ -2,6 +2,9 @@ import { db } from "../db";
 import Router from "router";
 import { runInNewContext } from "vm";
 import { type RequestEvent, type Response } from "./request";
+import type { HTTP_METHODS } from "@/lib/utils";
+
+export type HandlerMethod = (typeof HTTP_METHODS)[number];
 
 export interface Handler {
   id: string;
@@ -9,7 +12,7 @@ export interface Handler {
   name: string;
   code: string;
   path: string;
-  method: string;
+  method: HandlerMethod;
   order: number;
 }
 

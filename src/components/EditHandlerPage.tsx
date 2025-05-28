@@ -4,6 +4,7 @@ import { type Handler } from "../models/handler";
 import { useCallback } from "react";
 import { useResource, useResourceUpdater } from "../hooks";
 import { HandlerForm } from "./HandlerForm";
+import { Skeleton } from "./ui/skeleton";
 
 export const EditHandlerPage = () => {
   let { id } = useParams();
@@ -21,11 +22,11 @@ export const EditHandlerPage = () => {
 
   return (
     <Layout>
-      <HandlerForm
-        isLoading={isLoading}
-        initialValues={handler}
-        onChange={handleSaveChanges}
-      />
+      {isLoading ? (
+        <Skeleton className="h-16 w-full" />
+      ) : (
+        <HandlerForm initialValues={handler} onChange={handleSaveChanges} />
+      )}
     </Layout>
   );
 };

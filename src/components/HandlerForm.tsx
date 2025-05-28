@@ -1,96 +1,120 @@
+import { HTTP_METHODS } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { type Handler } from "../models/handler";
-import { type ChangeEvent, useCallback, useState } from "react";
-import { HTTP_METHODS } from "../lib/utils";
-import { useImmer } from "use-immer";
+import { CodeEditor } from "./CodeEditor";
+import { Button } from "./ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "./ui/form";
+import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 export interface HandlerFormProps {
   initialValues?: Partial<Handler>;
   onChange: (v: Handler) => void;
-  isLoading?: boolean;
 }
 
-export const HandlerForm = ({
-  initialValues,
-  onChange,
-  isLoading,
-}: HandlerFormProps) => {
-  const [handler, setHandler] = useImmer<Partial<Handler>>({});
+const handlerSchema = z.object({
+  id: z.string().uuid(),
+  versionId: z.string().min(1),
+  name: z.string().min(1),
+  path: z.string().min(1),
+  method: z.enum(HTTP_METHODS),
+  code: z.string().min(1).optional(),
+  order: z.number(),
+});
 
-  const handleNameChange = useCallback(
-    (v: string) => {
-      setHandler((draft) => ({ ...draft, name: v }));
-    },
-    [setHandler]
-  );
-  const handlePathChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setHandler({ ...handler, path: e.target.value });
-    },
-    [setHandler, handler]
-  );
-  const handleMethodChange = useCallback(
-    (e: ChangeEvent<HTMLSelectElement>) => {
-      setHandler({ ...handler, method: e.target.value });
-    },
-    [setHandler, handler]
-  );
-  const handleCodeChange = useCallback(
-    (e: ChangeEvent<HTMLTextAreaElement>) => {
-      setHandler({ ...handler, code: e.target.value });
-    },
-    [setHandler, handler]
-  );
+export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
+  const form = useForm({
+    resolver: zodResolver(handlerSchema),
+    defaultValues: initialValues,
+  });
 
-  const handleSaveChanges = useCallback(() => {
-    // TODO -- validation
-    onChange(handler as Handler);
-  }, [handler, onChange]);
-
-  if (initialValues && handler !== initialValues) {
-    setHandler(initialValues);
+  function onSubmit(values: z.infer<typeof handlerSchema>) {
+    onChange(values as Handler);
   }
 
-  return null;
-
-  // return isLoading ? (
-  //   <Spinner />
-  // ) : (
-  //   <>
-  //     <Section>
-  //       <FormGroup label="Name">
-  //         <InputGroup
-  //           type="text"
-  //           placeholder="Enter handler name..."
-  //           value={handler?.name ?? ""}
-  //           onValueChange={handleNameChange}
-  //         />
-  //       </FormGroup>
-  //       <FormGroup label="Route">
-  //         <ControlGroup>
-  //           <HTMLSelect
-  //             options={HTTP_METHODS}
-  //             value={handler?.method ?? ""}
-  //             onChange={handleMethodChange}
-  //           />
-  //           <InputGroup
-  //             type="text"
-  //             placeholder="e.g. /recipe/:id"
-  //             value={handler?.path ?? ""}
-  //             onChange={handlePathChange}
-  //           />
-  //         </ControlGroup>
-  //       </FormGroup>
-  //       <FormGroup label="Code">
-  //         <TextArea
-  //           className="mono"
-  //           value={handler?.code ?? ""}
-  //           onChange={handleCodeChange}
-  //         />
-  //       </FormGroup>
-  //       <Button intent="primary" onClick={handleSaveChanges}>
-  //         Save handler
-  //       </Button>
-  //     </Section>
-  //   </>
-  // );
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Handler name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="method"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Method</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="HTTP method" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {HTTP_METHODS.map((item) => (
+                    <SelectItem value={item} key={item}>
+                      {item}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="path"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Path</FormLabel>
+              <FormControl>
+                <Input placeholder="/example/:id" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="code"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Handler code</FormLabel>
+              <FormControl>
+                <CodeEditor {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit">Save changes</Button>
+      </form>
+    </Form>
+  );
 };

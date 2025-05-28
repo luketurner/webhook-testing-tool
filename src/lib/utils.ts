@@ -18,4 +18,4 @@ export const HTTP_METHODS = [
   "OPTIONS",
   "HEAD",
   "PATCH",
-];
+] as const;
