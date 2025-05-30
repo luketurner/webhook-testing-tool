@@ -51,6 +51,7 @@ export const startAdminServer = () =>
       // page routes
       "/": indexPage,
       "/requests/:id": indexPage,
+      "/handlers": indexPage,
       "/handlers/:id": indexPage,
 
       // api routes

@@ -6,6 +6,7 @@ import { HomePage } from "./components/HomePage";
 import { RequestPage } from "./components/RequestPage";
 import { resourceFetcher } from "./hooks";
 import { BrowserRouter, Routes, Route } from "react-router";
+import { ManageHandlersPage } from "./components/ManageHandlersPage";
 
 export function App() {
   return (
@@ -18,6 +19,7 @@ export function App() {
         <Routes>
           <Route index element={<HomePage />} />
           <Route path="/requests/:id" element={<RequestPage />} />
+          <Route path="/handlers" element={<ManageHandlersPage />} />
           <Route path="/handlers/new" element={<CreateHandlerPage />} />
           <Route path="/handlers/:id" element={<EditHandlerPage />} />
         </Routes>

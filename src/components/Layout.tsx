@@ -74,6 +74,7 @@ export const Layout = ({
                 ))}
               </MenubarSubContent>
             </MenubarSub>
+            <MenubarLink to="/handlers">Manage handlers</MenubarLink>
           </MenubarContent>
         </MenubarMenu>
         <MenubarMenu>
