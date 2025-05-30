@@ -1,5 +1,6 @@
 import useSWRMutation from "swr/mutation";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
+import { useCallback } from "react";
 
 export type ResourceFetcherAction =
   | "list"
@@ -56,22 +57,54 @@ export function useResourceList<T>(type: ResourceType) {
 }
 
 export function useResourceCreator(type: ResourceType) {
-  return useSWRMutation(
+  const { mutate } = useSWRConfig();
+
+  const stuff = useSWRMutation(
     { type, action: "create" as ResourceFetcherAction },
     resourceFetcher
   );
+  const trigger = useCallback(
+    async (...args) => {
+      await stuff.trigger(...args);
+      mutate({ type, action: "list" });
+    },
+    [stuff.trigger]
+  );
+  return { ...stuff, trigger };
 }
 
 export function useResourceUpdater(type: ResourceType, id: string) {
-  return useSWRMutation(
+  const { mutate } = useSWRConfig();
+
+  const stuff = useSWRMutation(
     { type, id, action: "update" as ResourceFetcherAction },
     resourceFetcher
   );
+  const trigger = useCallback(
+    async (...args) => {
+      await stuff.trigger(...args);
+      mutate({ type, action: "list" });
+      mutate({ type, action: "get", id });
+    },
+    [stuff.trigger]
+  );
+  return { ...stuff, trigger };
 }
 
 export function useResourceDeleter(type: ResourceType, id: string) {
-  return useSWRMutation(
+  const { mutate } = useSWRConfig();
+
+  const stuff = useSWRMutation(
     { type, id, action: "delete" as ResourceFetcherAction },
     resourceFetcher
   );
+  const trigger = useCallback(
+    async (...args) => {
+      await stuff.trigger(...args);
+      mutate({ type, action: "list" });
+      mutate({ type, action: "get", id });
+    },
+    [stuff.trigger]
+  );
+  return { ...stuff, trigger };
 }
