@@ -69,6 +69,10 @@ export function getHandler(id: string) {
   return deserializeHandler(data);
 }
 
+export function deleteHandler(id: string) {
+  db.run("DELETE FROM handlers WHERE id = ?", [id]);
+}
+
 export async function handleRequest(
   requestEvent: RequestEvent
 ): Promise<[Error | null, Partial<Response>]> {

@@ -9,6 +9,7 @@ import {
   MenubarItem,
   MenubarLink,
   MenubarMenu,
+  MenubarSeparator,
   MenubarSub,
   MenubarSubContent,
   MenubarSubTrigger,
@@ -74,6 +75,7 @@ export const Layout = ({
                 ))}
               </MenubarSubContent>
             </MenubarSub>
+            <MenubarSeparator />
             <MenubarLink to="/handlers">Manage handlers</MenubarLink>
           </MenubarContent>
         </MenubarMenu>

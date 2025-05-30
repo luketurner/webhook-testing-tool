@@ -9,6 +9,7 @@ import {
 } from "./config";
 import indexPage from "./index.html";
 import {
+  deleteHandler,
   getAllHandlers,
   getHandler,
   insertHandler,
@@ -105,6 +106,10 @@ export const startAdminServer = () =>
           const body = await req.json();
           updateHandler(body);
           return Response.json({ status: "ok" });
+        }),
+        DELETE: apiController(async (req) => {
+          deleteHandler(req.params.id);
+          return Response.json({ status: "deleted" });
         }),
       },
       "/api/db/export": {
