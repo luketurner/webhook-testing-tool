@@ -21,6 +21,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 
 export interface HandlerFormProps {
   initialValues?: Partial<Handler>;
@@ -49,7 +56,10 @@ export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-4 min-w-xl max-w-3xl m-4"
+      >
         <FormField
           control={form.control}
           name="name"
@@ -71,7 +81,7 @@ export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
               <FormLabel>Method</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger style={{ width: "10em" }}>
                     <SelectValue placeholder="HTTP method" />
                   </SelectTrigger>
                 </FormControl>
@@ -105,9 +115,19 @@ export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
           name="code"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Handler code</FormLabel>
               <FormControl>
-                <CodeEditor {...field} />
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Handler script</CardTitle>
+                    <CardDescription>
+                      Run when the handler is called. Provided <code>req</code>{" "}
+                      and <code>resp</code> variables.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pl-0">
+                    <CodeEditor {...field} />
+                  </CardContent>
+                </Card>
               </FormControl>
               <FormMessage />
             </FormItem>

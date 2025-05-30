@@ -64,7 +64,7 @@ export const Layout = ({
             <MenubarLink to="/handlers/new">New handler</MenubarLink>
             <MenubarSub>
               <MenubarSubTrigger disabled={!handlers?.length}>
-                Edit handler
+                Open handler
               </MenubarSubTrigger>
               <MenubarSubContent>
                 {handlers?.map((handler) => (
@@ -85,7 +85,7 @@ export const Layout = ({
           </MenubarContent>
         </MenubarMenu>
       </Menubar>
-      {children}
+      <div className="grid justify-items-center">{children}</div>
     </div>
   );
 };

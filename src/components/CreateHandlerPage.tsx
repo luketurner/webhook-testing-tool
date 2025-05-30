@@ -29,7 +29,7 @@ export const CreateHandlerPage = () => {
           name: "",
           method: "*",
           path: "",
-          code: "",
+          code: "resp.status = 200;\nresp.body = { status: 'ok' };",
         }}
         onChange={handleSaveChanges}
       />

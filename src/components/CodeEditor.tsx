@@ -7,7 +7,7 @@ loader.init().then((monaco) => {
   // TODO -- Proper types
   monaco.languages.typescript.typescriptDefaults.addExtraLib(
     `
-    declare interface Request {
+    declare interface HandlerRequest {
       url: string;
       method: string;
       body?: string;
@@ -15,11 +15,14 @@ loader.init().then((monaco) => {
       query?: Record<string, string>;
     }
 
-    declare interface Response {
-      body?: string;
+    declare interface HandlerResponse {
+      body?: any;
       headers: Record<string, string>;
       status: number;
     }
+
+    declare var req: HandlerRequest;
+    declare var resp: HandlerResponse;
     `
   );
 });
@@ -38,6 +41,11 @@ export function CodeEditor({ onChange, defaultValue, value }: CodeEditorProps) {
       value={value}
       defaultValue={defaultValue ?? ""}
       onChange={onChange}
+      options={{
+        minimap: {
+          enabled: false,
+        },
+      }}
     />
   );
 }
