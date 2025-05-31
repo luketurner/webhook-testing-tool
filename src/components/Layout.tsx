@@ -16,17 +16,6 @@ import {
   MenubarTrigger,
 } from "./ui/menubar";
 
-// const RequestCard = ({ request, openRequest }) => {
-//   const selected = request.id === openRequest;
-
-//   const card = <Card selected={selected}>{request.id}</Card>;
-//   return selected ? (
-//     card
-//   ) : (
-//     <NavLink to={`/requests/${request.id}`}>{card}</NavLink>
-//   );
-// };
-
 export const Layout = ({
   openRequest,
   children,
@@ -45,6 +34,7 @@ export const Layout = ({
         <MenubarMenu>
           <MenubarTrigger>Requests</MenubarTrigger>
           <MenubarContent>
+            <MenubarLink to="/requests/new">New request</MenubarLink>
             <MenubarSub>
               <MenubarSubTrigger disabled={!requests?.length}>
                 Open request
