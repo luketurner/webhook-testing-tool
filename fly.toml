@@ -11,9 +11,10 @@ primary_region = 'sea'
   source = 'data'
   destination = '/data'
 
+# Webhook responder
 [http_service]
-  internal_port = 3001
-  force_https = true
+  internal_port = 3000
+  force_https = false
   auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
@@ -22,21 +23,14 @@ primary_region = 'sea'
 [[vm]]
   size = 'shared-cpu-1x'
 
+# Admin server
 [[services]]
-  internal_port = 3000
+  internal_port = 3001
   protocol = "tcp"
   auto_stop_machines = "stop"
   auto_start_machines = true
   min_machines_running = 0
-
-  [[services.ports]]
-    handlers = ["http"]
-    port = 80
-    [services.ports.http_options.response]
-      pristine = true
   
   [[services.ports]]
     handlers = ["tls", "http"]
-    port = 443
-    [services.ports.http_options.response]
-      pristine = true
+    port = 8000
