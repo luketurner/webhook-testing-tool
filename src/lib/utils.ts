@@ -86,10 +86,7 @@ export function tryParseBasicHeader(rawHeader: string): ParsedAuthBasic | null {
   if (!result) return null;
   try {
     const [, encodedCredentials] = result;
-    const decodedCredentials = Buffer.from(
-      encodedCredentials,
-      "base64"
-    ).toString();
+    const decodedCredentials = atob(encodedCredentials);
 
     // N.B. username cannot contain colons, but passwords can
     // ref. https://datatracker.ietf.org/doc/html/rfc7617#section-2
@@ -171,8 +168,8 @@ export function tryParseJWTHeader(rawHeader: string): ParsedAuthJWT | null {
     parsed.rawPayload = rawPayload;
     parsed.rawSignature = rawSignature;
 
-    parsed.decodedHeaders = Buffer.from(rawHeaders, "base64").toString();
-    parsed.decodedPayload = Buffer.from(rawPayload, "base64").toString();
+    parsed.decodedHeaders = atob(rawHeaders);
+    parsed.decodedPayload = atob(rawPayload);
 
     parsed.headers = JSON.parse(parsed.decodedHeaders);
     parsed.payload = JSON.parse(parsed.decodedPayload);

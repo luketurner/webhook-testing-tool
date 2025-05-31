@@ -11,7 +11,7 @@ import {
 import { Layout } from "./Layout";
 import { useResource } from "@/hooks";
 import { Skeleton } from "./ui/skeleton";
-import { Table, TableBody } from "./ui/table";
+import { Table, TableBody, TableCell, TableRow } from "./ui/table";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import {
   Dialog,
@@ -49,34 +49,87 @@ const AuthorizationInspector = ({ value }: { value: string }) => {
               : "Unrecognized"}{" "}
             Authorization
           </DialogTitle>
-          {/* <DialogDescription>
+          <DialogDescription>
             Details about the Authorization header
-          </DialogDescription> */}
+          </DialogDescription>
         </DialogHeader>
         {isBasicAuth(parsed) ? (
-          <div>
-            {parsed.username}:{parsed.password}
-          </div>
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>Raw Header</TableCell>
+                <TableCell>{parsed.rawHeader}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Username</TableCell>
+                <TableCell>{parsed.username}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Password</TableCell>
+                <TableCell>{parsed.password}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         ) : isDigestAuth(parsed) ? (
-          <div>{parsed.rawHeader}</div>
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>Raw Header</TableCell>
+                <TableCell>{parsed.rawHeader}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         ) : isGenericBearerAuth(parsed) ? (
-          <div>{parsed.token}</div>
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>Raw Header</TableCell>
+                <TableCell>{parsed.rawHeader}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Token</TableCell>
+                <TableCell>{parsed.token}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         ) : isJWTAuth(parsed) ? (
-          <>
-            <div>
-              {parsed.headers
-                ? JSON.stringify(parsed.headers)
-                : parsed.decodedHeaders || parsed.rawHeaders}
-            </div>
-            <div>
-              {parsed.payload
-                ? JSON.stringify(parsed.payload)
-                : parsed.decodedPayload || parsed.rawPayload}
-            </div>
-            <div>{parsed.rawSignature}</div>
-          </>
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>Raw Header</TableCell>
+                <TableCell>{parsed.rawHeader}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Headers</TableCell>
+                <TableCell>
+                  {parsed.headers
+                    ? JSON.stringify(parsed.headers)
+                    : parsed.decodedHeaders || parsed.rawHeaders}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Payload</TableCell>
+                <TableCell>
+                  {parsed.payload
+                    ? JSON.stringify(parsed.payload)
+                    : parsed.decodedPayload || parsed.rawPayload}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Signature</TableCell>
+                <TableCell>{parsed.rawSignature}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         ) : (
-          <div>{parsed.rawHeader}</div>
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>Raw Header</TableCell>
+                <TableCell>{parsed.rawHeader}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         )}
         <DialogFooter>
           <DialogClose asChild>
