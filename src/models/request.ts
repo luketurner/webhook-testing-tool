@@ -150,7 +150,7 @@ function serializeResponse(response: Response) {
 export function getInboundRequests(): RequestEventMetadata[] {
   const data = db
     .query(
-      "SELECT id, type, status, request_method, request_url, request_timestamp, response_status, response_timestamp FROM requests WHERE type = 'inbound'"
+      "SELECT id, type, status, request_method, request_url, request_timestamp, response_status, response_timestamp FROM requests WHERE type = 'inbound' ORDER BY request_timestamp DESC"
     )
     .all() as RequestEventRaw[];
   return data.map(deserializeRequestMetadata);

@@ -163,7 +163,7 @@ export const RequestPage = () => {
       {isLoading ? (
         <Skeleton className="h-16 w-full" />
       ) : (
-        <div className="m-4 grid grid-cols-[50%_50%] grid-rows-[fit-content_fit-content_fit-content] max-w-5xl gap-4">
+        <div className="m-4 grid grid-cols-[50%_50%] grid-rows-[fit-content_fit-content_fit-content] gap-4">
           <div>
             {request?.request?.method} {request?.request?.url}
           </div>
@@ -216,7 +216,9 @@ export const RequestPage = () => {
                   </div>
                 ) : null}
               </>
-            ) : null}
+            ) : (
+              <em>No request body.</em>
+            )}
           </div>
           <div>
             {responseBody ? (
@@ -232,7 +234,9 @@ export const RequestPage = () => {
                   </div>
                 ) : null}
               </>
-            ) : null}
+            ) : (
+              <em>No response body.</em>
+            )}
           </div>
         </div>
       )}

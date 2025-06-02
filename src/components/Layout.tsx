@@ -29,7 +29,7 @@ export const Layout = ({
     window.location.href = "/api/db/export";
   }, []);
   return (
-    <div>
+    <div className="max-w-4xl mx-auto">
       <Menubar>
         <MenubarMenu>
           <MenubarTrigger>Requests</MenubarTrigger>
@@ -78,7 +78,7 @@ export const Layout = ({
           </MenubarContent>
         </MenubarMenu>
       </Menubar>
-      <div className="grid justify-items-center">{children}</div>
+      <div className="grid justify-items-stretch">{children}</div>
     </div>
   );
 };
