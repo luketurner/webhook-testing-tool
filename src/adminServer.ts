@@ -20,6 +20,7 @@ import {
   getRequest,
   type RequestEventClient,
 } from "./models/request";
+import { seedRequestData } from "./lib/seed";
 
 function apiController<Request extends BunRequest>(
   controller: (req: Request) => Response | Promise<Response>
@@ -59,6 +60,12 @@ export const startAdminServer = () =>
       "/api/requests": {
         GET: apiController((req) => {
           return Response.json(getInboundRequests());
+        }),
+      },
+      "/api/requests/seed": {
+        POST: apiController(async (req) => {
+          await seedRequestData();
+          return Response.json({ status: "ok" });
         }),
       },
       "/api/requests/:id": {

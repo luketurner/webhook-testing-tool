@@ -1,7 +1,6 @@
 import React from "react";
-import { NavLink } from "react-router";
 import { type RequestEventMetadata } from "../models/request";
-import { useResourceList } from "../hooks";
+import { useResourceList, useSendDemoRequests } from "../hooks";
 import { type HandlerMetadata } from "../models/handler";
 import {
   Menubar,
@@ -16,15 +15,10 @@ import {
   MenubarTrigger,
 } from "./ui/menubar";
 
-export const Layout = ({
-  openRequest,
-  children,
-}: {
-  openRequest?: string;
-  children: React.ReactNode;
-}) => {
+export const Layout = ({ children }: { children: React.ReactNode }) => {
   const { data: requests } = useResourceList<RequestEventMetadata>("requests");
   const { data: handlers } = useResourceList<HandlerMetadata>("handlers");
+  const { trigger: handleSendDemoRequests } = useSendDemoRequests();
   const handleDownloadDatabase = React.useCallback(() => {
     window.location.href = "/api/db/export";
   }, []);
@@ -74,6 +68,9 @@ export const Layout = ({
           <MenubarContent>
             <MenubarItem onSelect={handleDownloadDatabase}>
               Export database (SQLite)
+            </MenubarItem>
+            <MenubarItem onSelect={handleSendDemoRequests}>
+              Send demo requests
             </MenubarItem>
           </MenubarContent>
         </MenubarMenu>

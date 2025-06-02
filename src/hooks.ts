@@ -108,3 +108,11 @@ export function useResourceDeleter(type: ResourceType, id: string) {
   );
   return { ...stuff, trigger };
 }
+
+export function useSendDemoRequests() {
+  return useSWRMutation({ type: "requests", action: "list" }, async () => {
+    await fetch("/api/requests/seed", {
+      method: "POST",
+    });
+  });
+}

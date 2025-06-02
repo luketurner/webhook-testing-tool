@@ -1,4 +1,6 @@
-const baseUrl = "http://localhost:3000";
+import { WEBHOOK_PORT } from "@/config";
+
+const baseUrl = `http://localhost:${WEBHOOK_PORT}`;
 
 async function send(
   method: string,
@@ -14,7 +16,7 @@ async function send(
   });
 }
 
-export async function seed() {
+export async function seedRequestData() {
   await send("GET", "/simple");
   await send("GET", "/auth_basic", {
     headers: {
@@ -39,8 +41,4 @@ export async function seed() {
     },
   });
   await send("POST", "/post_json", { body: JSON.stringify({ foo: "bar" }) });
-}
-
-if (import.meta.main) {
-  await seed();
 }
