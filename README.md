@@ -4,7 +4,7 @@
 >
 > The README and code for `v1` are available at: https://github.com/luketurner/webhook-testing-tool/releases/tag/v1.
 
-`wtt` is an open-source, self-hosted alternative to webhook testing tools like https://webhook.site.
+`wtt` is an open-source alternative to webhook testing tools like https://webhook.site. It's designed for easy and lightweight self-hosting.
 
 ![Screenshot of the app](./docs/screenshot.png)
 
@@ -19,11 +19,14 @@ How it works:
 
 ## Features
 
-- Supports responder scripts for customizing responses for different types of requests (see section below).
-- Displays complete request and response headers.
-  - Headers to display can be filtered with `WTT_EXCLUDE_HEADERS` environment variable (e.g. to hide headers added by a proxy / load balancer).
-- Automatically parses the header and payload from JWT Bearer tokens in the Authorization header.
-- Formats and syntax-highlights JSON requests and responses.
+- Easy to deploy; runs in a single container.
+- Automatically responds to any HTTP request.
+- Response behavior can be customized with Typescript code by defining **handlers**.
+
+## Limitations
+
+- Does not support multi-user login. (Users are expected to deploy their own instance of `wtt` instead of sharing.)
+- Reliance on SQLite means horizontal scaling is tricky. I recommend running `wtt` with a single pod/container and SQLite stored in a persistent volume. You could probably make horizontal scaling work with [Litestream](https://litestream.io/) or something, but I haven't tried it.
 
 ## Responder scripts
 
