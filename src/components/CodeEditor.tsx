@@ -31,12 +31,18 @@ export interface CodeEditorProps {
   onChange: (value: string) => void;
   defaultValue?: string;
   value?: string;
+  defaultLanguage?: string;
 }
 
-export function CodeEditor({ onChange, defaultValue, value }: CodeEditorProps) {
+export function CodeEditor({
+  onChange,
+  defaultValue,
+  value,
+  defaultLanguage,
+}: CodeEditorProps) {
   return (
     <Editor
-      defaultLanguage="typescript"
+      defaultLanguage={defaultLanguage ?? "typescript"}
       height="300px"
       value={value}
       defaultValue={defaultValue ?? ""}

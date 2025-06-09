@@ -8,6 +8,8 @@ import {
   DEV,
 } from "./config";
 import indexPage from "./index.html";
+import { seedRequestData } from "./lib/seed";
+import { sendWebhookRequest } from "./lib/sendRequest";
 import {
   deleteHandler,
   getAllHandlers,
@@ -20,7 +22,6 @@ import {
   getRequest,
   type RequestEventClient,
 } from "./models/request";
-import { seedRequestData } from "./lib/seed";
 
 function apiController<Request extends BunRequest>(
   controller: (req: Request) => Response | Promise<Response>
@@ -65,6 +66,12 @@ export const startAdminServer = () =>
       "/api/requests/seed": {
         POST: apiController(async (req) => {
           await seedRequestData();
+          return Response.json({ status: "ok" });
+        }),
+      },
+      "/api/requests/send": {
+        POST: apiController(async (req) => {
+          await sendWebhookRequest(await req.json());
           return Response.json({ status: "ok" });
         }),
       },

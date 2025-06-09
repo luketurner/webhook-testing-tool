@@ -1,12 +1,16 @@
 import { type ClassValue, clsx } from "clsx";
+import type { Request } from "express";
 import { twMerge } from "tailwind-merge";
+import { z } from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export function headerNameDisplay(v: string) {
-  return v?.replace(/(?<!\w)[a-zA-Z]/g, (match) => match.toUpperCase());
+  return v
+    ?.toLowerCase()
+    ?.replace(/(?<!\w)[a-zA-Z]/g, (match) => match.toUpperCase());
 }
 
 export const HTTP_METHODS = [

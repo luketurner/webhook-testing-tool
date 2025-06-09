@@ -7,6 +7,8 @@ import { RequestPage } from "./components/RequestPage";
 import { resourceFetcher } from "./hooks";
 import { BrowserRouter, Routes, Route } from "react-router";
 import { ManageHandlersPage } from "./components/ManageHandlersPage";
+import { CreateRequestPage } from "./components/CreateRequestPage";
+import { Toaster } from "./components/ui/sonner";
 
 export function App() {
   return (
@@ -18,12 +20,14 @@ export function App() {
       <BrowserRouter>
         <Routes>
           <Route index element={<HomePage />} />
+          <Route path="/requests/new" element={<CreateRequestPage />} />
           <Route path="/requests/:id" element={<RequestPage />} />
           <Route path="/handlers" element={<ManageHandlersPage />} />
           <Route path="/handlers/new" element={<CreateHandlerPage />} />
           <Route path="/handlers/:id" element={<EditHandlerPage />} />
         </Routes>
       </BrowserRouter>
+      <Toaster position="top-center" />
     </SWRConfig>
   );
 }

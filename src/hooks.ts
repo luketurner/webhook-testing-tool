@@ -1,6 +1,8 @@
-import useSWRMutation from "swr/mutation";
-import useSWR, { useSWRConfig } from "swr";
 import { useCallback } from "react";
+import { toast } from "sonner";
+import useSWR, { useSWRConfig } from "swr";
+import useSWRMutation from "swr/mutation";
+import type { SendRequestOptions } from "./lib/sendRequestClient";
 
 export type ResourceFetcherAction =
   | "list"
@@ -115,4 +117,31 @@ export function useSendDemoRequests() {
       method: "POST",
     });
   });
+}
+
+export function useSendRequest() {
+  return useSWRMutation(
+    { type: "requests", action: "list" },
+    async (_key, { arg }: { arg: SendRequestOptions }) => {
+      const requestPromise = fetch("/api/requests/send", {
+        method: "POST",
+        body: JSON.stringify(arg),
+      });
+      toast.promise(requestPromise, {
+        loading: "Sending request...",
+        success: (resp) => {
+          return {
+            message: `Request succeeded!`,
+            description: `${resp.status} ${resp.statusText}`,
+          };
+        },
+        error: (e) => {
+          return {
+            message: `Request failed!`,
+            description: `Error: ${e}`,
+          };
+        },
+      });
+    }
+  );
 }
