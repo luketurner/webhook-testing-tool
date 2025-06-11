@@ -1,6 +1,4 @@
-import Editor, { useMonaco } from "@monaco-editor/react";
-import { useEffect } from "react";
-import { loader } from "@monaco-editor/react";
+import Editor, { loader } from "@monaco-editor/react";
 
 // Note -- I'm getting errors when using the useMonaco hook, so using loader init instead.
 loader.init().then((monaco) => {

@@ -1,12 +1,11 @@
-import { NavLink, useParams } from "react-router";
-import { Layout } from "./Layout";
-import { type Handler } from "../models/handler";
+import type { Handler } from "@/handlers/shared";
 import { useCallback } from "react";
+import { NavLink } from "react-router";
 import { useResourceDeleter, useResourceList } from "../hooks";
-import { HandlerForm } from "./HandlerForm";
+import { Layout } from "./Layout";
+import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "./ui/table";
-import { Button } from "./ui/button";
 
 const HandlerRow = ({ handler }: { handler: Handler }) => {
   const { trigger } = useResourceDeleter("handlers", handler.id);

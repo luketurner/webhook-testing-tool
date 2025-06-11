@@ -1,12 +1,12 @@
 import { useSendRequest } from "@/hooks";
-import { arrayReplace, kvListSchema, type KVList } from "@/lib/kvList";
+import { kvListSchema, type KVList } from "@/lib/kvList";
 import { SENDABLE_HTTP_METHODS } from "@/lib/sendRequestClient";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { XIcon } from "lucide-react";
-import { Fragment, useCallback } from "react";
+import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CodeEditor } from "./CodeEditor";
+import { KeyValuePairEditor } from "./KeyValuePairEditor";
 import { Layout } from "./Layout";
 import { Button } from "./ui/button";
 import {
@@ -33,7 +33,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { KeyValuePairEditor } from "./KeyValuePairEditor";
 
 const requestSchema = z.object({
   method: z.enum(SENDABLE_HTTP_METHODS),

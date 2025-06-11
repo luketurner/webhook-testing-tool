@@ -1,9 +1,9 @@
-import { Layout } from "./Layout";
+import type { Handler } from "@/handlers/shared";
 import { useCallback, useMemo } from "react";
+import { useNavigate } from "react-router";
 import { useResourceCreator } from "../hooks";
 import { HandlerForm } from "./HandlerForm";
-import { type Handler } from "../models/handler";
-import { useNavigate } from "react-router";
+import { Layout } from "./Layout";
 
 export const CreateHandlerPage = () => {
   const { trigger } = useResourceCreator("handlers");

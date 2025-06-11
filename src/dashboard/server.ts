@@ -1,23 +1,20 @@
 import "@/server-only";
 import basicAuth from "basic-auth";
 import type { BunRequest } from "bun";
-import { ADMIN_PASSWORD, ADMIN_USERNAME, DB_FILE, DEV } from "./config-server";
+import { ADMIN_PASSWORD, ADMIN_USERNAME, DB_FILE, DEV } from "../config-server";
 import indexPage from "./index.html";
-import { seedRequestData } from "./lib/seed";
-import { sendWebhookRequest } from "./lib/sendRequest";
+import { seedRequestData } from "../lib/seed";
+import { sendWebhookRequest } from "../lib/sendRequest";
+import { ADMIN_PORT } from "../config-shared";
 import {
-  deleteHandler,
   getAllHandlers,
-  getHandler,
   insertHandler,
+  getHandler,
   updateHandler,
-} from "./models/handler";
-import {
-  getInboundRequests,
-  getRequest,
-  type RequestEventClient,
-} from "./models/request";
-import { ADMIN_PORT } from "./config-shared";
+  deleteHandler,
+} from "@/handlers/server";
+import { getInboundRequests, getRequest } from "@/request-events/server";
+import type { RequestEventClient } from "@/request-events/shared";
 
 function apiController<Request extends BunRequest>(
   controller: (req: Request) => Response | Promise<Response>

@@ -2,25 +2,8 @@ import "@/server-only";
 import { db } from "../db";
 import Router from "router";
 import { runInNewContext } from "vm";
-import { type RequestEvent, type Response } from "./request";
-import type { HTTP_METHODS } from "@/lib/utils";
-
-export type HandlerMethod = (typeof HTTP_METHODS)[number];
-
-export interface Handler {
-  id: string;
-  versionId: string;
-  name: string;
-  code: string;
-  path: string;
-  method: HandlerMethod;
-  order: number;
-}
-
-export type HandlerMetadata = Pick<
-  Handler,
-  "id" | "versionId" | "name" | "path" | "method" | "order"
->;
+import { type RequestEvent, type Response } from "../request-events/shared";
+import type { Handler } from "./shared";
 
 export interface HandlerRaw {
   id: string;

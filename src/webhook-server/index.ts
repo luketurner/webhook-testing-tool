@@ -3,13 +3,10 @@ import express from "express";
 import morgan from "morgan";
 import bodyParser from "body-parser";
 import { randomUUID } from "crypto";
-import {
-  completeRequest,
-  type RequestEvent,
-  startRequest,
-} from "./models/request";
-import { handleRequest } from "./models/handler";
-import { EXCLUDE_HEADER_MAP, WEBHOOK_PORT } from "./config-shared";
+import { EXCLUDE_HEADER_MAP, WEBHOOK_PORT } from "../config-shared";
+import { handleRequest } from "@/handlers/server";
+import { startRequest, completeRequest } from "@/request-events/server";
+import type { RequestEvent } from "@/request-events/shared";
 
 const app = express();
 app.use(morgan("combined"));

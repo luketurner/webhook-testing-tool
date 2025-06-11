@@ -1,9 +1,9 @@
-import { useParams } from "react-router";
-import { Layout } from "./Layout";
-import { type Handler } from "../models/handler";
+import type { Handler } from "@/handlers/shared";
 import { useCallback } from "react";
+import { useParams } from "react-router";
 import { useResource, useResourceUpdater } from "../hooks";
 import { HandlerForm } from "./HandlerForm";
+import { Layout } from "./Layout";
 import { Skeleton } from "./ui/skeleton";
 
 export const EditHandlerPage = () => {

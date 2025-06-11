@@ -1,5 +1,8 @@
+import { useResource } from "@/hooks";
+import type { RequestEventClient } from "@/request-events/shared";
+import { ExpandIcon } from "lucide-react";
 import { useParams } from "react-router";
-import { type RequestEventClient } from "../models/request";
+import SyntaxHighlighter from "react-syntax-highlighter";
 import {
   headerNameDisplay,
   isBasicAuth,
@@ -9,10 +12,7 @@ import {
   parseAuthorizationHeader,
 } from "../lib/utils";
 import { Layout } from "./Layout";
-import { useResource } from "@/hooks";
-import { Skeleton } from "./ui/skeleton";
-import { Table, TableBody, TableCell, TableRow } from "./ui/table";
-import SyntaxHighlighter from "react-syntax-highlighter";
+import { Button } from "./ui/button";
 import {
   Dialog,
   DialogClose,
@@ -23,8 +23,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { ExpandIcon } from "lucide-react";
-import { Button } from "./ui/button";
+import { Skeleton } from "./ui/skeleton";
+import { Table, TableBody, TableCell, TableRow } from "./ui/table";
 
 const AuthorizationInspector = ({ value }: { value: string }) => {
   const parsed = parseAuthorizationHeader(value);

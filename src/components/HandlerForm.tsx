@@ -1,10 +1,17 @@
+import type { Handler } from "@/handlers/shared";
 import { HTTP_METHODS } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { type Handler } from "../models/handler";
 import { CodeEditor } from "./CodeEditor";
 import { Button } from "./ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import {
   Form,
   FormControl,
@@ -21,13 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
 
 export interface HandlerFormProps {
   initialValues?: Partial<Handler>;

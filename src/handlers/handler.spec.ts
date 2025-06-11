@@ -1,7 +1,7 @@
+import type { RequestEvent } from "@/request-events/shared";
 import { expect, test, describe, beforeEach } from "bun:test";
-import { type RequestEvent } from "./request";
 import { randomUUID } from "crypto";
-import { clearHandlers, handleRequest, insertHandler } from "./handler";
+import { clearHandlers, insertHandler, handleRequest } from "./server";
 
 describe("handleRequest()", () => {
   let request: RequestEvent;
@@ -18,6 +18,7 @@ describe("handleRequest()", () => {
         body: null,
         headers: {},
       },
+      handlers: [],
     };
 
     clearHandlers();

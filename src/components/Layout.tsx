@@ -1,7 +1,5 @@
 import React from "react";
-import { type RequestEventMetadata } from "../models/request";
 import { useResourceList, useSendDemoRequests } from "../hooks";
-import { type HandlerMetadata } from "../models/handler";
 import {
   Menubar,
   MenubarContent,
@@ -14,10 +12,12 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from "./ui/menubar";
+import type { Handler } from "@/handlers/shared";
+import type { RequestEventMetadata } from "@/request-events/shared";
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const { data: requests } = useResourceList<RequestEventMetadata>("requests");
-  const { data: handlers } = useResourceList<HandlerMetadata>("handlers");
+  const { data: handlers } = useResourceList<Handler>("handlers");
   const { trigger: handleSendDemoRequests } = useSendDemoRequests();
   const handleDownloadDatabase = React.useCallback(() => {
     window.location.href = "/api/db/export";
