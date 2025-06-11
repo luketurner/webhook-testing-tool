@@ -1,6 +1,9 @@
+import "@/server-only";
 import { join } from "path";
 
 export const MIGRATION_TEMPLATE = `
+import "@/server-only";
+
 export const up = \`
   SELECT 1;
 \`;

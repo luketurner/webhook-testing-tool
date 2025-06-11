@@ -1,3 +1,5 @@
+import "@/server-only";
+
 export const up = `
   CREATE TABLE handlers (
     id TEXT,

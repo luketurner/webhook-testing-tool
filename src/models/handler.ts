@@ -1,3 +1,4 @@
+import "@/server-only";
 import { db } from "../db";
 import Router from "router";
 import { runInNewContext } from "vm";

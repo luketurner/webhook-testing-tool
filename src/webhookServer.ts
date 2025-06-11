@@ -1,10 +1,15 @@
+import "@/server-only";
 import express from "express";
 import morgan from "morgan";
 import bodyParser from "body-parser";
 import { randomUUID } from "crypto";
-import { EXCLUDE_HEADER_MAP, WEBHOOK_PORT } from "./config";
-import { completeRequest, RequestEvent, startRequest } from "./models/request";
+import {
+  completeRequest,
+  type RequestEvent,
+  startRequest,
+} from "./models/request";
 import { handleRequest } from "./models/handler";
+import { EXCLUDE_HEADER_MAP, WEBHOOK_PORT } from "./config-shared";
 
 const app = express();
 app.use(morgan("combined"));
@@ -33,6 +38,7 @@ app.all("*", async (req, res) => {
       body: Buffer.isBuffer(req.body) ? req.body : null,
       headers,
     },
+    handlers: [],
   };
 
   startRequest(event);

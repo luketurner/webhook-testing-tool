@@ -1,4 +1,5 @@
-import { WEBHOOK_PORT } from "@/config";
+import "@/server-only";
+import { WEBHOOK_PORT } from "@/config-shared";
 import {
   SEND_REQUEST_SCHEMA,
   type SendRequestOptions,

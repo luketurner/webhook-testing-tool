@@ -1,3 +1,4 @@
+import "@/server-only";
 import { sendWebhookRequest } from "./sendRequest";
 
 export async function seedRequestData() {

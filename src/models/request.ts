@@ -1,3 +1,4 @@
+import "@/server-only";
 import { db } from "../db";
 
 export type Headers = Record<string, number | string | string[]>;

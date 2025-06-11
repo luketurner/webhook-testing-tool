@@ -1,7 +1,8 @@
+import "@/server-only";
 import { Glob } from "bun";
 import { Database } from "bun:sqlite";
 import path, { join } from "path";
-import { DB_FILE } from "../config";
+import { DB_FILE } from "../config-server";
 
 export const db = new Database(DB_FILE, { create: true, strict: true });
 

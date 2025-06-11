@@ -1,12 +1,7 @@
+import "@/server-only";
 import basicAuth from "basic-auth";
 import type { BunRequest } from "bun";
-import {
-  ADMIN_PASSWORD,
-  ADMIN_PORT,
-  ADMIN_USERNAME,
-  DB_FILE,
-  DEV,
-} from "./config";
+import { ADMIN_PASSWORD, ADMIN_USERNAME, DB_FILE, DEV } from "./config-server";
 import indexPage from "./index.html";
 import { seedRequestData } from "./lib/seed";
 import { sendWebhookRequest } from "./lib/sendRequest";
@@ -22,6 +17,7 @@ import {
   getRequest,
   type RequestEventClient,
 } from "./models/request";
+import { ADMIN_PORT } from "./config-shared";
 
 function apiController<Request extends BunRequest>(
   controller: (req: Request) => Response | Promise<Response>

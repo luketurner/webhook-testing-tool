@@ -1,7 +1,9 @@
+import "@/server-only";
 import { startAdminServer } from "./adminServer";
-import { ADMIN_PORT, DB_FILE, WEBHOOK_PORT } from "./config";
+import { DB_FILE } from "./config-server";
 import { migrateDb } from "./db";
 import { startWebhookServer } from "./webhookServer";
+import { ADMIN_PORT, WEBHOOK_PORT } from "./config-shared";
 
 console.log(`Using database: ${DB_FILE}`);
 await migrateDb();
