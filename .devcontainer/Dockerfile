@@ -1,4 +1,4 @@
-FROM oven/bun:debian
+FROM node:20
 
 ARG TZ
 ENV TZ="$TZ"
@@ -19,15 +19,13 @@ RUN apt update && apt install -y less \
   iproute2 \
   dnsutils \
   aggregate \
-  jq \
-  wget \
-  curl
+  jq
 
-# Ensure default bun user has access to /usr/local/share
+# Ensure default node user has access to /usr/local/share
 RUN mkdir -p /usr/local/share/npm-global && \
-  chown -R bun:bun /usr/local/share
+  chown -R node:node /usr/local/share
 
-ARG USERNAME=bun
+ARG USERNAME=node
 
 # Persist bash history.
 RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
@@ -39,8 +37,8 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhisto
 ENV DEVCONTAINER=true
 
 # Create workspace and config directories and set permissions
-RUN mkdir -p /workspace /home/bun/.claude && \
-  chown -R bun:bun /workspace /home/bun/.claude
+RUN mkdir -p /workspace /home/node/.claude && \
+  chown -R node:node /workspace /home/node/.claude
 
 WORKDIR /workspace
 
@@ -50,7 +48,7 @@ RUN ARCH=$(dpkg --print-architecture) && \
   rm "git-delta_0.18.2_${ARCH}.deb"
 
 # Set up non-root user
-USER bun
+USER node
 
 # Install global packages
 ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
@@ -69,12 +67,12 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
   -x
 
 # Install Claude
-RUN bun install -g @anthropic-ai/claude-code
+RUN npm install -g @anthropic-ai/claude-code
 
 # Copy and set up firewall script
 COPY init-firewall.sh /usr/local/bin/
 USER root
 RUN chmod +x /usr/local/bin/init-firewall.sh && \
-  echo "bun ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/bun-firewall && \
-  chmod 0440 /etc/sudoers.d/bun-firewall
-USER bun
+  echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
+  chmod 0440 /etc/sudoers.d/node-firewall
+USER node
