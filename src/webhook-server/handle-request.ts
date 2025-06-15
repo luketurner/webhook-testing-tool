@@ -15,13 +15,15 @@ export async function handleRequest(
 ): Promise<[Error | null, Partial<RequestEvent>]> {
   const handlers = getAllHandlers();
   const router = Router();
+  const locals: Record<string, any> = {};
   for (const handler of handlers) {
     router[handler.method === "*" ? "use" : handler.method.toLowerCase()](
       handler.path,
       async (req, resp, next) => {
         const handlerExecution = { handler: handler.id, timestamp: now() };
         try {
-          await runInNewContext(handler.code, { req, resp });
+          const ctx = { requestEvent };
+          await runInNewContext(handler.code, { req, resp, locals, ctx });
           requestEvent.handlers.push(handlerExecution);
           next();
         } catch (e) {
