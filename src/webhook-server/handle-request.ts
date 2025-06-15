@@ -4,6 +4,7 @@ import { getAllHandlers } from "@/handlers/model";
 import type { RequestEvent } from "@/request-events/schema";
 import { now } from "@/util/timestamp";
 import { runInNewContext } from "vm";
+import { deepFreeze } from "@/util/object";
 import {
   handlerResponseToRequestEvent,
   requestEventToHandlerRequest,
@@ -23,7 +24,12 @@ export async function handleRequest(
         const handlerExecution = { handler: handler.id, timestamp: now() };
         try {
           const ctx = { requestEvent };
-          await runInNewContext(handler.code, { req, resp, locals, ctx });
+          await runInNewContext(handler.code, { 
+            req: deepFreeze(req), 
+            resp, 
+            locals, 
+            ctx: deepFreeze(ctx) 
+          });
           requestEvent.handlers.push(handlerExecution);
           next();
         } catch (e) {
