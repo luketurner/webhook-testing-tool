@@ -6,6 +6,9 @@ import { DB_FILE } from "../config-server";
 
 export const db = new Database(DB_FILE, { create: true, strict: true });
 
+// Enable WAL mode for better performance
+db.run("PRAGMA journal_mode = WAL");
+
 export interface MigrationDefn {
   name: string;
   up: string;
