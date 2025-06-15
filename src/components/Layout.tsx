@@ -1,5 +1,5 @@
 import React from "react";
-import { useResourceList, useSendDemoRequests } from "../hooks";
+import { useResourceList, useSendDemoRequests } from "../dashboard/hooks";
 import {
   Menubar,
   MenubarContent,

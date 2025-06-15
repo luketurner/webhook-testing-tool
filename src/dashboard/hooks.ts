@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 import useSWR, { useSWRConfig } from "swr";
 import useSWRMutation from "swr/mutation";
-import type { HandlerRequest } from "./webhook-server/schema";
+import type { HandlerRequest } from "../webhook-server/schema";
 
 export type ResourceFetcherAction =
   | "list"

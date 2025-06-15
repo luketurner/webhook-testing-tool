@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import { NavLink } from "react-router";
 import { useResourceDeleter, useResourceList } from "../hooks";
-import { Layout } from "./Layout";
-import { Button } from "./ui/button";
-import { Skeleton } from "./ui/skeleton";
-import { Table, TableBody, TableCell, TableRow } from "./ui/table";
+import { Layout } from "@/components/Layout";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import type { Handler } from "@/handlers/schema";
 
 const HandlerRow = ({ handler }: { handler: Handler }) => {

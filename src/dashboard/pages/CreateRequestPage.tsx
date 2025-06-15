@@ -1,14 +1,14 @@
-import { useSendRequest } from "@/hooks";
+import { useSendRequest } from "@/dashboard/hooks";
 import { type KVList } from "@/util/kv-list";
 import { requestSchema } from "@/webhook-server/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
-import { CodeEditor } from "./CodeEditor";
-import { KeyValuePairEditor } from "./KeyValuePairEditor";
-import { Layout } from "./Layout";
-import { Button } from "./ui/button";
+import { CodeEditor } from "@/components/CodeEditor";
+import { KeyValuePairEditor } from "@/components/KeyValuePairEditor";
+import { Layout } from "@/components/Layout";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,7 +16,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./ui/card";
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -24,15 +24,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "./ui/form";
-import { Input } from "./ui/input";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
+} from "@/components/ui/select";
 import { HTTP_METHODS } from "@/util/http";
 
 export const CreateRequestPage = () => {

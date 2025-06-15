@@ -1,10 +1,10 @@
 import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { useResourceCreator } from "../hooks";
-import { HandlerForm } from "./HandlerForm";
-import { Layout } from "./Layout";
 import { randomUUID } from "@/util/uuid";
 import type { Handler } from "@/handlers/schema";
+import { HandlerForm } from "@/components/HandlerForm";
+import { useResourceCreator } from "../hooks";
+import { Layout } from "@/components/Layout";
 
 export const CreateHandlerPage = () => {
   const { trigger } = useResourceCreator("handlers");

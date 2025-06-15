@@ -1,9 +1,9 @@
-import { useResource } from "@/hooks";
+import { useResource } from "@/dashboard/hooks";
 import { ExpandIcon } from "lucide-react";
 import { useParams } from "react-router";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import { Layout } from "./Layout";
-import { Button } from "./ui/button";
+import { Layout } from "@/components/Layout";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -13,9 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog";
-import { Skeleton } from "./ui/skeleton";
-import { Table, TableBody, TableCell, TableRow } from "./ui/table";
+} from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import {
   parseAuthorizationHeader,
   isBasicAuth,

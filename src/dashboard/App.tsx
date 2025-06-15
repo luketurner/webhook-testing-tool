@@ -1,14 +1,14 @@
 import { SWRConfig } from "swr";
 import "./index.css";
-import { CreateHandlerPage } from "../components/CreateHandlerPage";
-import { EditHandlerPage } from "../components/EditHandlerPage";
-import { HomePage } from "../components/HomePage";
-import { RequestPage } from "../components/RequestPage";
-import { resourceFetcher } from "../hooks";
+import { resourceFetcher } from "./hooks";
 import { BrowserRouter, Routes, Route } from "react-router";
-import { ManageHandlersPage } from "../components/ManageHandlersPage";
-import { CreateRequestPage } from "../components/CreateRequestPage";
 import { Toaster } from "../components/ui/sonner";
+import { CreateHandlerPage } from "./pages/CreateHandlerPage";
+import { CreateRequestPage } from "./pages/CreateRequestPage";
+import { EditHandlerPage } from "./pages/EditHandlerPage";
+import { HomePage } from "./pages/HomePage";
+import { ManageHandlersPage } from "./pages/ManageHandlersPage";
+import { RequestPage } from "./pages/RequestPage";
 
 export function App() {
   return (
