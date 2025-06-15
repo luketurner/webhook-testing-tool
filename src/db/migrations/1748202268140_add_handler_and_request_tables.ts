@@ -22,7 +22,7 @@ export const up = `
     request_headers TEXT,
     request_body BLOB,
     request_timestamp INTEGER NOT NULL,
-    response_status TEXT,
+    response_status INTEGER,
     response_status_message TEXT,
     response_headers TEXT,
     response_body BLOB,

@@ -1,23 +1,47 @@
 import "@/server-only";
+
+import { dbController } from "@/db/controller";
+import { handlerController } from "@/handlers/controller";
+import { requestEventController } from "@/request-events/controller";
 import basicAuth from "basic-auth";
 import type { BunRequest } from "bun";
-import { ADMIN_PASSWORD, ADMIN_USERNAME, DB_FILE, DEV } from "../config-server";
-import indexPage from "./index.html";
-import { seedRequestData } from "../lib/seed";
-import { sendWebhookRequest } from "../lib/sendRequest";
+import { ADMIN_PASSWORD, ADMIN_USERNAME, DEV } from "../config-server";
 import { ADMIN_PORT } from "../config-shared";
-import {
-  getAllHandlers,
-  insertHandler,
-  getHandler,
-  updateHandler,
-  deleteHandler,
-} from "@/handlers/server";
-import { getInboundRequests, getRequest } from "@/request-events/server";
-import type { RequestEventClient } from "@/request-events/shared";
+import indexPage from "./index.html";
 
-function apiController<Request extends BunRequest>(
-  controller: (req: Request) => Response | Promise<Response>
+export const startDashboardServer = () =>
+  Bun.serve({
+    port: ADMIN_PORT,
+    development: DEV && {
+      hmr: true,
+      console: true,
+    },
+
+    routes: {
+      // page routes
+      "/": indexPage,
+      "/requests/:id": indexPage,
+      "/handlers": indexPage,
+      "/handlers/:id": indexPage,
+
+      // api routes
+      ...buildController(requestEventController),
+      ...buildController(handlerController),
+      ...buildController(dbController),
+
+      "/*": new Response(null, { status: 404 }),
+    },
+    // error() {},
+  });
+
+export type ControllerMethod = (req: Request) => Response | Promise<Response>;
+export type Controller = Record<
+  string,
+  ControllerMethod | Record<string, ControllerMethod>
+>;
+
+function buildControllerMethod<Request extends BunRequest>(
+  controller: ControllerMethod
 ) {
   return (req: Request) => {
     const creds = basicAuth.parse(req.headers.get("authorization")!);
@@ -35,100 +59,18 @@ function apiController<Request extends BunRequest>(
   };
 }
 
-export const startAdminServer = () =>
-  Bun.serve({
-    port: ADMIN_PORT,
-    development: DEV && {
-      hmr: true,
-      console: true,
-    },
-
-    routes: {
-      // page routes
-      "/": indexPage,
-      "/requests/:id": indexPage,
-      "/handlers": indexPage,
-      "/handlers/:id": indexPage,
-
-      // api routes
-      "/api/requests": {
-        GET: apiController((req) => {
-          return Response.json(getInboundRequests());
-        }),
-      },
-      "/api/requests/seed": {
-        POST: apiController(async (req) => {
-          await seedRequestData();
-          return Response.json({ status: "ok" });
-        }),
-      },
-      "/api/requests/send": {
-        POST: apiController(async (req) => {
-          await sendWebhookRequest(await req.json());
-          return Response.json({ status: "ok" });
-        }),
-      },
-      "/api/requests/:id": {
-        GET: apiController((req) => {
-          const request = getRequest(req.params.id);
-
-          if (!request) {
-            return new Response(null, { status: 404 });
-          }
-
-          const requestForClient: RequestEventClient = {
-            ...request,
-            request: {
-              ...request.request,
-              body: request.request.body?.toBase64() ?? null,
-            },
-            ...(request.response
-              ? {
-                  response: {
-                    ...request.response,
-                    body: request.response.body?.toBase64() ?? null,
-                  },
-                }
-              : null),
-          };
-
-          return Response.json(requestForClient);
-        }),
-      },
-      "/api/handlers": {
-        GET: apiController((req) => {
-          return Response.json(getAllHandlers());
-        }),
-        POST: apiController(async (req) => {
-          const body = await req.json();
-          insertHandler(body);
-          return Response.json({ status: "ok" });
-        }),
-      },
-      "/api/handlers/:id": {
-        GET: apiController((req) => {
-          return Response.json(getHandler(req.params.id));
-        }),
-        PUT: apiController(async (req) => {
-          const body = await req.json();
-          updateHandler(body);
-          return Response.json({ status: "ok" });
-        }),
-        DELETE: apiController(async (req) => {
-          deleteHandler(req.params.id);
-          return Response.json({ status: "deleted" });
-        }),
-      },
-      "/api/db/export": {
-        GET: apiController((req) => {
-          return new Response(Bun.file(DB_FILE), {
-            headers: {
-              "content-disposition": `attachment; filename="database-${Date.now()}.sqlite"`,
-            },
-          });
-        }),
-      },
-      "/*": new Response(null, { status: 404 }),
-    },
-    // error() {},
-  });
+function buildController<T, R>(controller: Controller): Controller {
+  return Object.entries(controller).reduce(
+    (m, [k, v]) => ({
+      ...m,
+      [k]:
+        typeof v === "function"
+          ? buildControllerMethod(v)
+          : Object.entries(v).reduce(
+              (m2, [k2, v2]) => ({ ...m2, [k2]: buildControllerMethod(v2) }),
+              {}
+            ),
+    }),
+    {}
+  );
+}

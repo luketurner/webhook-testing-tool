@@ -1,16 +1,7 @@
 import { useResource } from "@/hooks";
-import type { RequestEventClient } from "@/request-events/shared";
 import { ExpandIcon } from "lucide-react";
 import { useParams } from "react-router";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import {
-  headerNameDisplay,
-  isBasicAuth,
-  isDigestAuth,
-  isGenericBearerAuth,
-  isJWTAuth,
-  parseAuthorizationHeader,
-} from "../lib/utils";
 import { Layout } from "./Layout";
 import { Button } from "./ui/button";
 import {
@@ -25,6 +16,15 @@ import {
 } from "./ui/dialog";
 import { Skeleton } from "./ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "./ui/table";
+import {
+  parseAuthorizationHeader,
+  isBasicAuth,
+  isDigestAuth,
+  isGenericBearerAuth,
+  isJWTAuth,
+} from "@/util/authorization";
+import { headerNameDisplay } from "@/util/http";
+import type { RequestEvent } from "@/request-events/schema";
 
 const AuthorizationInspector = ({ value }: { value: string }) => {
   const parsed = parseAuthorizationHeader(value);
@@ -143,12 +143,12 @@ const AuthorizationInspector = ({ value }: { value: string }) => {
 
 export const RequestPage = () => {
   const { id } = useParams();
-  const { data: request, isLoading } = useResource<RequestEventClient>(
+  const { data: request, isLoading } = useResource<RequestEvent>(
     "requests",
     id
   );
-  const requestBody = atob(request?.request?.body ?? "");
-  const responseBody = atob(request?.response?.body ?? "");
+  const requestBody = atob(request?.request_body ?? "");
+  const responseBody = atob(request?.response_body ?? "");
   let prettyRequestBody: string | null = null;
   let prettyResponseBody: string | null = null;
   try {
@@ -159,46 +159,41 @@ export const RequestPage = () => {
   } catch (e) {}
 
   return (
-    <Layout openRequest={id}>
+    <Layout>
       {isLoading ? (
         <Skeleton className="h-16 w-full" />
       ) : (
         <div className="m-4 grid grid-cols-[50%_50%] grid-rows-[fit-content_fit-content_fit-content] gap-4">
           <div>
-            {request?.request?.method} {request?.request?.url}
+            {request?.request_method} {request?.request_url}
           </div>
-          <div>{request?.request?.timestamp?.toLocaleString()}</div>
+          <div>{request?.request_timestamp?.toLocaleString()}</div>
           <div>
             <Table>
               <TableBody>
-                {Object.entries(request?.request?.headers ?? {}).map(
-                  // TODO -- handle multiple header values
-                  ([k, v]) => (
-                    <tr key={k}>
-                      <td>{headerNameDisplay(k)}</td>
-                      <td>
-                        {v}{" "}
-                        {k === "authorization" ? (
-                          <AuthorizationInspector value={v as string} />
-                        ) : null}
-                      </td>
-                    </tr>
-                  )
-                )}
+                {(request?.request_headers ?? []).map(([k, v]) => (
+                  <tr key={k}>
+                    <td>{headerNameDisplay(k)}</td>
+                    <td>
+                      {v}{" "}
+                      {k === "authorization" ? (
+                        <AuthorizationInspector value={v as string} />
+                      ) : null}
+                    </td>
+                  </tr>
+                ))}
               </TableBody>
             </Table>
           </div>
           <div>
             <Table>
               <TableBody>
-                {Object.entries(request?.response?.headers ?? {}).map(
-                  ([k, v]) => (
-                    <tr key={k}>
-                      <td>{headerNameDisplay(k)}</td>
-                      <td>{v}</td>
-                    </tr>
-                  )
-                )}
+                {(request?.response_headers ?? []).map(([k, v]) => (
+                  <tr key={k}>
+                    <td>{headerNameDisplay(k)}</td>
+                    <td>{v}</td>
+                  </tr>
+                ))}
               </TableBody>
             </Table>
           </div>

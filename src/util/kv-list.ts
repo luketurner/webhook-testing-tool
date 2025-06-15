@@ -1,12 +1,12 @@
-import { z, ZodSchema } from "zod";
+import { z, type ZodType } from "zod/v4";
 
-export function kvListSchema<T>(valueSchema?: ZodSchema<T>) {
+export function kvListSchema<T>(valueSchema?: ZodType<T>) {
   return z.array(z.tuple([z.string(), valueSchema ?? z.any()]));
 }
 
 export function parseKvList<T>(
   kvList: unknown,
-  valueSchema?: ZodSchema<T>
+  valueSchema?: ZodType<T>
 ): KVList<T> {
   return kvListSchema(valueSchema).parse(kvList) as KVList<T>;
 }
@@ -43,12 +43,3 @@ export function fromFlatArray<T>(flat: (string | T)[]): KVList<T> {
   return list;
 }
 
-export function arrayReplace<T>(
-  arr: T[],
-  index: number,
-  ...newValues: T[]
-): T[] {
-  const newArr = [...arr];
-  newArr.splice(index, 1, ...newValues);
-  return newArr;
-}

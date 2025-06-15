@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 import useSWR, { useSWRConfig } from "swr";
 import useSWRMutation from "swr/mutation";
-import type { SendRequestOptions } from "./lib/sendRequestClient";
+import type { HandlerRequest } from "./webhook-server/schema";
 
 export type ResourceFetcherAction =
   | "list"
@@ -122,7 +122,7 @@ export function useSendDemoRequests() {
 export function useSendRequest() {
   return useSWRMutation(
     { type: "requests", action: "list" },
-    async (_key, { arg }: { arg: SendRequestOptions }) => {
+    async (_key, { arg }: { arg: HandlerRequest }) => {
       const requestPromise = fetch("/api/requests/send", {
         method: "POST",
         body: JSON.stringify(arg),

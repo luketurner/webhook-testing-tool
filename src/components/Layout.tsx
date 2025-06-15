@@ -12,11 +12,11 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from "./ui/menubar";
-import type { Handler } from "@/handlers/shared";
-import type { RequestEventMetadata } from "@/request-events/shared";
+import type { RequestEventMeta } from "@/request-events/schema";
+import type { Handler } from "@/handlers/schema";
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
-  const { data: requests } = useResourceList<RequestEventMetadata>("requests");
+  const { data: requests } = useResourceList<RequestEventMeta>("requests");
   const { data: handlers } = useResourceList<Handler>("handlers");
   const { trigger: handleSendDemoRequests } = useSendDemoRequests();
   const handleDownloadDatabase = React.useCallback(() => {
@@ -36,7 +36,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               <MenubarSubContent>
                 {requests?.map((request) => (
                   <MenubarLink to={`/requests/${request.id}`}>
-                    {request.request.url}
+                    {request.request_url}
                   </MenubarLink>
                 ))}
               </MenubarSubContent>

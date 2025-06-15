@@ -1,10 +1,10 @@
 import { useSendRequest } from "@/hooks";
-import { kvListSchema, type KVList } from "@/lib/kvList";
-import { SENDABLE_HTTP_METHODS } from "@/lib/sendRequestClient";
+import { type KVList } from "@/util/kv-list";
+import { requestSchema } from "@/webhook-server/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { CodeEditor } from "./CodeEditor";
 import { KeyValuePairEditor } from "./KeyValuePairEditor";
 import { Layout } from "./Layout";
@@ -33,14 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-
-const requestSchema = z.object({
-  method: z.enum(SENDABLE_HTTP_METHODS),
-  path: z.string(),
-  body: z.string().optional(),
-  headers: kvListSchema(z.string()).optional(),
-  query: z.record(z.string(), z.string()).optional(),
-});
+import { HTTP_METHODS } from "@/util/http";
 
 export const CreateRequestPage = () => {
   const webookRequestUrl = `https://${window.location.hostname}`;
@@ -48,8 +41,8 @@ export const CreateRequestPage = () => {
     resolver: zodResolver(requestSchema),
     defaultValues: {
       method: "GET",
-      path: "/",
-      body: undefined,
+      url: "/",
+      body: null,
       headers: [],
     },
   });
@@ -61,7 +54,7 @@ export const CreateRequestPage = () => {
         method: values.method ?? "GET",
         body: values.body,
         headers: values.headers as KVList<string>, // TODO
-        path: values.path ?? "/",
+        url: values.url ?? "/",
       });
     },
     [sendRequest]
@@ -95,7 +88,7 @@ export const CreateRequestPage = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {SENDABLE_HTTP_METHODS.map((item) => (
+                        {HTTP_METHODS.map((item) => (
                           <SelectItem value={item} key={item}>
                             {item}
                           </SelectItem>
@@ -108,7 +101,7 @@ export const CreateRequestPage = () => {
               />
               <FormField
                 control={form.control}
-                name="path"
+                name="url"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Path</FormLabel>

@@ -1,8 +1,6 @@
-import type { Handler } from "@/handlers/shared";
-import { HTTP_METHODS } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { CodeEditor } from "./CodeEditor";
 import { Button } from "./ui/button";
 import {
@@ -28,21 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { handlerSchema, type Handler } from "@/handlers/schema";
+import { HTTP_METHODS } from "@/util/http";
 
 export interface HandlerFormProps {
   initialValues?: Partial<Handler>;
   onChange: (v: Handler) => void;
 }
-
-const handlerSchema = z.object({
-  id: z.string().uuid(),
-  versionId: z.string().min(1),
-  name: z.string().min(1),
-  path: z.string().min(1),
-  method: z.enum(HTTP_METHODS),
-  code: z.string().min(1).optional(),
-  order: z.number(),
-});
 
 export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
   const form = useForm({

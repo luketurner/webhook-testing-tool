@@ -9,13 +9,13 @@ loader.init().then((monaco) => {
       url: string;
       method: string;
       body?: string;
-      params?: Record<string, string>;
+      params?: [string, string][];
       query?: Record<string, string>;
     }
 
     declare interface HandlerResponse {
       body?: any;
-      headers: Record<string, string>;
+      headers: [string, string][];
       status: number;
     }
 

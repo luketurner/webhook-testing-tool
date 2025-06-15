@@ -1,9 +1,10 @@
-import { arrayReplace, type KVList } from "@/lib/kvList";
-import { cn } from "@/lib/utils";
+import { type KVList } from "@/util/kv-list";
+import { cn } from "@/util/ui";
 import { Fragment } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { PlusIcon, XIcon } from "lucide-react";
+import { arrayReplace } from "@/util/array";
 
 export interface KeyValuePairEditorProps<ValueType>
   extends Omit<React.ComponentProps<"div">, "onChange"> {

@@ -1,23 +1,29 @@
+/**
+ * Implementation of the Web server that receives arbitrary HTTP requests, runs a Handler chain for the requests, and returns a response.
+ * The execution of each request is tracked as a RequestEvent.
+ */
 import "@/server-only";
 import express from "express";
 import morgan from "morgan";
 import bodyParser from "body-parser";
-import { randomUUID } from "crypto";
 import { EXCLUDE_HEADER_MAP, WEBHOOK_PORT } from "../config-shared";
-import { handleRequest } from "@/handlers/server";
-import { startRequest, completeRequest } from "@/request-events/server";
-import type { RequestEvent } from "@/request-events/shared";
+import type { RequestEvent } from "@/request-events/schema";
+import { randomUUID } from "@/util/uuid";
+import { now } from "@/util/timestamp";
+import { fromObject } from "@/util/kv-list";
+import type { HttpMethod } from "@/util/http";
+import { fromBufferLike } from "@/util/base64";
+import { createRequestEvent, updateRequestEvent } from "@/request-events/model";
+import { handleRequest } from "./handle-request";
 
+// NOTE: Express is used for the webhook server instead of Bun.serve() because we want to
+// be able to inspect the final HTTP response sent to the client (including content-length, etc.)
+// which isn't possible with Bun.serve().
 const app = express();
+
 app.use(morgan("combined"));
-
-//
-// Webhook router
-// Used for responding to generic HTTP requests
-//
-
 app.use(bodyParser.raw({ type: "*/*" }));
-// app.use(requestLogger);
+
 app.all("*", async (req, res) => {
   const headers = { ...req.headers };
   for (const header of Object.keys(headers)) {
@@ -28,17 +34,15 @@ app.all("*", async (req, res) => {
     id: randomUUID(),
     type: "inbound",
     status: "running",
-    request: {
-      url: req.originalUrl,
-      method: req.method,
-      timestamp: new Date(),
-      body: Buffer.isBuffer(req.body) ? req.body : null,
-      headers,
-    },
+    request_url: req.originalUrl,
+    request_method: req.method as HttpMethod,
+    request_timestamp: now(),
+    request_body: Buffer.isBuffer(req.body) ? fromBufferLike(req.body) : null,
+    request_headers: fromObject(headers),
     handlers: [],
   };
 
-  startRequest(event);
+  createRequestEvent(event);
 
   // intercept response write so we can log the response info
   // ref. https://stackoverflow.com/a/50161321
@@ -50,27 +54,26 @@ app.all("*", async (req, res) => {
 
   res.write = (...restArgs) => {
     chunks.push(Buffer.from(restArgs[0]));
-    oldWrite.apply(res, restArgs);
+    return oldWrite.apply(res, restArgs);
   };
 
   res.end = (...restArgs) => {
     if (restArgs[0]) {
       chunks.push(Buffer.from(restArgs[0]));
     }
-    const body = Buffer.concat(chunks);
-    oldEnd.apply(res, restArgs);
+    const body = Buffer.concat(chunks as any);
+    const result = oldEnd.apply(res, restArgs);
 
-    completeRequest({
+    updateRequestEvent({
       id: event.id,
       status: "complete",
-      response: {
-        status: res.statusCode,
-        statusMessage: res.statusMessage,
-        headers: res.getHeaders(),
-        body: body.length > 0 ? body : null,
-        timestamp: new Date(),
-      },
+      response_status: res.statusCode,
+      response_status_message: res.statusMessage,
+      response_headers: fromObject(res.getHeaders()),
+      response_body: body.length > 0 ? fromBufferLike(body) : null,
+      response_timestamp: now(),
     });
+    return result;
   };
 
   // TODO handle errors
@@ -79,11 +82,13 @@ app.all("*", async (req, res) => {
   const responseStatus =
     typeof response?.status === "number" ? response.status : 200;
   res.status(responseStatus);
-  for (const [k, v] of Object.entries(response?.headers ?? {})) {
+  for (const [k, v] of response?.response_headers) {
     res.set(k, v.toString());
   }
   res.send(
-    response?.body === undefined ? { status: responseStatus } : response.body
+    response?.response_body === undefined
+      ? { status: responseStatus }
+      : response.response_body
   );
 });
 

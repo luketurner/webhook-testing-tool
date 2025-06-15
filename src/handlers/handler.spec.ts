@@ -1,7 +1,9 @@
-import type { RequestEvent } from "@/request-events/shared";
+import type { RequestEvent } from "@/request-events/schema";
 import { expect, test, describe, beforeEach } from "bun:test";
-import { randomUUID } from "crypto";
-import { clearHandlers, insertHandler, handleRequest } from "./server";
+import { clearHandlers, createHandler } from "./model";
+import { randomUUID } from "@/util/uuid";
+import { now } from "@/util/timestamp";
+import { handleRequest } from "@/webhook-server/handle-request";
 
 describe("handleRequest()", () => {
   let request: RequestEvent;
@@ -11,13 +13,11 @@ describe("handleRequest()", () => {
       id: randomUUID(),
       type: "inbound",
       status: "running",
-      request: {
-        url: "/",
-        method: "get",
-        timestamp: new Date(),
-        body: null,
-        headers: {},
-      },
+      request_url: "/",
+      request_method: "GET",
+      request_timestamp: now(),
+      request_body: null,
+      request_headers: [],
       handlers: [],
     };
 
@@ -26,9 +26,9 @@ describe("handleRequest()", () => {
 
   const defineHandler = (order, method, path, code) => {
     const id = randomUUID();
-    insertHandler({
+    createHandler({
       id,
-      versionId: "1",
+      version_id: "1",
       method,
       path,
       code,
@@ -70,7 +70,7 @@ describe("handleRequest()", () => {
   test("it should run two handlers if they both match", async () => {
     defineHandler(1, "*", "/foo", "resp.body = 'foo'; resp.status = 202;");
     defineHandler(2, "get", "/foo/bar", "resp.body = 'bar';");
-    request.request.url = "/foo/bar";
+    request.request_url = "/foo/bar";
     const [err, resp] = await handleRequest(request);
     expect(err).toBeNull();
     expect(resp).toEqual({
@@ -82,7 +82,7 @@ describe("handleRequest()", () => {
 
   test("it should support parsing parameters from the URL", async () => {
     defineHandler(1, "GET", "/foo/:id", "resp.body = req.params.id");
-    request.request.url = "/foo/bar";
+    request.request_url = "/foo/bar";
     const [err, resp] = await handleRequest(request);
     expect(err).toBeNull();
     expect(resp).toEqual({
@@ -100,7 +100,7 @@ describe("handleRequest()", () => {
       "resp.body = 'foo'; resp.status = 202;"
     );
     const id2 = defineHandler(2, "get", "/foo/bar", "resp.body = 'bar';");
-    request.request.url = "/foo/bar";
+    request.request_url = "/foo/bar";
     const [err, resp] = await handleRequest(request);
     expect(err).toBeNull();
     expect(resp).toEqual({

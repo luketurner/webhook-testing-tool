@@ -1,15 +1,16 @@
-import type { Handler } from "@/handlers/shared";
 import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useResourceCreator } from "../hooks";
 import { HandlerForm } from "./HandlerForm";
 import { Layout } from "./Layout";
+import { randomUUID } from "@/util/uuid";
+import type { Handler } from "@/handlers/schema";
 
 export const CreateHandlerPage = () => {
   const { trigger } = useResourceCreator("handlers");
   const navigate = useNavigate();
 
-  const id = useMemo(() => crypto.randomUUID(), []);
+  const id = useMemo(() => randomUUID(), []);
 
   const handleSaveChanges = useCallback(
     async (resource: Handler) => {
@@ -24,7 +25,7 @@ export const CreateHandlerPage = () => {
       <HandlerForm
         initialValues={{
           id,
-          versionId: "1",
+          version_id: "1",
           order: 1,
           name: "",
           method: "*",
