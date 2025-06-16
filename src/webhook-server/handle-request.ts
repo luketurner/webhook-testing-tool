@@ -1,36 +1,72 @@
 import "@/server-only";
 import Router from "router";
+
 import { getAllHandlers } from "@/handlers/model";
 import type { RequestEvent } from "@/request-events/schema";
 import { now } from "@/util/timestamp";
 import { runInNewContext } from "vm";
 import { deepFreeze } from "@/util/object";
+import { randomUUID } from "@/util/uuid";
+import {
+  createHandlerExecution,
+  updateHandlerExecution,
+} from "@/handler-executions/model";
+import type { HandlerExecution } from "@/handler-executions/schema";
 import {
   handlerResponseToRequestEvent,
   requestEventToHandlerRequest,
+  type HandlerRequest,
   type HandlerResponse,
 } from "./schema";
+
+type NextFunction = (error?: Error) => void;
 
 export async function handleRequest(
   requestEvent: RequestEvent
 ): Promise<[Error | null, Partial<RequestEvent>]> {
   const handlers = getAllHandlers();
   const router = Router();
-  const locals: Record<string, any> = {};
+  const locals: Record<string, unknown> = {};
+  let executionOrder = 0;
+
   for (const handler of handlers) {
     router[handler.method === "*" ? "use" : handler.method.toLowerCase()](
       handler.path,
-      async (req, resp, next) => {
-        const handlerExecution = { handler: handler.id, timestamp: now() };
+      async (
+        req: HandlerRequest,
+        resp: HandlerResponse,
+        next: NextFunction
+      ) => {
+        const currentOrder = executionOrder++;
+        const executionId = randomUUID();
+        const timestamp = now();
+
+        const handlerExecution: HandlerExecution = {
+          id: executionId,
+          handler_id: handler.id,
+          request_event_id: requestEvent.id,
+          order: currentOrder,
+          timestamp,
+          status: "running",
+          error_message: null,
+        };
+
+        // Create the execution record with "running" status
+        createHandlerExecution(handlerExecution);
+
         try {
           const ctx = { requestEvent };
-          await runInNewContext(handler.code, { 
-            req: deepFreeze(req), 
-            resp, 
-            locals, 
-            ctx: deepFreeze(ctx) 
+          await runInNewContext(handler.code, {
+            req: deepFreeze(req),
+            resp,
+            locals,
+            ctx: deepFreeze(ctx),
           });
-          requestEvent.handlers.push(handlerExecution);
+          // Update to success status
+          updateHandlerExecution({
+            id: executionId,
+            status: "success",
+          });
           next();
         } catch (e) {
           console.error("Error running script", e);
@@ -39,7 +75,12 @@ export async function handleRequest(
             error:
               "Error running responder script. See application logs for more details.",
           };
-          requestEvent.handlers.push(handlerExecution);
+          // Update to error status with error message
+          updateHandlerExecution({
+            id: executionId,
+            status: "error",
+            error_message: e instanceof Error ? e.message : String(e),
+          });
           next(e);
         }
       }
@@ -52,11 +93,14 @@ export async function handleRequest(
     body: null,
   };
   let error: Error | null = null;
-  requestEvent.handlers = [];
   return new Promise((resolve) => {
-    router(requestEventToHandlerRequest(requestEvent), response, (err) => {
-      if (err) error = err;
-      resolve([error, handlerResponseToRequestEvent(response)]);
-    });
+    router(
+      requestEventToHandlerRequest(requestEvent),
+      response,
+      (err?: Error) => {
+        if (err) error = err;
+        resolve([error, handlerResponseToRequestEvent(response)]);
+      }
+    );
   });
 }

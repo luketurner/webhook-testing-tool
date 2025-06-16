@@ -15,7 +15,7 @@ export function deepFreeze<T>(obj: T): T {
   // Handle objects
   const frozen = {} as T;
   for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
       (frozen as any)[key] = deepFreeze(obj[key]);
     }
   }

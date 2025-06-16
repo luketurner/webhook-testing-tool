@@ -26,7 +26,6 @@ export function requestEventToSql(
     ...event,
     ...jsonFieldToSql(event, "request_headers"),
     ...jsonFieldToSql(event, "response_headers"),
-    ...jsonFieldToSql(event, "handlers"),
     ...base64FieldToSql(event, "request_body"),
     ...base64FieldToSql(event, "response_body"),
   };

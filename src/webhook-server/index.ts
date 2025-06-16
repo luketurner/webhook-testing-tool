@@ -39,7 +39,6 @@ app.all("*", async (req, res) => {
     request_timestamp: now(),
     request_body: Buffer.isBuffer(req.body) ? fromBufferLike(req.body) : null,
     request_headers: fromObject(headers),
-    handlers: [],
   };
 
   createRequestEvent(event);

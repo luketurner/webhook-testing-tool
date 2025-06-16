@@ -9,11 +9,6 @@ import { fromJSONString } from "@/util/json";
 export const REQUEST_EVENT_TYPES = ["inbound", "outbound"] as const;
 export const REQUEST_EVENT_STATUSES = ["running", "complete", "error"] as const;
 
-export const handlerExecutionSchema = z.object({
-  handler: z.string(),
-  timestamp: timestampSchema,
-});
-
 export const requestEventSchema = z.object({
   id: uuidSchema,
   type: z.enum(REQUEST_EVENT_TYPES),
@@ -30,7 +25,6 @@ export const requestEventSchema = z.object({
     .nullish(),
   response_body: z.preprocess(fromBufferLike, base64Schema).nullish(),
   response_timestamp: timestampSchema.nullish(),
-  handlers: z.preprocess(fromJSONString, z.array(handlerExecutionSchema)),
 });
 
 export const requestEventMetaSchema = requestEventSchema.omit({
@@ -38,7 +32,6 @@ export const requestEventMetaSchema = requestEventSchema.omit({
   request_body: true,
   response_headers: true,
   response_body: true,
-  handlers: true,
 });
 
 export type RequestEvent = z.infer<typeof requestEventSchema>;
