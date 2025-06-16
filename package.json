@@ -11,7 +11,8 @@
     "dev": "NODE_ENV=development bun --hot src/server.ts",
     "test": "NODE_ENV=test bun test",
     "migrate:create": "bun run src/db/createMigration.ts",
-    "build": "bun run build.ts"
+    "build": "bun run build.ts",
+    "format": "prettier --write ."
   },
   "author": "Luke Turner",
   "license": "MIT",
@@ -55,6 +56,7 @@
     "zod": "^3.25.31"
   },
   "devDependencies": {
-    "@flydotio/dockerfile": "^0.5.2"
+    "@flydotio/dockerfile": "^0.5.2",
+    "prettier": "^3.5.3"
   }
 }
