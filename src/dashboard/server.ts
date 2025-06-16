@@ -41,7 +41,7 @@ export type Controller = Record<
 >;
 
 function buildControllerMethod<Request extends BunRequest>(
-  controller: ControllerMethod
+  controller: ControllerMethod,
 ) {
   return (req: Request) => {
     const creds = basicAuth.parse(req.headers.get("authorization")!);
@@ -68,9 +68,9 @@ function buildController<T, R>(controller: Controller): Controller {
           ? buildControllerMethod(v)
           : Object.entries(v).reduce(
               (m2, [k2, v2]) => ({ ...m2, [k2]: buildControllerMethod(v2) }),
-              {}
+              {},
             ),
     }),
-    {}
+    {},
   );
 }

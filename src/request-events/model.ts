@@ -20,7 +20,7 @@ import { base64FieldToSql } from "@/util/base64";
 const tableName = "requests";
 
 export function requestEventToSql(
-  event: Partial<RequestEvent>
+  event: Partial<RequestEvent>,
 ): Record<string, any> {
   return {
     ...event,
@@ -36,10 +36,10 @@ export function getRequestEvent(id: RequestId): RequestEvent {
     db
       .query(
         `select ${keysForSelect(
-          requestEventSchema
-        )} from "${tableName}" where id = $id;`
+          requestEventSchema,
+        )} from "${tableName}" where id = $id;`,
       )
-      .get({ id })
+      .get({ id }),
   );
 }
 
@@ -48,10 +48,10 @@ export function getRequestEventMeta(id: RequestId): RequestEventMeta {
     db
       .query(
         `select ${keysForSelect(
-          requestEventMetaSchema
-        )} from "${tableName}" where id = $id;`
+          requestEventMetaSchema,
+        )} from "${tableName}" where id = $id;`,
       )
-      .get({ id })
+      .get({ id }),
   );
 }
 
@@ -59,8 +59,8 @@ export function getAllRequestEvents(): RequestEvent[] {
   return db
     .query(
       `select ${keysForSelect(
-        requestEventSchema
-      )} from "${tableName}" order by request_timestamp desc;`
+        requestEventSchema,
+      )} from "${tableName}" order by request_timestamp desc;`,
     )
     .all()
     .map((v) => requestEventSchema.parse(v));
@@ -70,8 +70,8 @@ export function getAllRequestEventsMeta(): RequestEventMeta[] {
   return db
     .query(
       `select ${keysForSelect(
-        requestEventMetaSchema
-      )} from "${tableName}" order by request_timestamp desc;`
+        requestEventMetaSchema,
+      )} from "${tableName}" order by request_timestamp desc;`,
     )
     .all()
     .map((v) => requestEventMetaSchema.parse(v));
@@ -83,28 +83,28 @@ export function createRequestEvent(request: RequestEvent): RequestEvent {
       .query(
         `insert into "${tableName}" (${keysForInsertFields(
           requestEventSchema,
-          request
+          request,
         )}) values (${keysForInsertValues(
           requestEventSchema,
-          request
-        )}) returning *;`
+          request,
+        )}) returning *;`,
       )
-      .get(requestEventToSql(request))
+      .get(requestEventToSql(request)),
   );
 }
 
 export function updateRequestEvent(
-  request: Partial<RequestEvent>
+  request: Partial<RequestEvent>,
 ): RequestEvent {
   return requestEventSchema.parse(
     db
       .query(
         `update "${tableName}" set ${keysForUpdate(
           requestEventSchema,
-          request
-        )} where id = $id returning *;`
+          request,
+        )} where id = $id returning *;`,
       )
-      .get(requestEventToSql(request) as Record<string, any>)
+      .get(requestEventToSql(request) as Record<string, any>),
   );
 }
 

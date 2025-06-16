@@ -6,7 +6,7 @@ export function kvListSchema<T>(valueSchema?: ZodType<T>) {
 
 export function parseKvList<T>(
   kvList: unknown,
-  valueSchema?: ZodType<T>
+  valueSchema?: ZodType<T>,
 ): KVList<T> {
   return kvListSchema(valueSchema).parse(kvList) as KVList<T>;
 }
@@ -42,4 +42,3 @@ export function fromFlatArray<T>(flat: (string | T)[]): KVList<T> {
   }
   return list;
 }
-

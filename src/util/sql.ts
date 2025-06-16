@@ -21,7 +21,7 @@ export function keysForUpdate(schema: ZodObject, values: Record<string, any>) {
 
 export function keysForInsertFields(
   schema: ZodObject,
-  values: Record<string, any>
+  values: Record<string, any>,
 ) {
   return keys(schema)
     .filter((k) => values[k] !== undefined)
@@ -31,7 +31,7 @@ export function keysForInsertFields(
 
 export function keysForInsertValues(
   schema: ZodObject,
-  values: Record<string, any>
+  values: Record<string, any>,
 ) {
   return keys(schema)
     .filter((k) => values[k] !== undefined)

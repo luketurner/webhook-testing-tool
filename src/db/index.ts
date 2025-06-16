@@ -48,7 +48,7 @@ const runMigrations = db.transaction((migrations: MigrationDefn[]) => {
     );
   `);
   const existingMigrations = new Set(
-    getExistingMigrations().map((s) => s.name)
+    getExistingMigrations().map((s) => s.name),
   );
   for (const migration of migrations) {
     console.write(`Running ${migration.name.substring(0, 30).padEnd(30)} `);

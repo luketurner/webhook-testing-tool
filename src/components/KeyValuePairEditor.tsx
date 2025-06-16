@@ -26,7 +26,7 @@ KeyValuePairEditorProps<string>) {
       <div
         className={cn(
           "grid grid-cols-[repeat(2,_minmax(0,_1fr))_3rem] gap-1 mb-1",
-          className
+          className,
         )}
         {...props}
       >

@@ -17,7 +17,7 @@ export const CreateHandlerPage = () => {
       await trigger({ resource });
       navigate(`/handlers/${id}`);
     },
-    [trigger]
+    [trigger],
   );
 
   return (

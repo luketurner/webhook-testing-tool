@@ -17,7 +17,7 @@ export const EditHandlerPage = () => {
     (resource: Handler) => {
       trigger({ resource });
     },
-    [handler, trigger]
+    [handler, trigger],
   );
 
   return (

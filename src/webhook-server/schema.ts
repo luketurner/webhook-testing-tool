@@ -21,7 +21,7 @@ export type HandlerRequest = z.infer<typeof requestSchema>;
 export type HandlerResponse = z.infer<typeof responseSchema>;
 
 export function requestEventToHandlerRequest(
-  event: RequestEvent
+  event: RequestEvent,
 ): HandlerRequest {
   return requestSchema.parse({
     method: event.request_method,
@@ -32,7 +32,7 @@ export function requestEventToHandlerRequest(
 }
 
 export function handlerResponseToRequestEvent(
-  resp: HandlerResponse
+  resp: HandlerResponse,
 ): Partial<RequestEvent> {
   const parsed = responseSchema.parse(resp);
   return {

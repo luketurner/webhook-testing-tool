@@ -6,5 +6,5 @@ export const EXCLUDE_HEADER_MAP = EXCLUDE_HEADERS.split(",").reduce(
     if (k) obj[k] = true;
     return obj;
   },
-  {}
+  {},
 );

@@ -57,7 +57,7 @@ export const CreateRequestPage = () => {
         url: values.url ?? "/",
       });
     },
-    [sendRequest]
+    [sendRequest],
   );
   return (
     <Layout>

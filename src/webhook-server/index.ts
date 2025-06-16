@@ -87,7 +87,7 @@ app.all("*", async (req, res) => {
   res.send(
     response?.response_body === undefined
       ? { status: responseStatus }
-      : response.response_body
+      : response.response_body,
   );
 });
 

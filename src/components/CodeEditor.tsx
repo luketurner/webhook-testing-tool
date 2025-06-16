@@ -21,7 +21,7 @@ loader.init().then((monaco) => {
 
     declare var req: HandlerRequest;
     declare var resp: HandlerResponse;
-    `
+    `,
   );
 });
 

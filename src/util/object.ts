@@ -9,7 +9,7 @@ export function deepFreeze<T>(obj: T): T {
 
   // Handle arrays
   if (Array.isArray(obj)) {
-    return Object.freeze(obj.map(item => deepFreeze(item))) as T;
+    return Object.freeze(obj.map((item) => deepFreeze(item))) as T;
   }
 
   // Handle objects

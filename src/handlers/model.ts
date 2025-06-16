@@ -22,10 +22,10 @@ export function getHandler(id: HandlerId): Handler {
     db
       .query(
         `select ${keysForSelect(
-          handlerSchema
-        )} from ${tableName} where id = $id;`
+          handlerSchema,
+        )} from ${tableName} where id = $id;`,
       )
-      .get({ id })
+      .get({ id }),
   );
 }
 
@@ -34,10 +34,10 @@ export function getHandlerMetadata(id: HandlerId): HandlerMeta {
     db
       .query(
         `select ${keysForSelect(
-          handlerMetaSchema
-        )} from ${tableName} where id = $id;`
+          handlerMetaSchema,
+        )} from ${tableName} where id = $id;`,
       )
-      .get({ id })
+      .get({ id }),
   );
 }
 
@@ -45,8 +45,8 @@ export function getAllHandlers(): Handler[] {
   return db
     .query(
       `select ${keysForSelect(
-        handlerSchema
-      )} from ${tableName} order by "order" asc;`
+        handlerSchema,
+      )} from ${tableName} order by "order" asc;`,
     )
     .all()
     .map((v) => handlerSchema.parse(v));
@@ -56,8 +56,8 @@ export function getAllHandlersMeta(): HandlerMeta[] {
   return db
     .query(
       `select ${keysForSelect(
-        handlerMetaSchema
-      )} from ${tableName} order by order asc;`
+        handlerMetaSchema,
+      )} from ${tableName} order by order asc;`,
     )
     .all()
     .map((v) => handlerMetaSchema.parse(v));
@@ -69,13 +69,13 @@ export function createHandler(handler: Handler): Handler {
       .query(
         `insert into ${tableName} (${keysForInsertFields(
           handlerSchema,
-          handler
+          handler,
         )}) values (${keysForInsertValues(
           handlerSchema,
-          handler
-        )}) returning *;`
+          handler,
+        )}) returning *;`,
       )
-      .get(handler)
+      .get(handler),
   );
 }
 
@@ -85,10 +85,10 @@ export function updateHandler(handler: Handler): Handler {
       .query(
         `update ${tableName} set ${keysForUpdate(
           handlerSchema,
-          handler
-        )} where id = $id returning *;`
+          handler,
+        )} where id = $id returning *;`,
       )
-      .get(handler)
+      .get(handler),
   );
 }
 

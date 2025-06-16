@@ -23,34 +23,34 @@ export function getHandlerExecution(id: HandlerExecutionId): HandlerExecution {
     db
       .query(
         `select ${keysForSelect(
-          handlerExecutionSchema
-        )} from ${tableName} where id = $id;`
+          handlerExecutionSchema,
+        )} from ${tableName} where id = $id;`,
       )
-      .get({ id })
+      .get({ id }),
   );
 }
 
 export function getHandlerExecutionsByRequestId(
-  requestId: RequestId
+  requestId: RequestId,
 ): HandlerExecution[] {
   return db
     .query(
       `select ${keysForSelect(
-        handlerExecutionSchema
-      )} from ${tableName} where request_event_id = $requestId order by "order" asc;`
+        handlerExecutionSchema,
+      )} from ${tableName} where request_event_id = $requestId order by "order" asc;`,
     )
     .all({ requestId })
     .map((v) => handlerExecutionSchema.parse(v));
 }
 
 export function getHandlerExecutionsByHandlerId(
-  handlerId: string
+  handlerId: string,
 ): HandlerExecution[] {
   return db
     .query(
       `select ${keysForSelect(
-        handlerExecutionSchema
-      )} from ${tableName} where handler_id = $handlerId order by timestamp desc;`
+        handlerExecutionSchema,
+      )} from ${tableName} where handler_id = $handlerId order by timestamp desc;`,
     )
     .all({ handlerId })
     .map((v) => handlerExecutionSchema.parse(v));
@@ -60,8 +60,8 @@ export function getAllHandlerExecutions(): HandlerExecution[] {
   return db
     .query(
       `select ${keysForSelect(
-        handlerExecutionSchema
-      )} from ${tableName} order by timestamp desc;`
+        handlerExecutionSchema,
+      )} from ${tableName} order by timestamp desc;`,
     )
     .all()
     .map((v) => handlerExecutionSchema.parse(v));
@@ -71,43 +71,43 @@ export function getAllHandlerExecutionsMeta(): HandlerExecutionMeta[] {
   return db
     .query(
       `select ${keysForSelect(
-        handlerExecutionMetaSchema
-      )} from ${tableName} order by timestamp desc;`
+        handlerExecutionMetaSchema,
+      )} from ${tableName} order by timestamp desc;`,
     )
     .all()
     .map((v) => handlerExecutionMetaSchema.parse(v));
 }
 
 export function createHandlerExecution(
-  execution: HandlerExecution
+  execution: HandlerExecution,
 ): HandlerExecution {
   return handlerExecutionSchema.parse(
     db
       .query(
         `insert into ${tableName} (${keysForInsertFields(
           handlerExecutionSchema,
-          execution
+          execution,
         )}) values (${keysForInsertValues(
           handlerExecutionSchema,
-          execution
-        )}) returning *;`
+          execution,
+        )}) returning *;`,
       )
-      .get(execution)
+      .get(execution),
   );
 }
 
 export function updateHandlerExecution(
-  execution: Partial<HandlerExecution> & { id: HandlerExecutionId }
+  execution: Partial<HandlerExecution> & { id: HandlerExecutionId },
 ): HandlerExecution {
   return handlerExecutionSchema.parse(
     db
       .query(
         `update ${tableName} set ${keysForUpdate(
           handlerExecutionSchema,
-          execution
-        )} where id = $id returning *;`
+          execution,
+        )} where id = $id returning *;`,
       )
-      .get(execution)
+      .get(execution),
   );
 }
 

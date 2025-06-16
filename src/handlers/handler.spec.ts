@@ -104,7 +104,7 @@ describe("handleRequest()", () => {
       1,
       "*",
       "/foo",
-      "resp.body = 'foo'; resp.status = 202;"
+      "resp.body = 'foo'; resp.status = 202;",
     );
     const id2 = defineHandler(2, "GET", "/foo/bar", "resp.body = 'bar';");
     request.request_url = "/foo/bar";

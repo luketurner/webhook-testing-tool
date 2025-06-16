@@ -46,7 +46,7 @@ export function isDigestAuth(v: IParsedAuth): v is ParsedAuthDigest {
 }
 
 export function isGenericBearerAuth(
-  v: IParsedAuth
+  v: IParsedAuth,
 ): v is ParsedAuthGenericBearer {
   return v.authType === "bearer";
 }
@@ -89,7 +89,7 @@ export function tryParseBasicHeader(rawHeader: string): ParsedAuthBasic | null {
 }
 
 export function tryParseDigestHeader(
-  rawHeader: string
+  rawHeader: string,
 ): ParsedAuthDigest | null {
   if (!rawHeader.startsWith("Digest ")) return null;
   try {
@@ -110,7 +110,7 @@ export function tryParseDigestHeader(
 }
 
 export function tryParseGenericBearerHeader(
-  rawHeader: string
+  rawHeader: string,
 ): ParsedAuthGenericBearer | null {
   if (!rawHeader.startsWith("Bearer ")) return null;
   const [, token] = rawHeader.match(/^Bearer\s+(.*)/);

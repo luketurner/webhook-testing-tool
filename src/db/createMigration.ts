@@ -18,7 +18,7 @@ export async function createMigration(name: string) {
 
   await Bun.write(
     join(import.meta.dir, "migrations", filename),
-    MIGRATION_TEMPLATE
+    MIGRATION_TEMPLATE,
   );
 }
 

@@ -41,12 +41,12 @@ const AuthorizationInspector = ({ value }: { value: string }) => {
             {isBasicAuth(parsed)
               ? "Basic"
               : isDigestAuth(parsed)
-              ? "Digest"
-              : isGenericBearerAuth(parsed)
-              ? "Bearer"
-              : isJWTAuth(parsed)
-              ? "JWT"
-              : "Unrecognized"}{" "}
+                ? "Digest"
+                : isGenericBearerAuth(parsed)
+                  ? "Bearer"
+                  : isJWTAuth(parsed)
+                    ? "JWT"
+                    : "Unrecognized"}{" "}
             Authorization
           </DialogTitle>
           <DialogDescription>
@@ -145,7 +145,7 @@ export const RequestPage = () => {
   const { id } = useParams();
   const { data: request, isLoading } = useResource<RequestEvent>(
     "requests",
-    id
+    id,
   );
   const requestBody = atob(request?.request_body ?? "");
   const responseBody = atob(request?.response_body ?? "");

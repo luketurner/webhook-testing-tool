@@ -28,7 +28,7 @@ export interface ResourceFetcherParameters {
 
 export async function resourceFetcher(
   { action, type, id }: ResourceFetcherOptions,
-  { arg }: { arg: ResourceFetcherParameters } = { arg: {} }
+  { arg }: { arg: ResourceFetcherParameters } = { arg: {} },
 ) {
   const url =
     action === "list" || action === "create"
@@ -63,14 +63,14 @@ export function useResourceCreator(type: ResourceType) {
 
   const stuff = useSWRMutation(
     { type, action: "create" as ResourceFetcherAction },
-    resourceFetcher
+    resourceFetcher,
   );
   const trigger = useCallback(
     async (...args) => {
       await stuff.trigger(...args);
       mutate({ type, action: "list" });
     },
-    [stuff.trigger]
+    [stuff.trigger],
   );
   return { ...stuff, trigger };
 }
@@ -80,7 +80,7 @@ export function useResourceUpdater(type: ResourceType, id: string) {
 
   const stuff = useSWRMutation(
     { type, id, action: "update" as ResourceFetcherAction },
-    resourceFetcher
+    resourceFetcher,
   );
   const trigger = useCallback(
     async (...args) => {
@@ -88,7 +88,7 @@ export function useResourceUpdater(type: ResourceType, id: string) {
       mutate({ type, action: "list" });
       mutate({ type, action: "get", id });
     },
-    [stuff.trigger]
+    [stuff.trigger],
   );
   return { ...stuff, trigger };
 }
@@ -98,7 +98,7 @@ export function useResourceDeleter(type: ResourceType, id: string) {
 
   const stuff = useSWRMutation(
     { type, id, action: "delete" as ResourceFetcherAction },
-    resourceFetcher
+    resourceFetcher,
   );
   const trigger = useCallback(
     async (...args) => {
@@ -106,7 +106,7 @@ export function useResourceDeleter(type: ResourceType, id: string) {
       mutate({ type, action: "list" });
       mutate({ type, action: "get", id });
     },
-    [stuff.trigger]
+    [stuff.trigger],
   );
   return { ...stuff, trigger };
 }
@@ -142,6 +142,6 @@ export function useSendRequest() {
           };
         },
       });
-    }
+    },
   );
 }
