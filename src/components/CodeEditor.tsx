@@ -19,9 +19,15 @@ loader.init().then((monaco) => {
       status: number;
     }
 
+    declare interface Context {
+      requestEvent: Record<string, any>; // TODO
+    }
+
     declare var req: HandlerRequest;
     declare var resp: HandlerResponse;
-    `,
+    declare var locals: Record<string, any>;
+    declare var ctx: Context
+    `
   );
 });
 
