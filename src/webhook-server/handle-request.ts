@@ -49,6 +49,8 @@ export async function handleRequest(
           timestamp,
           status: "running",
           error_message: null,
+          response_data: null,
+          locals_data: null,
         };
 
         // Create the execution record with "running" status
@@ -62,10 +64,12 @@ export async function handleRequest(
             locals,
             ctx: deepFreeze(ctx),
           });
-          // Update to success status
+          // Update to success status with captured data
           updateHandlerExecution({
             id: executionId,
             status: "success",
+            response_data: JSON.stringify(resp),
+            locals_data: JSON.stringify(locals),
           });
           next();
         } catch (e) {
@@ -75,11 +79,13 @@ export async function handleRequest(
             error:
               "Error running responder script. See application logs for more details.",
           };
-          // Update to error status with error message
+          // Update to error status with error message and captured data
           updateHandlerExecution({
             id: executionId,
             status: "error",
             error_message: e instanceof Error ? e.message : String(e),
+            response_data: JSON.stringify(resp),
+            locals_data: JSON.stringify(locals),
           });
           next(e);
         }

@@ -30,7 +30,9 @@ export function getHandlerExecution(id: HandlerExecutionId): HandlerExecution {
   );
 }
 
-export function getHandlerExecutionsByRequestId(requestId: RequestId): HandlerExecution[] {
+export function getHandlerExecutionsByRequestId(
+  requestId: RequestId
+): HandlerExecution[] {
   return db
     .query(
       `select ${keysForSelect(
@@ -41,7 +43,9 @@ export function getHandlerExecutionsByRequestId(requestId: RequestId): HandlerEx
     .map((v) => handlerExecutionSchema.parse(v));
 }
 
-export function getHandlerExecutionsByHandlerId(handlerId: string): HandlerExecution[] {
+export function getHandlerExecutionsByHandlerId(
+  handlerId: string
+): HandlerExecution[] {
   return db
     .query(
       `select ${keysForSelect(
@@ -74,7 +78,9 @@ export function getAllHandlerExecutionsMeta(): HandlerExecutionMeta[] {
     .map((v) => handlerExecutionMetaSchema.parse(v));
 }
 
-export function createHandlerExecution(execution: HandlerExecution): HandlerExecution {
+export function createHandlerExecution(
+  execution: HandlerExecution
+): HandlerExecution {
   return handlerExecutionSchema.parse(
     db
       .query(
@@ -110,5 +116,7 @@ export function deleteHandlerExecution(id: HandlerExecutionId) {
 }
 
 export function deleteHandlerExecutionsByRequestId(requestId: RequestId) {
-  return db.query(`delete from ${tableName} where request_event_id = ?`).run(requestId);
+  return db
+    .query(`delete from ${tableName} where request_event_id = ?`)
+    .run(requestId);
 }
