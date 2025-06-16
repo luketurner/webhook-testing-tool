@@ -71,3 +71,7 @@ Prefer focusing source files on a single concept. When in doubt, go with the app
 ### Util directory
 
 If a helper function would be useful across multiple feature areas, put it in an appropriate file in the `./src/util` directory.
+
+## Development Best Practices
+
+- Do not use the `any` type to fix TypeScript errors.
