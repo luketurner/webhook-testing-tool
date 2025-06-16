@@ -28,6 +28,7 @@ The webhook server uses Express because it allows you to write code after the re
 - Use Tailwind classes for all styles.
 - Do not edit files in `src/components/ui`, those are managed by the shadcn code generator.
 - Do not edit `src/util/ui.ts`, that is required by the shadcn code generator.
+- **Use the Link or NavLink components from react-router for client-side navigation.**
 
 ### Client-Server Architecture
 
