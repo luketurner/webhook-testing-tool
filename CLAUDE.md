@@ -78,3 +78,4 @@ If a helper function would be useful across multiple feature areas, put it in an
 - Use `bun` for all package management commands. Do not use `npm`.
 - Commit messages should tersely explain what changed without excessive prose.
 - Prefix all commit messages with "claude: "
+- Use `bun run format` to format code changes after making updates.
