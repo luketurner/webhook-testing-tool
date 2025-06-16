@@ -75,3 +75,4 @@ If a helper function would be useful across multiple feature areas, put it in an
 ## Development Best Practices
 
 - Do not use the `any` type to fix TypeScript errors.
+- Use `bun` for all package management commands. Do not use `npm`.
