@@ -1,4 +1,4 @@
-import { Activity, Webhook } from "lucide-react";
+import { Activity, Webhook, Settings } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -15,6 +15,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useResourceList } from "@/dashboard/hooks";
 import type { RequestEventMeta } from "@/request-events/schema";
+import type { Handler } from "@/handlers/schema";
 import { Link, NavLink } from "react-router";
 
 const navMain = [
@@ -24,12 +25,20 @@ const navMain = [
     icon: Activity,
     isActive: true,
   },
+  {
+    title: "Handlers",
+    url: "#",
+    icon: Settings,
+    isActive: false,
+  },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [activeItem, setActiveItem] = React.useState(navMain[0]);
-  const { data: requests, isLoading } =
+  const { data: requests, isLoading: requestsLoading } =
     useResourceList<RequestEventMeta>("requests");
+  const { data: handlers, isLoading: handlersLoading } =
+    useResourceList<Handler>("handlers");
   const { setOpen } = useSidebar();
 
   return (
@@ -106,62 +115,96 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarContent>
           <SidebarGroup className="px-0">
             <SidebarGroupContent>
-              {isLoading
-                ? Array.from({ length: 5 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex flex-col gap-2 border-b p-4 last:border-b-0"
-                    >
-                      <div className="flex w-full items-center gap-2">
-                        <Skeleton className="h-4 w-16" />
-                        <Skeleton className="ml-auto h-3 w-12" />
-                      </div>
-                      <Skeleton className="h-4 w-full" />
-                      <div className="flex items-center gap-2">
-                        <Skeleton className="h-3 w-16" />
-                        <Skeleton className="h-3 w-8" />
-                      </div>
-                    </div>
-                  ))
-                : requests?.map((request) => {
-                    const statusColor =
-                      request.status === "complete"
-                        ? "text-green-600"
-                        : request.status === "error"
-                          ? "text-red-600"
-                          : "text-yellow-600";
-                    const date = new Date(
-                      request.request_timestamp
-                    ).toLocaleString();
-
-                    return (
-                      <NavLink
-                        to={`/requests/${request.id}`}
-                        key={request.id}
-                        className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
+              {activeItem?.title === "Requests" ? (
+                requestsLoading
+                  ? Array.from({ length: 5 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex flex-col gap-2 border-b p-4 last:border-b-0"
                       >
                         <div className="flex w-full items-center gap-2">
-                          <span className={`font-medium ${statusColor}`}>
-                            {request.request_method}
-                          </span>
-                          <span className="ml-auto text-xs">{date}</span>
+                          <Skeleton className="h-4 w-16" />
+                          <Skeleton className="ml-auto h-3 w-12" />
                         </div>
-                        <span className="font-medium truncate w-full">
-                          {request.request_url}
-                        </span>
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className={`capitalize ${statusColor}`}>
-                            {request.status}
-                          </span>
-                          {request.response_status && (
-                            <span className="text-muted-foreground">
-                              • {request.response_status}
+                        <Skeleton className="h-4 w-full" />
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-3 w-16" />
+                          <Skeleton className="h-3 w-8" />
+                        </div>
+                      </div>
+                    ))
+                  : requests?.map((request) => {
+                      const statusColor =
+                        request.status === "complete"
+                          ? "text-green-600"
+                          : request.status === "error"
+                            ? "text-red-600"
+                            : "text-yellow-600";
+                      const date = new Date(
+                        request.request_timestamp
+                      ).toLocaleString();
+
+                      return (
+                        <NavLink
+                          to={`/requests/${request.id}`}
+                          key={request.id}
+                          className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
+                        >
+                          <div className="flex w-full items-center gap-2">
+                            <span className={`font-medium ${statusColor}`}>
+                              {request.request_method}
                             </span>
+                            <span className="ml-auto text-xs">{date}</span>
+                          </div>
+                          <span className="font-medium truncate w-full">
+                            {request.request_url}
+                          </span>
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className={`capitalize ${statusColor}`}>
+                              {request.status}
+                            </span>
+                            {request.response_status && (
+                              <span className="text-muted-foreground">
+                                • {request.response_status}
+                              </span>
+                            )}
+                          </div>
+                        </NavLink>
+                      );
+                    })
+              ) : activeItem?.title === "Handlers" ? (
+                handlersLoading
+                  ? Array.from({ length: 3 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex flex-col gap-2 border-b p-4 last:border-b-0"
+                      >
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-full" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                    ))
+                  : handlers?.map((handler) => (
+                      <NavLink
+                        to={`/handlers/${handler.id}`}
+                        key={handler.id}
+                        className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
+                      >
+                        <span className="font-medium truncate w-full">
+                          {handler.name || "Unnamed handler"}
+                        </span>
+                        <span className="text-muted-foreground text-xs truncate w-full">
+                          {handler.path}
+                        </span>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>Handler</span>
+                          {handler.method && (
+                            <span>• {handler.method.toUpperCase()}</span>
                           )}
                         </div>
                       </NavLink>
-                    );
-                  })}
+                    ))
+              ) : null}
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
