@@ -18,11 +18,12 @@ import {
   type HandlerRequest,
   type HandlerResponse,
 } from "./schema";
+import { HandlerErrors, isHandlerError } from "./errors";
 
 type NextFunction = (error?: Error) => void;
 
 export async function handleRequest(
-  requestEvent: RequestEvent,
+  requestEvent: RequestEvent
 ): Promise<[Error | null, Partial<RequestEvent>]> {
   const handlers = getAllHandlers();
   const router = Router();
@@ -35,7 +36,7 @@ export async function handleRequest(
       async (
         req: HandlerRequest,
         resp: HandlerResponse,
-        next: NextFunction,
+        next: NextFunction
       ) => {
         const currentOrder = executionOrder++;
         const executionId = randomUUID();
@@ -63,6 +64,7 @@ export async function handleRequest(
             resp,
             locals,
             ctx: deepFreeze(ctx),
+            ...HandlerErrors,
           });
           // Update to success status with captured data
           updateHandlerExecution({
@@ -74,11 +76,20 @@ export async function handleRequest(
           next();
         } catch (e) {
           console.error("Error running script", e);
-          resp.status = 500;
-          resp.body = {
-            error:
-              "Error running responder script. See application logs for more details.",
-          };
+
+          if (isHandlerError(e)) {
+            resp.status = e.statusCode;
+            resp.body = {
+              error: e.message,
+            };
+          } else {
+            resp.status = 500;
+            resp.body = {
+              error:
+                "Error running responder script. See application logs for more details.",
+            };
+          }
+
           // Update to error status with error message and captured data
           updateHandlerExecution({
             id: executionId,
@@ -89,7 +100,7 @@ export async function handleRequest(
           });
           next(e);
         }
-      },
+      }
     );
   }
   const response: HandlerResponse = {
@@ -106,7 +117,7 @@ export async function handleRequest(
       (err?: Error) => {
         if (err) error = err;
         resolve([error, handlerResponseToRequestEvent(response)]);
-      },
+      }
     );
   });
 }
