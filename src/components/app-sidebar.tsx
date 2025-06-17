@@ -115,8 +115,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarContent>
           <SidebarGroup className="px-0">
             <SidebarGroupContent>
-              {activeItem?.title === "Requests" ? (
-                requestsLoading
+              {activeItem?.title === "Requests"
+                ? requestsLoading
                   ? Array.from({ length: 5 }).map((_, i) => (
                       <div
                         key={i}
@@ -141,7 +141,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             ? "text-red-600"
                             : "text-yellow-600";
                       const date = new Date(
-                        request.request_timestamp
+                        request.request_timestamp,
                       ).toLocaleString();
 
                       return (
@@ -172,39 +172,39 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         </NavLink>
                       );
                     })
-              ) : activeItem?.title === "Handlers" ? (
-                handlersLoading
-                  ? Array.from({ length: 3 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex flex-col gap-2 border-b p-4 last:border-b-0"
-                      >
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-full" />
-                        <Skeleton className="h-3 w-24" />
-                      </div>
-                    ))
-                  : handlers?.map((handler) => (
-                      <NavLink
-                        to={`/handlers/${handler.id}`}
-                        key={handler.id}
-                        className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
-                      >
-                        <span className="font-medium truncate w-full">
-                          {handler.name || "Unnamed handler"}
-                        </span>
-                        <span className="text-muted-foreground text-xs truncate w-full">
-                          {handler.path}
-                        </span>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>Handler</span>
-                          {handler.method && (
-                            <span>• {handler.method.toUpperCase()}</span>
-                          )}
+                : activeItem?.title === "Handlers"
+                  ? handlersLoading
+                    ? Array.from({ length: 3 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex flex-col gap-2 border-b p-4 last:border-b-0"
+                        >
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-full" />
+                          <Skeleton className="h-3 w-24" />
                         </div>
-                      </NavLink>
-                    ))
-              ) : null}
+                      ))
+                    : handlers?.map((handler) => (
+                        <NavLink
+                          to={`/handlers/${handler.id}`}
+                          key={handler.id}
+                          className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
+                        >
+                          <span className="font-medium truncate w-full">
+                            {handler.name || "Unnamed handler"}
+                          </span>
+                          <span className="text-muted-foreground text-xs truncate w-full">
+                            {handler.path}
+                          </span>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>Handler</span>
+                            {handler.method && (
+                              <span>• {handler.method.toUpperCase()}</span>
+                            )}
+                          </div>
+                        </NavLink>
+                      ))
+                  : null}
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>

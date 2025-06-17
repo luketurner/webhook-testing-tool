@@ -27,7 +27,7 @@ loader.init().then((monaco) => {
     declare var resp: HandlerResponse;
     declare var locals: Record<string, any>;
     declare var ctx: Context
-    `
+    `,
   );
 });
 
