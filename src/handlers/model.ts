@@ -99,3 +99,27 @@ export function deleteHandler(id: HandlerId) {
 export function clearHandlers() {
   return db.query(`delete from ${tableName}`).run();
 }
+
+export function getNextHandlerOrder(): number {
+  const result = db
+    .query(`SELECT MAX("order") as max_order FROM ${tableName}`)
+    .get() as { max_order: number | null } | undefined;
+
+  return (result?.max_order || 0) + 1;
+}
+
+export function reorderHandlers(
+  updates: { id: HandlerId; order: number }[],
+): void {
+  // Use a transaction to ensure all updates succeed or fail together
+  const transaction = db.transaction(() => {
+    for (const update of updates) {
+      db.query(`UPDATE ${tableName} SET "order" = ? WHERE id = ?`).run(
+        update.order,
+        update.id,
+      );
+    }
+  });
+
+  transaction();
+}

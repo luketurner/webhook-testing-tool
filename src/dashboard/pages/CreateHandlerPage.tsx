@@ -16,7 +16,7 @@ export const CreateHandlerPage = () => {
       await mutate(resource);
       navigate(`/handlers/${id}`);
     },
-    [mutate],
+    [mutate]
   );
 
   return (
@@ -24,7 +24,6 @@ export const CreateHandlerPage = () => {
       initialValues={{
         id,
         version_id: "1",
-        order: 1,
         name: "",
         method: "*",
         path: "",

@@ -7,7 +7,7 @@ export const up = `
     method TEXT,
     path TEXT,
     code TEXT,
-    "order" INTEGER,
+    "order" INTEGER NOT NULL UNIQUE,
     name TEXT,
     PRIMARY KEY (id, version_id)
   ) WITHOUT ROWID;

@@ -38,7 +38,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [activeItem, setActiveItem] = React.useState(navMain[0]);
   const { setOpen, open } = useSidebar();
   const { mutate: handleSendDemoRequests } = useSendDemoRequests();
-  
+
   const handleDownloadDatabase = React.useCallback(() => {
     window.location.href = "/api/db/export";
   }, []);
@@ -123,7 +123,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent side="right" align="start">
-                      <DropdownMenuItem onSelect={() => handleSendDemoRequests()}>
+                      <DropdownMenuItem
+                        onSelect={() => handleSendDemoRequests()}
+                      >
                         Send demo requests
                       </DropdownMenuItem>
                       <DropdownMenuItem onSelect={handleDownloadDatabase}>

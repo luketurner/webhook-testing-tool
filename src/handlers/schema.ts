@@ -16,6 +16,18 @@ export const handlerMetaSchema = handlerSchema.omit({
   code: true,
 });
 
+export const bulkReorderSchema = z.object({
+  updates: z
+    .array(
+      z.object({
+        id: uuidSchema,
+        order: z.number().int().min(0),
+      }),
+    )
+    .min(1),
+});
+
 export type Handler = z.infer<typeof handlerSchema>;
 export type HandlerMeta = z.infer<typeof handlerMetaSchema>;
 export type HandlerId = Handler["id"];
+export type BulkReorderRequest = z.infer<typeof bulkReorderSchema>;
