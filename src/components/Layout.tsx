@@ -70,8 +70,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                   ))}
                 </MenubarSubContent>
               </MenubarSub>
-              <MenubarSeparator />
-              <MenubarLink to="/handlers">Manage handlers</MenubarLink>
             </MenubarContent>
           </MenubarMenu>
           <MenubarMenu>
