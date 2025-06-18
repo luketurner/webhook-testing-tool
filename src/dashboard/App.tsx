@@ -18,7 +18,13 @@ export function App() {
         fetcher: resourceFetcher,
       }}
     >
-      <SidebarProvider>
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "425px",
+          } as React.CSSProperties
+        }
+      >
         <BrowserRouter>
           <Routes>
             <Route index element={<HomePage />} />
