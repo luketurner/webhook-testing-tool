@@ -1,4 +1,5 @@
-import { Plus } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Circle, Plus } from "lucide-react";
 import { NavLink } from "react-router";
 
 import {
@@ -10,17 +11,51 @@ import {
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useResourceList } from "@/dashboard/hooks";
+import { useSSE } from "@/hooks/useSSE";
 import type { RequestEventMeta } from "@/request-events/schema";
 
 export function RequestSidebar() {
   const { data: requests, isLoading: requestsLoading } =
     useResourceList<RequestEventMeta>("requests");
 
+  const queryClient = useQueryClient();
+
+  // Set up SSE connection for real-time updates
+  const { connectionState } = useSSE({
+    url: `/api/events/stream`,
+    onEvent: (event) => {
+      if (
+        event.type === "request:created" ||
+        event.type === "request:updated"
+      ) {
+        // Invalidate and refetch the requests list to get the latest data
+        console.log("Received event", JSON.stringify(event));
+        queryClient.invalidateQueries({ queryKey: ["requests"] });
+      }
+    },
+    onError: (error) => {
+      console.error("SSE connection error:", error);
+    },
+  });
+
   return (
     <Sidebar collapsible="none" className="hidden flex-1 md:flex">
       <SidebarHeader className="gap-3.5 border-b p-4">
         <div className="flex w-full items-center justify-between">
-          <div className="text-foreground text-base font-medium">Requests</div>
+          <div className="flex items-center gap-2">
+            <div className="text-foreground text-base font-medium">
+              Requests
+            </div>
+            <Circle
+              className={`h-2 w-2 ${
+                connectionState === "connected"
+                  ? "fill-green-500 text-green-500"
+                  : connectionState === "connecting"
+                    ? "fill-yellow-500 text-yellow-500"
+                    : "fill-red-500 text-red-500"
+              }`}
+            />
+          </div>
           <NavLink
             to="/requests/new"
             className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 w-8"
@@ -58,7 +93,7 @@ export function RequestSidebar() {
                         ? "text-red-600"
                         : "text-yellow-600";
                   const date = new Date(
-                    request.request_timestamp,
+                    request.request_timestamp
                   ).toLocaleString();
 
                   return (

@@ -14,6 +14,7 @@ import { fromObject } from "@/util/kv-list";
 import type { HttpMethod } from "@/util/http";
 import { fromBufferLike } from "@/util/base64";
 import { createRequestEvent, updateRequestEvent } from "@/request-events/model";
+import { appEvents } from "@/events/emitter";
 import { handleRequest } from "./handle-request";
 
 // NOTE: Express is used for the webhook server instead of Bun.serve() because we want to
@@ -41,7 +42,8 @@ app.all("*", async (req, res) => {
     request_headers: fromObject(headers),
   };
 
-  createRequestEvent(event);
+  const createdEvent = createRequestEvent(event);
+  appEvents.emit("request:created", createdEvent);
 
   // intercept response write so we can log the response info
   // ref. https://stackoverflow.com/a/50161321
@@ -63,7 +65,7 @@ app.all("*", async (req, res) => {
     const body = Buffer.concat(chunks as any);
     const result = oldEnd.apply(res, restArgs);
 
-    updateRequestEvent({
+    const updatedEvent = updateRequestEvent({
       id: event.id,
       status: "complete",
       response_status: res.statusCode,
@@ -72,6 +74,7 @@ app.all("*", async (req, res) => {
       response_body: body.length > 0 ? fromBufferLike(body) : null,
       response_timestamp: now(),
     });
+    appEvents.emit("request:updated", updatedEvent);
     return result;
   };
 
