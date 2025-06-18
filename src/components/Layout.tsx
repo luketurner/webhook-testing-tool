@@ -28,62 +28,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
     <>
       <AppSidebar />
       <SidebarInset>
-        <Menubar className="border-none">
-          <SidebarTrigger />
-          <MenubarMenu>
-            <MenubarTrigger>Requests</MenubarTrigger>
-            <MenubarContent>
-              <MenubarLink to="/requests/new">New request</MenubarLink>
-              <MenubarSub>
-                <MenubarSubTrigger disabled={!requests?.length}>
-                  Open request
-                </MenubarSubTrigger>
-                <MenubarSubContent>
-                  {requests?.map((request) => (
-                    <MenubarLink
-                      key={request.id}
-                      to={`/requests/${request.id}`}
-                    >
-                      {request.request_url}
-                    </MenubarLink>
-                  ))}
-                </MenubarSubContent>
-              </MenubarSub>
-            </MenubarContent>
-          </MenubarMenu>
-          <MenubarMenu>
-            <MenubarTrigger>Handlers</MenubarTrigger>
-            <MenubarContent>
-              <MenubarLink to="/handlers/new">New handler</MenubarLink>
-              <MenubarSub>
-                <MenubarSubTrigger disabled={!handlers?.length}>
-                  Open handler
-                </MenubarSubTrigger>
-                <MenubarSubContent>
-                  {handlers?.map((handler) => (
-                    <MenubarLink
-                      key={handler.id}
-                      to={`/handlers/${handler.id}`}
-                    >
-                      {handler.name || "Unnamed handler"}
-                    </MenubarLink>
-                  ))}
-                </MenubarSubContent>
-              </MenubarSub>
-            </MenubarContent>
-          </MenubarMenu>
-          <MenubarMenu>
-            <MenubarTrigger>Tools</MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem onSelect={handleDownloadDatabase}>
-                Export database (SQLite)
-              </MenubarItem>
-              <MenubarItem onSelect={handleSendDemoRequests}>
-                Send demo requests
-              </MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-        </Menubar>
+        <SidebarTrigger className="m-1" />
         <main className="max-w-4xl mx-auto p-4 w-full">
           <div className="grid justify-items-stretch">{children}</div>
         </main>
