@@ -10,13 +10,13 @@ export const EditHandlerPage = () => {
 
   const { data: handler, isLoading } = useResource<Handler>("handlers", id!);
 
-  const { trigger } = useResourceUpdater("handlers", id!);
+  const { mutate } = useResourceUpdater("handlers", id!);
 
   const handleSaveChanges = useCallback(
     (resource: Handler) => {
-      trigger({ resource });
+      mutate(resource);
     },
-    [handler, trigger]
+    [handler, mutate]
   );
 
   return (

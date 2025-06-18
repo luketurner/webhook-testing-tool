@@ -1,6 +1,5 @@
-import { SWRConfig } from "swr";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
-import { resourceFetcher } from "./hooks";
 import { BrowserRouter, Routes, Route } from "react-router";
 import { Toaster } from "../components/ui/sonner";
 import { CreateHandlerPage } from "./pages/CreateHandlerPage";
@@ -11,13 +10,11 @@ import { RequestPage } from "./pages/RequestPage";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Layout } from "@/components/Layout";
 
+const queryClient = new QueryClient();
+
 export function App() {
   return (
-    <SWRConfig
-      value={{
-        fetcher: resourceFetcher,
-      }}
-    >
+    <QueryClientProvider client={queryClient}>
       <SidebarProvider
         style={
           {
@@ -38,6 +35,6 @@ export function App() {
         </BrowserRouter>
         <Toaster position="top-center" />
       </SidebarProvider>
-    </SWRConfig>
+    </QueryClientProvider>
   );
 }

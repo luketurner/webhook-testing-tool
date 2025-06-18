@@ -1,7 +1,5 @@
-import { useCallback } from "react";
 import { toast } from "sonner";
-import useSWR, { useSWRConfig } from "swr";
-import useSWRMutation from "swr/mutation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { HandlerRequest } from "../webhook-server/schema";
 
 export type ResourceFetcherAction =
@@ -22,13 +20,9 @@ export interface ResourceFetcherOptions {
   resource?: Resource;
 }
 
-export interface ResourceFetcherParameters {
-  resource?: Resource;
-}
-
 export async function resourceFetcher(
   { action, type, id }: ResourceFetcherOptions,
-  { arg }: { arg: ResourceFetcherParameters } = { arg: {} },
+  resource?: Resource
 ) {
   const url =
     action === "list" || action === "create"
@@ -37,10 +31,10 @@ export async function resourceFetcher(
   let init: RequestInit | undefined = undefined;
   switch (action) {
     case "create":
-      init = { method: "POST", body: JSON.stringify(arg.resource) };
+      init = { method: "POST", body: JSON.stringify(resource) };
       break;
     case "update":
-      init = { method: "PUT", body: JSON.stringify(arg.resource) };
+      init = { method: "PUT", body: JSON.stringify(resource) };
       break;
     case "delete":
       init = { method: "DELETE" };
@@ -51,81 +45,79 @@ export async function resourceFetcher(
 }
 
 export function useResource<T>(type: ResourceType, id: string | number) {
-  return useSWR<T>({ id, action: "get", type });
+  return useQuery<T>({
+    queryKey: [type, id],
+    queryFn: () => resourceFetcher({ action: "get", type, id: String(id) }),
+  });
 }
 
 export function useResourceList<T>(type: ResourceType) {
-  return useSWR<T[]>({ action: "list", type });
+  return useQuery<T[]>({
+    queryKey: [type],
+    queryFn: () => resourceFetcher({ action: "list", type }),
+  });
 }
 
 export function useResourceCreator(type: ResourceType) {
-  const { mutate } = useSWRConfig();
+  const queryClient = useQueryClient();
 
-  const stuff = useSWRMutation(
-    { type, action: "create" as ResourceFetcherAction },
-    resourceFetcher,
-  );
-  const trigger = useCallback(
-    async (...args) => {
-      await stuff.trigger(...args);
-      mutate({ type, action: "list" });
+  return useMutation({
+    mutationFn: (resource: Resource) =>
+      resourceFetcher({ action: "create", type }, resource),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [type] });
     },
-    [stuff.trigger],
-  );
-  return { ...stuff, trigger };
+  });
 }
 
 export function useResourceUpdater(type: ResourceType, id: string) {
-  const { mutate } = useSWRConfig();
+  const queryClient = useQueryClient();
 
-  const stuff = useSWRMutation(
-    { type, id, action: "update" as ResourceFetcherAction },
-    resourceFetcher,
-  );
-  const trigger = useCallback(
-    async (...args) => {
-      await stuff.trigger(...args);
-      mutate({ type, action: "list" });
-      mutate({ type, action: "get", id });
+  return useMutation({
+    mutationFn: (resource: Resource) =>
+      resourceFetcher({ action: "update", type, id }, resource),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [type] });
+      queryClient.invalidateQueries({ queryKey: [type, id] });
     },
-    [stuff.trigger],
-  );
-  return { ...stuff, trigger };
+  });
 }
 
 export function useResourceDeleter(type: ResourceType, id: string) {
-  const { mutate } = useSWRConfig();
+  const queryClient = useQueryClient();
 
-  const stuff = useSWRMutation(
-    { type, id, action: "delete" as ResourceFetcherAction },
-    resourceFetcher,
-  );
-  const trigger = useCallback(
-    async (...args) => {
-      await stuff.trigger(...args);
-      mutate({ type, action: "list" });
-      mutate({ type, action: "get", id });
+  return useMutation({
+    mutationFn: () => resourceFetcher({ action: "delete", type, id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [type] });
+      queryClient.invalidateQueries({ queryKey: [type, id] });
     },
-    [stuff.trigger],
-  );
-  return { ...stuff, trigger };
+  });
 }
 
 export function useSendDemoRequests() {
-  return useSWRMutation({ type: "requests", action: "list" }, async () => {
-    await fetch("/api/requests/seed", {
-      method: "POST",
-    });
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      await fetch("/api/requests/seed", {
+        method: "POST",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["requests"] });
+    },
   });
 }
 
 export function useSendRequest() {
-  return useSWRMutation(
-    { type: "requests", action: "list" },
-    async (_key, { arg }: { arg: HandlerRequest }) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: HandlerRequest) => {
       const requestPromise = fetch("/api/requests/send", {
         method: "POST",
-        body: JSON.stringify(arg),
+        body: JSON.stringify(request),
       });
       toast.promise(requestPromise, {
         loading: "Sending request...",
@@ -142,6 +134,10 @@ export function useSendRequest() {
           };
         },
       });
+      return requestPromise;
     },
-  );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["requests"] });
+    },
+  });
 }

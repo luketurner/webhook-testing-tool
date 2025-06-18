@@ -6,17 +6,17 @@ import { HandlerForm } from "@/components/HandlerForm";
 import { useResourceCreator } from "../hooks";
 
 export const CreateHandlerPage = () => {
-  const { trigger } = useResourceCreator("handlers");
+  const { mutate } = useResourceCreator("handlers");
   const navigate = useNavigate();
 
   const id = useMemo(() => randomUUID(), []);
 
   const handleSaveChanges = useCallback(
     async (resource: Handler) => {
-      await trigger({ resource });
+      await mutate(resource);
       navigate(`/handlers/${id}`);
     },
-    [trigger],
+    [mutate],
   );
 
   return (

@@ -44,11 +44,11 @@ export const CreateRequestPage = () => {
       headers: [],
     },
   });
-  const { trigger: sendRequest } = useSendRequest();
+  const { mutate: sendRequest } = useSendRequest();
 
   const handleSubmit = useCallback(
-    async (values: HandlerRequest) => {
-      await sendRequest({
+    (values: HandlerRequest) => {
+      sendRequest({
         method: values.method ?? "GET",
         body: values.body,
         headers: values.headers,
