@@ -12,7 +12,7 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from "./ui/menubar";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "./ui/sidebar";
+import { SidebarInset, SidebarTrigger } from "./ui/sidebar";
 import { AppSidebar } from "./app-sidebar";
 import type { RequestEventMeta } from "@/request-events/schema";
 import type { Handler } from "@/handlers/schema";
@@ -25,7 +25,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
     window.location.href = "/api/db/export";
   }, []);
   return (
-    <SidebarProvider>
+    <>
       <AppSidebar />
       <SidebarInset>
         <Menubar className="border-none">
@@ -90,6 +90,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           <div className="grid justify-items-stretch">{children}</div>
         </main>
       </SidebarInset>
-    </SidebarProvider>
+    </>
   );
 };

@@ -9,6 +9,7 @@ import { EditHandlerPage } from "./pages/EditHandlerPage";
 import { HomePage } from "./pages/HomePage";
 import { ManageHandlersPage } from "./pages/ManageHandlersPage";
 import { RequestPage } from "./pages/RequestPage";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 export function App() {
   return (
@@ -17,17 +18,19 @@ export function App() {
         fetcher: resourceFetcher,
       }}
     >
-      <BrowserRouter>
-        <Routes>
-          <Route index element={<HomePage />} />
-          <Route path="/requests/new" element={<CreateRequestPage />} />
-          <Route path="/requests/:id" element={<RequestPage />} />
-          <Route path="/handlers" element={<ManageHandlersPage />} />
-          <Route path="/handlers/new" element={<CreateHandlerPage />} />
-          <Route path="/handlers/:id" element={<EditHandlerPage />} />
-        </Routes>
-      </BrowserRouter>
-      <Toaster position="top-center" />
+      <SidebarProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route index element={<HomePage />} />
+            <Route path="/requests/new" element={<CreateRequestPage />} />
+            <Route path="/requests/:id" element={<RequestPage />} />
+            <Route path="/handlers" element={<ManageHandlersPage />} />
+            <Route path="/handlers/new" element={<CreateHandlerPage />} />
+            <Route path="/handlers/:id" element={<EditHandlerPage />} />
+          </Routes>
+        </BrowserRouter>
+        <Toaster position="top-center" />
+      </SidebarProvider>
     </SWRConfig>
   );
 }
