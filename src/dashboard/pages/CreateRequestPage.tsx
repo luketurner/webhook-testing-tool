@@ -1,10 +1,9 @@
 import { useSendRequest } from "@/dashboard/hooks";
 import { type KVList } from "@/util/kv-list";
-import { requestSchema } from "@/webhook-server/schema";
+import { requestSchema, type HandlerRequest } from "@/webhook-server/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod/v4";
 import { CodeEditor } from "@/components/CodeEditor";
 import { KeyValuePairEditor } from "@/components/KeyValuePairEditor";
 import { Button } from "@/components/ui/button";
@@ -36,8 +35,8 @@ import { HTTP_METHODS } from "@/util/http";
 
 export const CreateRequestPage = () => {
   const webookRequestUrl = `https://${window.location.hostname}`;
-  const form = useForm<z.infer<typeof requestSchema>>({
-    resolver: zodResolver(requestSchema),
+  const form = useForm<HandlerRequest>({
+    resolver: zodResolver(requestSchema as any), // TODO
     defaultValues: {
       method: "GET",
       url: "/",
@@ -48,11 +47,11 @@ export const CreateRequestPage = () => {
   const { trigger: sendRequest } = useSendRequest();
 
   const handleSubmit = useCallback(
-    async (values: z.infer<typeof requestSchema>) => {
+    async (values: HandlerRequest) => {
       await sendRequest({
         method: values.method ?? "GET",
         body: values.body,
-        headers: values.headers as KVList<string>, // TODO
+        headers: values.headers,
         url: values.url ?? "/",
       });
     },

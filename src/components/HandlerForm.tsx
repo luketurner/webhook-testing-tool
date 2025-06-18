@@ -35,8 +35,8 @@ export interface HandlerFormProps {
 }
 
 export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
-  const form = useForm({
-    resolver: zodResolver(handlerSchema),
+  const form = useForm<Handler>({
+    resolver: zodResolver(handlerSchema as any), // TODO
     defaultValues: initialValues,
   });
 

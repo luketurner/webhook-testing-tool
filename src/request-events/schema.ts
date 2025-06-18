@@ -1,4 +1,4 @@
-import { kvListSchema } from "@/util/kv-list";
+import { kvListSchema, type KVList } from "@/util/kv-list";
 import { base64Schema, fromBufferLike } from "@/util/base64";
 import { timestampSchema } from "@/util/timestamp";
 import { uuidSchema } from "@/util/uuid";
@@ -34,7 +34,11 @@ export const requestEventMetaSchema = requestEventSchema.omit({
   response_body: true,
 });
 
-export type RequestEvent = z.infer<typeof requestEventSchema>;
+export interface RequestEvent extends z.infer<typeof requestEventSchema> {
+  request_headers: KVList<string>;
+  response_headers?: KVList<string> | undefined | null;
+}
+
 export type RequestEventMeta = z.infer<typeof requestEventMetaSchema>;
 export type RequestId = RequestEvent["id"];
 export type RequestEventType = (typeof REQUEST_EVENT_TYPES)[number];
