@@ -4,7 +4,6 @@ import { randomUUID } from "@/util/uuid";
 import type { Handler } from "@/handlers/schema";
 import { HandlerForm } from "@/components/HandlerForm";
 import { useResourceCreator } from "../hooks";
-import { Layout } from "@/components/Layout";
 
 export const CreateHandlerPage = () => {
   const { trigger } = useResourceCreator("handlers");
@@ -21,19 +20,17 @@ export const CreateHandlerPage = () => {
   );
 
   return (
-    <Layout>
-      <HandlerForm
-        initialValues={{
-          id,
-          version_id: "1",
-          order: 1,
-          name: "",
-          method: "*",
-          path: "",
-          code: "resp.status = 200;\nresp.body = { status: 'ok' };",
-        }}
-        onChange={handleSaveChanges}
-      />
-    </Layout>
+    <HandlerForm
+      initialValues={{
+        id,
+        version_id: "1",
+        order: 1,
+        name: "",
+        method: "*",
+        path: "",
+        code: "resp.status = 200;\nresp.body = { status: 'ok' };",
+      }}
+      onChange={handleSaveChanges}
+    />
   );
 };

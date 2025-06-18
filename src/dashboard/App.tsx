@@ -10,6 +10,7 @@ import { HomePage } from "./pages/HomePage";
 import { ManageHandlersPage } from "./pages/ManageHandlersPage";
 import { RequestPage } from "./pages/RequestPage";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { Layout } from "@/components/Layout";
 
 export function App() {
   return (
@@ -26,14 +27,16 @@ export function App() {
         }
       >
         <BrowserRouter>
-          <Routes>
-            <Route index element={<HomePage />} />
-            <Route path="/requests/new" element={<CreateRequestPage />} />
-            <Route path="/requests/:id" element={<RequestPage />} />
-            <Route path="/handlers" element={<ManageHandlersPage />} />
-            <Route path="/handlers/new" element={<CreateHandlerPage />} />
-            <Route path="/handlers/:id" element={<EditHandlerPage />} />
-          </Routes>
+          <Layout>
+            <Routes>
+              <Route index element={<HomePage />} />
+              <Route path="/requests/new" element={<CreateRequestPage />} />
+              <Route path="/requests/:id" element={<RequestPage />} />
+              <Route path="/handlers" element={<ManageHandlersPage />} />
+              <Route path="/handlers/new" element={<CreateHandlerPage />} />
+              <Route path="/handlers/:id" element={<EditHandlerPage />} />
+            </Routes>
+          </Layout>
         </BrowserRouter>
         <Toaster position="top-center" />
       </SidebarProvider>

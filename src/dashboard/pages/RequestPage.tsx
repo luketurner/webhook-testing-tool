@@ -2,7 +2,6 @@ import { useResource } from "@/dashboard/hooks";
 import { ExpandIcon } from "lucide-react";
 import { useParams } from "react-router";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -145,7 +144,7 @@ export const RequestPage = () => {
   const { id } = useParams();
   const { data: request, isLoading } = useResource<RequestEvent>(
     "requests",
-    id,
+    id
   );
   const requestBody = atob(request?.request_body ?? "");
   const responseBody = atob(request?.response_body ?? "");
@@ -159,7 +158,7 @@ export const RequestPage = () => {
   } catch (e) {}
 
   return (
-    <Layout>
+    <>
       {isLoading ? (
         <Skeleton className="h-16 w-full" />
       ) : (
@@ -235,6 +234,6 @@ export const RequestPage = () => {
           </div>
         </div>
       )}
-    </Layout>
+    </>
   );
 };

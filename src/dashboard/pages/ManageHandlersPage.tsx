@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import { NavLink } from "react-router";
 import { useResourceDeleter, useResourceList } from "../hooks";
-import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -38,7 +37,7 @@ export const ManageHandlersPage = () => {
   const { data: handlers, isLoading } = useResourceList<Handler>("handlers");
 
   return (
-    <Layout>
+    <>
       {isLoading ? (
         <Skeleton className="h-16 w-full" />
       ) : (
@@ -50,6 +49,6 @@ export const ManageHandlersPage = () => {
           </TableBody>
         </Table>
       )}
-    </Layout>
+    </>
   );
 };
