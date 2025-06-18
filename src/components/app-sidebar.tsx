@@ -19,21 +19,17 @@ import { HandlerSidebar } from "@/components/HandlerSidebar";
 const navMain = [
   {
     title: "Requests",
-    url: "#",
     icon: Activity,
-    isActive: true,
   },
   {
     title: "Handlers",
-    url: "#",
     icon: Settings,
-    isActive: false,
   },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [activeItem, setActiveItem] = React.useState(navMain[0]);
-  const { setOpen } = useSidebar();
+  const { setOpen, open } = useSidebar();
 
   return (
     <Sidebar
@@ -80,7 +76,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       }}
                       onClick={() => {
                         setActiveItem(item);
-                        setOpen(true);
+                        setOpen(
+                          open && activeItem?.title === item.title
+                            ? false
+                            : true
+                        );
                       }}
                       isActive={activeItem?.title === item.title}
                       className="px-2.5 md:px-2"
@@ -98,7 +98,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       {/* This is the second sidebar */}
       {/* We disable collapsible and let it fill remaining space */}
-      {activeItem?.title === "Requests" ? <RequestSidebar /> : <HandlerSidebar />}
+      {activeItem?.title === "Requests" ? (
+        <RequestSidebar />
+      ) : (
+        <HandlerSidebar />
+      )}
     </Sidebar>
   );
 }
