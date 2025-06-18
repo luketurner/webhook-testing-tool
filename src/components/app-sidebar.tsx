@@ -1,4 +1,4 @@
-import { Activity, Webhook, Settings } from "lucide-react";
+import { Activity, Webhook, Settings, Cog } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -12,6 +12,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useSendDemoRequests } from "@/dashboard/hooks";
 import { Link } from "react-router";
 import { RequestSidebar } from "@/components/RequestSidebar";
 import { HandlerSidebar } from "@/components/HandlerSidebar";
@@ -30,6 +37,11 @@ const navMain = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [activeItem, setActiveItem] = React.useState(navMain[0]);
   const { setOpen, open } = useSidebar();
+  const { trigger: handleSendDemoRequests } = useSendDemoRequests();
+  
+  const handleDownloadDatabase = React.useCallback(() => {
+    window.location.href = "/api/db/export";
+  }, []);
 
   return (
     <Sidebar
@@ -90,6 +102,36 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarGroup className="mt-auto">
+            <SidebarGroupContent className="px-1.5 md:px-0">
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <SidebarMenuButton
+                        tooltip={{
+                          children: "Tools",
+                          hidden: false,
+                        }}
+                        className="px-2.5 md:px-2"
+                      >
+                        <Cog />
+                        <span>Tools</span>
+                      </SidebarMenuButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent side="right" align="start">
+                      <DropdownMenuItem onSelect={handleSendDemoRequests}>
+                        Send demo requests
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={handleDownloadDatabase}>
+                        Export database as SQLite
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
