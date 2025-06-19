@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { Circle, Plus } from "lucide-react";
 import { NavLink } from "react-router";
 
@@ -11,32 +10,13 @@ import {
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useResourceList } from "@/dashboard/hooks";
-import { useSSE } from "@/hooks/useSSE";
+import { useSSEContext } from "@/hooks/useSSE";
 import type { RequestEventMeta } from "@/request-events/schema";
 
 export function RequestSidebar() {
   const { data: requests, isLoading: requestsLoading } =
     useResourceList<RequestEventMeta>("requests");
-
-  const queryClient = useQueryClient();
-
-  // Set up SSE connection for real-time updates
-  const { connectionState } = useSSE({
-    url: `/api/events/stream`,
-    onEvent: (event) => {
-      if (
-        event.type === "request:created" ||
-        event.type === "request:updated"
-      ) {
-        // Invalidate and refetch the requests list to get the latest data
-        console.log("Received event", JSON.stringify(event));
-        queryClient.invalidateQueries({ queryKey: ["requests"] });
-      }
-    },
-    onError: (error) => {
-      console.error("SSE connection error:", error);
-    },
-  });
+  const { connectionState } = useSSEContext();
 
   return (
     <Sidebar collapsible="none" className="hidden flex-1 md:flex">

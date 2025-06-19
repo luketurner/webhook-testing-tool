@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 export interface SSEEvent {
   type: "connected" | "request:created" | "request:updated" | "ping";
@@ -16,11 +16,21 @@ export interface SSEOptions {
   maxReconnectAttempts?: number;
 }
 
+export type SSEConnectionState =
+  | "connecting"
+  | "connected"
+  | "disconnected"
+  | "error";
+
+export interface SSEState {
+  connectionState: SSEConnectionState;
+  lastEvent: SSEEvent;
+}
+
 // AIDEV-NOTE: Custom hook for consuming Server-Sent Events with authentication and reconnection
-export function useSSE(options: SSEOptions) {
-  const [connectionState, setConnectionState] = useState<
-    "connecting" | "connected" | "disconnected" | "error"
-  >("disconnected");
+export function useSSE(options: SSEOptions): SSEState {
+  const [connectionState, setConnectionState] =
+    useState<SSEConnectionState>("disconnected");
   const [lastEvent, setLastEvent] = useState<SSEEvent | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -123,7 +133,14 @@ export function useSSE(options: SSEOptions) {
   return {
     connectionState,
     lastEvent,
-    connect,
-    disconnect,
   };
+}
+
+export const SSEContext = createContext<SSEState>({
+  connectionState: "disconnected",
+  lastEvent: null,
+});
+
+export function useSSEContext() {
+  return useContext(SSEContext);
 }

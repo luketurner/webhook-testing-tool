@@ -9,32 +9,35 @@ import { HomePage } from "./pages/HomePage";
 import { RequestPage } from "./pages/RequestPage";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Layout } from "@/components/Layout";
+import { SSEProvider } from "@/components/sse-provider";
 
 const queryClient = new QueryClient();
 
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <SidebarProvider
-        style={
-          {
-            "--sidebar-width": "425px",
-          } as React.CSSProperties
-        }
-      >
-        <BrowserRouter>
-          <Layout>
-            <Routes>
-              <Route index element={<HomePage />} />
-              <Route path="/requests/new" element={<CreateRequestPage />} />
-              <Route path="/requests/:id" element={<RequestPage />} />
-              <Route path="/handlers/new" element={<CreateHandlerPage />} />
-              <Route path="/handlers/:id" element={<EditHandlerPage />} />
-            </Routes>
-          </Layout>
-        </BrowserRouter>
-        <Toaster position="top-center" />
-      </SidebarProvider>
+      <SSEProvider>
+        <SidebarProvider
+          style={
+            {
+              "--sidebar-width": "425px",
+            } as React.CSSProperties
+          }
+        >
+          <BrowserRouter>
+            <Layout>
+              <Routes>
+                <Route index element={<HomePage />} />
+                <Route path="/requests/new" element={<CreateRequestPage />} />
+                <Route path="/requests/:id" element={<RequestPage />} />
+                <Route path="/handlers/new" element={<CreateHandlerPage />} />
+                <Route path="/handlers/:id" element={<EditHandlerPage />} />
+              </Routes>
+            </Layout>
+          </BrowserRouter>
+          <Toaster position="top-center" />
+        </SidebarProvider>
+      </SSEProvider>
     </QueryClientProvider>
   );
 }
