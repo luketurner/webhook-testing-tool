@@ -6,7 +6,7 @@ export const LOCAL_WEBHOOK_URL = `http://localhost:${WEBHOOK_PORT}`;
 
 export async function sendWebhookRequest(opts: HandlerRequest) {
   const { url, method, body, headers } = requestSchema.parse(
-    opts
+    opts,
   ) as HandlerRequest;
   const absoluteUrl = new URL(url, LOCAL_WEBHOOK_URL);
   return await fetch(absoluteUrl, {

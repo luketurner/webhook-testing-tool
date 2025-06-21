@@ -144,7 +144,7 @@ export const RequestPage = () => {
   const { id } = useParams();
   const { data: request, isLoading } = useResource<RequestEvent>(
     "requests",
-    id
+    id,
   );
   const requestBody = atob(request?.request_body ?? "");
   const responseBody = atob(request?.response_body ?? "");

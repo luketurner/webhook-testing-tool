@@ -16,7 +16,7 @@ export const EditHandlerPage = () => {
     (resource: Handler) => {
       mutate(resource);
     },
-    [handler, mutate]
+    [handler, mutate],
   );
 
   return (

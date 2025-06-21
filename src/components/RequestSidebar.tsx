@@ -73,7 +73,7 @@ export function RequestSidebar() {
                         ? "text-red-600"
                         : "text-yellow-600";
                   const date = new Date(
-                    request.request_timestamp
+                    request.request_timestamp,
                   ).toLocaleString();
 
                   return (

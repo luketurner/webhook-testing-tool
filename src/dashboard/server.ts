@@ -40,7 +40,7 @@ export const startDashboardServer = () =>
 
 export type ControllerMethod = (
   req: Request,
-  server: Bun.Server
+  server: Bun.Server,
 ) => Response | Promise<Response>;
 export type Controller = Record<
   string,
@@ -48,7 +48,7 @@ export type Controller = Record<
 >;
 
 function buildControllerMethod<Request extends BunRequest>(
-  controller: ControllerMethod
+  controller: ControllerMethod,
 ) {
   return (req: Request, server: Bun.Server) => {
     const creds = basicAuth.parse(req.headers.get("authorization")!);
@@ -75,10 +75,10 @@ function buildController(controller: Controller): Controller {
           ? buildControllerMethod(v)
           : Object.entries(v).reduce(
               (m2, [k2, v2]) => ({ ...m2, [k2]: buildControllerMethod(v2) }),
-              {}
+              {},
             ),
     }),
-    {}
+    {},
   );
 }
 
@@ -92,7 +92,7 @@ function sseEndpoint(req: BunRequest, server: Bun.Server) {
       try {
         // Send initial connection message
         controller.enqueue(
-          `data: ${JSON.stringify({ type: "connected" })}\n\n`
+          `data: ${JSON.stringify({ type: "connected" })}\n\n`,
         );
 
         // Set up event listeners
@@ -102,7 +102,7 @@ function sseEndpoint(req: BunRequest, server: Bun.Server) {
               `data: ${JSON.stringify({
                 type: "request:created",
                 payload: { id: event.id, status: event.status },
-              })}\n\n`
+              })}\n\n`,
             );
           } catch (error) {
             console.error("Error sending request:created event:", error);
@@ -115,7 +115,7 @@ function sseEndpoint(req: BunRequest, server: Bun.Server) {
               `data: ${JSON.stringify({
                 type: "request:updated",
                 payload: { id: event.id, status: event.status },
-              })}\n\n`
+              })}\n\n`,
             );
           } catch (error) {
             console.error("Error sending request:updated event:", error);

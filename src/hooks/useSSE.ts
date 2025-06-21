@@ -89,7 +89,7 @@ export function useSSE(options: SSEOptions): SSEState {
         if (reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current++;
           console.log(
-            `Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxReconnectAttempts})`
+            `Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxReconnectAttempts})`,
           );
 
           reconnectTimeoutRef.current = setTimeout(() => {

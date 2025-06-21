@@ -23,7 +23,7 @@ import { HandlerErrors, isHandlerError } from "./errors";
 type NextFunction = (error?: Error) => void;
 
 export async function handleRequest(
-  requestEvent: RequestEvent
+  requestEvent: RequestEvent,
 ): Promise<[Error | null, Partial<RequestEvent>]> {
   const handlers = getAllHandlers();
   const router = Router();
@@ -36,7 +36,7 @@ export async function handleRequest(
       async (
         req: HandlerRequest,
         resp: HandlerResponse,
-        next: NextFunction
+        next: NextFunction,
       ) => {
         const currentOrder = executionOrder++;
         const executionId = randomUUID();
@@ -100,7 +100,7 @@ export async function handleRequest(
           });
           next(e);
         }
-      }
+      },
     );
   }
   const response: HandlerResponse = {
@@ -117,7 +117,7 @@ export async function handleRequest(
       (err?: Error) => {
         if (err) error = err;
         resolve([error, handlerResponseToRequestEvent(response)]);
-      }
+      },
     );
   });
 }

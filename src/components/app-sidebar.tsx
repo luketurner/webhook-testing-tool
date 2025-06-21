@@ -91,7 +91,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         setOpen(
                           open && activeItem?.title === item.title
                             ? false
-                            : true
+                            : true,
                         );
                       }}
                       isActive={activeItem?.title === item.title}

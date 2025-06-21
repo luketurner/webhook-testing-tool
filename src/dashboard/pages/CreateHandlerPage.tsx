@@ -16,7 +16,7 @@ export const CreateHandlerPage = () => {
       await mutate(resource);
       navigate(`/handlers/${id}`);
     },
-    [mutate]
+    [mutate],
   );
 
   return (

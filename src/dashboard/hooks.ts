@@ -22,7 +22,7 @@ export interface ResourceFetcherOptions {
 
 export async function resourceFetcher(
   { action, type, id }: ResourceFetcherOptions,
-  resource?: Resource
+  resource?: Resource,
 ) {
   const url =
     action === "list" || action === "create"
