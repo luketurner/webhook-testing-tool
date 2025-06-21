@@ -10,7 +10,7 @@
     "start": "NODE_ENV=production bun src/server.ts",
     "dev": "NODE_ENV=development bun --hot src/server.ts",
     "test": "NODE_ENV=test bun test",
-    "migrate:create": "bun run src/db/createMigration.ts",
+    "migrate:create": "bun run src/db/create-migration.ts",
     "build": "bun run build.ts",
     "format": "prettier --write .",
     "compile": "tsc"
