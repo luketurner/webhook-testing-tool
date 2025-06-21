@@ -3,7 +3,7 @@ import "@/server-only";
 import { dbController } from "@/db/controller";
 import { handlerController } from "@/handlers/controller";
 import { requestEventController } from "@/request-events/controller";
-import { appEvents } from "@/events/emitter";
+import { appEvents } from "@/db/events";
 import basicAuth from "basic-auth";
 import type { BunRequest } from "bun";
 import { ADMIN_PASSWORD, ADMIN_USERNAME, DEV } from "../config-server";

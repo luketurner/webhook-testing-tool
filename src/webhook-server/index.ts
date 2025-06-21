@@ -14,7 +14,7 @@ import { fromObject } from "@/util/kv-list";
 import type { HttpMethod } from "@/util/http";
 import { fromBufferLike } from "@/util/base64";
 import { createRequestEvent, updateRequestEvent } from "@/request-events/model";
-import { appEvents } from "@/events/emitter";
+import { appEvents } from "@/db/events";
 import { handleRequest } from "./handle-request";
 
 // NOTE: Express is used for the webhook server instead of Bun.serve() because we want to
