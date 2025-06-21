@@ -1,11 +1,10 @@
 import { useSendRequest } from "@/dashboard/hooks";
-import { type KVList } from "@/util/kv-list";
 import { requestSchema, type HandlerRequest } from "@/webhook-server/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { CodeEditor } from "@/components/CodeEditor";
-import { KeyValuePairEditor } from "@/components/KeyValuePairEditor";
+import { CodeEditor } from "@/components/code-editor";
+import { KeyValuePairEditor } from "@/components/key-value-pair-editor";
 import { Button } from "@/components/ui/button";
 import {
   Card,

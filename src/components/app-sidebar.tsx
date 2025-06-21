@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSendDemoRequests } from "@/dashboard/hooks";
 import { Link } from "react-router";
-import { RequestSidebar } from "@/components/RequestSidebar";
-import { HandlerSidebar } from "@/components/HandlerSidebar";
+import { RequestSidebar } from "@/components/request-sidebar";
+import { HandlerSidebar } from "@/components/handler-sidebar";
 
 const navMain = [
   {

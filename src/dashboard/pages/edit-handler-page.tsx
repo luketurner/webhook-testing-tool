@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useParams } from "react-router";
 import { useResource, useResourceUpdater } from "../hooks";
-import { HandlerForm } from "@/components/HandlerForm";
+import { HandlerForm } from "@/components/handler-form";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Handler } from "@/handlers/schema";
 

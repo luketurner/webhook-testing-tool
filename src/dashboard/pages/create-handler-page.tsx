@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { randomUUID } from "@/util/uuid";
 import type { Handler } from "@/handlers/schema";
-import { HandlerForm } from "@/components/HandlerForm";
+import { HandlerForm } from "@/components/handler-form";
 import { useResourceCreator } from "../hooks";
 
 export const CreateHandlerPage = () => {
