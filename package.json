@@ -12,7 +12,8 @@
     "test": "NODE_ENV=test bun test",
     "migrate:create": "bun run src/db/createMigration.ts",
     "build": "bun run build.ts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "compile": "tsc"
   },
   "author": "Luke Turner",
   "license": "MIT",
@@ -60,6 +61,7 @@
     "tailwind-merge": "^3.3.0",
     "tailwindcss": "^4.1.7",
     "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.8.3",
     "use-immer": "^0.11.0",
     "zod": "^3.25.31"
   },
