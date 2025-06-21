@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useResourceList } from "@/dashboard/hooks";
-import { useSSEContext } from "@/hooks/useSSE";
+import { useSSEContext } from "@/util/hooks/use-sse";
 import type { RequestEventMeta } from "@/request-events/schema";
 
 export function RequestSidebar() {

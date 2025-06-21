@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { SSEContext, useSSE } from "@/hooks/useSSE";
+import { SSEContext, useSSE } from "@/util/hooks/use-sse";
 
 export function SSEProvider({ children }) {
   const queryClient = useQueryClient();

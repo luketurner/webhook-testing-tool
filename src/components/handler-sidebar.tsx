@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useResourceList } from "@/dashboard/hooks";
 import type { Handler } from "@/handlers/schema";
 import { DraggableHandlerItem } from "./draggable-handler-item";
-import { useHandlerReorder } from "@/hooks/useHandlerReorder";
+import { useHandlerReorder } from "@/util/hooks/use-handler-reorder";
 
 export function HandlerSidebar() {
   const { data: handlers, isLoading: handlersLoading } =
