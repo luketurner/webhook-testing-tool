@@ -1,6 +1,6 @@
 import type { RequestEvent } from "@/request-events/schema";
 import { expect, test, describe, beforeEach } from "bun:test";
-import { clearHandlers, createHandler } from "./model";
+import { clearHandlers, createHandler } from "../handlers/model";
 import { randomUUID } from "@/util/uuid";
 import { now } from "@/util/timestamp";
 import { handleRequest } from "@/webhook-server/handle-request";
