@@ -1,0 +1,1 @@
+Granularly commit the changes from the files in the working tree. Create one commit per logical change (e.g. one commit for a functional update, one commit for fixing a bug, etc.)
