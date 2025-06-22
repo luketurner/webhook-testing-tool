@@ -23,7 +23,7 @@ import { handleRequest } from "./handle-request";
 const app = express();
 
 app.use(morgan("combined"));
-app.use(bodyParser.raw({ type: "*/*" }));
+app.use(bodyParser.raw({ type: (_req) => true }));
 
 app.all("*", async (req, res) => {
   const headers = { ...req.headers };
