@@ -45,7 +45,7 @@ export async function seedRequestData() {
   await sendWebhookRequest({
     method: "POST",
     url: "/post_json",
-    headers: [],
+    headers: [["content-type", "application/json"]],
     body: JSON.stringify({ foo: "bar" }),
   });
 }
