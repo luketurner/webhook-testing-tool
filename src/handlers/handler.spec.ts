@@ -4,6 +4,7 @@ import { clearHandlers, createHandler } from "./model";
 import { randomUUID } from "@/util/uuid";
 import { now } from "@/util/timestamp";
 import { handleRequest } from "@/webhook-server/handle-request";
+import { parseBase64 } from "@/util/base64";
 
 describe("handleRequest()", () => {
   let request: RequestEvent;
@@ -80,7 +81,7 @@ describe("handleRequest()", () => {
     expect(err).toBeNull();
     expect(resp).toEqual({
       response_headers: [],
-      response_body: "bar",
+      response_body: parseBase64("YmFy"), // "bar" in base64
       response_status: 202,
       response_status_message: null,
     });
@@ -94,7 +95,7 @@ describe("handleRequest()", () => {
     expect(resp).toEqual({
       response_headers: [],
       response_status: 200,
-      response_body: "bar",
+      response_body: parseBase64("YmFy"), // "bar" in base64
       response_status_message: null,
     });
   });
@@ -112,7 +113,7 @@ describe("handleRequest()", () => {
     expect(err).toBeNull();
     expect(resp).toEqual({
       response_headers: [],
-      response_body: "bar",
+      response_body: parseBase64("YmFy"), // "bar" in base64
       response_status: 202,
       response_status_message: null,
     });

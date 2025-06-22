@@ -40,7 +40,7 @@ export function getRequestEvent(id: RequestId): RequestEvent {
         )} from "${tableName}" where id = $id;`,
       )
       .get({ id }),
-  );
+  ) as RequestEvent;
 }
 
 export function getRequestEventMeta(id: RequestId): RequestEventMeta {
@@ -63,7 +63,7 @@ export function getAllRequestEvents(): RequestEvent[] {
       )} from "${tableName}" order by request_timestamp desc;`,
     )
     .all()
-    .map((v) => requestEventSchema.parse(v));
+    .map((v) => requestEventSchema.parse(v) as RequestEvent);
 }
 
 export function getAllRequestEventsMeta(): RequestEventMeta[] {
@@ -90,7 +90,7 @@ export function createRequestEvent(request: RequestEvent): RequestEvent {
         )}) returning *;`,
       )
       .get(requestEventToSql(request)),
-  );
+  ) as RequestEvent;
 }
 
 export function updateRequestEvent(
@@ -105,7 +105,7 @@ export function updateRequestEvent(
         )} where id = $id returning *;`,
       )
       .get(requestEventToSql(request) as Record<string, any>),
-  );
+  ) as RequestEvent;
 }
 
 export function deleteRequestEvent(id: RequestId) {
