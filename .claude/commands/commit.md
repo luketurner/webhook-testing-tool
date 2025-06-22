@@ -1,1 +1,1 @@
-Granularly commit the changes from the files in the working tree. Create one commit per logical change (e.g. one commit for a functional update, one commit for fixing a bug, etc.)
+Granularly commit the changes from the files in the working tree. Create one commit per logical change (e.g. one commit for a functional update, one commit for fixing a bug, etc.) ALWAYS run `bun run format` and `bun run compile` before making a commit. Commit descriptions should be terse and focus on what changed.
