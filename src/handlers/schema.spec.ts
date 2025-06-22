@@ -47,9 +47,17 @@ describe("handlers/schema", () => {
     });
 
     test("should validate all supported HTTP methods", () => {
-      const methods = ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"] as const;
+      const methods = [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "HEAD",
+        "OPTIONS",
+        "PATCH",
+      ] as const;
 
-      methods.forEach(method => {
+      methods.forEach((method) => {
         const handler = {
           ...validHandler,
           id: randomUUID(),
@@ -120,7 +128,7 @@ describe("handlers/schema", () => {
         "/resource/:id/nested/:nestedId",
       ];
 
-      pathsWithParams.forEach(path => {
+      pathsWithParams.forEach((path) => {
         const handler = {
           ...validHandler,
           id: randomUUID(),
@@ -145,7 +153,7 @@ describe("handlers/schema", () => {
         "2023-01-01",
       ];
 
-      versions.forEach(version => {
+      versions.forEach((version) => {
         const handler = {
           ...validHandler,
           id: randomUUID(),
@@ -178,7 +186,7 @@ describe("handlers/schema", () => {
           "order",
         ];
 
-        requiredFields.forEach(field => {
+        requiredFields.forEach((field) => {
           const incompleteHandler = { ...validHandler };
           delete incompleteHandler[field];
 
@@ -189,7 +197,7 @@ describe("handlers/schema", () => {
       test("should reject empty string fields", () => {
         const stringFields = ["version_id", "name", "code", "path"];
 
-        stringFields.forEach(field => {
+        stringFields.forEach((field) => {
           const invalidHandler = {
             ...validHandler,
             [field]: "",
@@ -220,7 +228,7 @@ describe("handlers/schema", () => {
       test("should reject non-integer order values", () => {
         const invalidOrders = [1.5, 2.7, "5", true, null];
 
-        invalidOrders.forEach(order => {
+        invalidOrders.forEach((order) => {
           const invalidHandler = {
             ...validHandler,
             order,
@@ -241,7 +249,7 @@ describe("handlers/schema", () => {
           { incomplete: "object" },
         ];
 
-        invalidInputs.forEach(input => {
+        invalidInputs.forEach((input) => {
           expect(() => handlerSchema.parse(input)).toThrow();
         });
       });
@@ -260,7 +268,7 @@ describe("handlers/schema", () => {
       test("should reject whitespace-only string fields", () => {
         const whitespaceFields = ["version_id", "name", "code", "path"];
 
-        whitespaceFields.forEach(field => {
+        whitespaceFields.forEach((field) => {
           const invalidHandler = {
             ...validHandler,
             [field]: "   ",
@@ -315,9 +323,18 @@ describe("handlers/schema", () => {
     });
 
     test("should validate all HTTP methods without code", () => {
-      const methods = ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH", "*"] as const;
+      const methods = [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "HEAD",
+        "OPTIONS",
+        "PATCH",
+        "*",
+      ] as const;
 
-      methods.forEach(method => {
+      methods.forEach((method) => {
         const handler = {
           ...validHandler,
           id: randomUUID(),
@@ -393,7 +410,7 @@ describe("handlers/schema", () => {
 
       const result = bulkReorderSchema.parse(reorderRequest);
       expect(result.updates).toHaveLength(5);
-      
+
       result.updates.forEach((update, index) => {
         expect(update.id).toBe(reorderRequest.updates[index].id);
         expect(update.order).toBe(reorderRequest.updates[index].order);
@@ -402,9 +419,7 @@ describe("handlers/schema", () => {
 
     test("should validate reorder with zero order value", () => {
       const reorderRequest = {
-        updates: [
-          { id: randomUUID(), order: 0 },
-        ],
+        updates: [{ id: randomUUID(), order: 0 }],
       };
 
       const result = bulkReorderSchema.parse(reorderRequest);
@@ -441,9 +456,7 @@ describe("handlers/schema", () => {
 
       test("should reject invalid UUID in updates", () => {
         const invalidRequest = {
-          updates: [
-            { id: "not-a-uuid", order: 1 },
-          ],
+          updates: [{ id: "not-a-uuid", order: 1 }],
         };
 
         expect(() => bulkReorderSchema.parse(invalidRequest)).toThrow();
@@ -451,9 +464,7 @@ describe("handlers/schema", () => {
 
       test("should reject negative order values", () => {
         const invalidRequest = {
-          updates: [
-            { id: randomUUID(), order: -1 },
-          ],
+          updates: [{ id: randomUUID(), order: -1 }],
         };
 
         expect(() => bulkReorderSchema.parse(invalidRequest)).toThrow();
@@ -462,11 +473,9 @@ describe("handlers/schema", () => {
       test("should reject non-integer order values", () => {
         const invalidOrders = [1.5, "5", true, null, undefined];
 
-        invalidOrders.forEach(order => {
+        invalidOrders.forEach((order) => {
           const invalidRequest = {
-            updates: [
-              { id: randomUUID(), order },
-            ],
+            updates: [{ id: randomUUID(), order }],
           };
 
           expect(() => bulkReorderSchema.parse(invalidRequest)).toThrow();
@@ -492,7 +501,7 @@ describe("handlers/schema", () => {
           },
         ];
 
-        invalidRequests.forEach(request => {
+        invalidRequests.forEach((request) => {
           expect(() => bulkReorderSchema.parse(request)).toThrow();
         });
       });
@@ -506,22 +515,15 @@ describe("handlers/schema", () => {
           { updates: undefined },
         ];
 
-        invalidRequests.forEach(request => {
+        invalidRequests.forEach((request) => {
           expect(() => bulkReorderSchema.parse(request)).toThrow();
         });
       });
 
       test("should reject completely invalid data types", () => {
-        const invalidInputs = [
-          null,
-          undefined,
-          "string",
-          123,
-          [],
-          true,
-        ];
+        const invalidInputs = [null, undefined, "string", 123, [], true];
 
-        invalidInputs.forEach(input => {
+        invalidInputs.forEach((input) => {
           expect(() => bulkReorderSchema.parse(input)).toThrow();
         });
       });
@@ -610,9 +612,18 @@ describe("handlers/schema", () => {
 
     test("should validate all method enum values", () => {
       // This test ensures our schema includes all expected methods
-      const validMethods = ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH", "*"];
-      
-      validMethods.forEach(method => {
+      const validMethods = [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "HEAD",
+        "OPTIONS",
+        "PATCH",
+        "*",
+      ];
+
+      validMethods.forEach((method) => {
         const handler = {
           ...validHandler,
           id: randomUUID(),

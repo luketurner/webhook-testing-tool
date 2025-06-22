@@ -65,8 +65,9 @@ describe("handlers/controller", () => {
       expect(Array.isArray(data)).toBe(true);
       expect(data.length).toBeGreaterThanOrEqual(2);
 
-      const ourHandlers = data.filter((handler: any) => 
-        handler.id === handler1.id || handler.id === handler2.id
+      const ourHandlers = data.filter(
+        (handler: any) =>
+          handler.id === handler1.id || handler.id === handler2.id,
       );
       expect(ourHandlers).toHaveLength(2);
 
@@ -128,8 +129,9 @@ describe("handlers/controller", () => {
       const response = handlerController["/api/handlers"].GET(mockReq);
 
       const data = await response.json();
-      const ourHandlers = data.filter((h: any) => 
-        h.id === handler1.id || h.id === handler2.id || h.id === handler3.id
+      const ourHandlers = data.filter(
+        (h: any) =>
+          h.id === handler1.id || h.id === handler2.id || h.id === handler3.id,
       );
 
       expect(ourHandlers).toHaveLength(3);
@@ -160,7 +162,7 @@ describe("handlers/controller", () => {
 
       // Verify handler was created
       const allHandlers = getAllHandlers();
-      const createdHandler = allHandlers.find(h => h.id === handlerData.id);
+      const createdHandler = allHandlers.find((h) => h.id === handlerData.id);
       expect(createdHandler).toBeDefined();
       expect(createdHandler).toMatchObject(handlerData);
     });
@@ -195,7 +197,9 @@ describe("handlers/controller", () => {
 
       // Verify handler was created with auto-assigned order
       const allHandlers = getAllHandlers();
-      const createdHandler = allHandlers.find(h => h.id === handlerDataWithoutOrder.id);
+      const createdHandler = allHandlers.find(
+        (h) => h.id === handlerDataWithoutOrder.id,
+      );
       expect(createdHandler).toBeDefined();
       expect(createdHandler!.order).toBe(6); // Should be max + 1
     });
@@ -217,7 +221,9 @@ describe("handlers/controller", () => {
       expect(response.status).toBe(200);
 
       const allHandlers = getAllHandlers();
-      const createdHandler = allHandlers.find(h => h.id === handlerDataWithNullOrder.id);
+      const createdHandler = allHandlers.find(
+        (h) => h.id === handlerDataWithNullOrder.id,
+      );
       expect(createdHandler).toBeDefined();
       expect(typeof createdHandler!.order).toBe("number");
       expect(createdHandler!.order).toBeGreaterThanOrEqual(1);
@@ -240,7 +246,7 @@ describe("handlers/controller", () => {
       expect(response.status).toBe(200);
 
       const allHandlers = getAllHandlers();
-      const createdHandler = allHandlers.find(h => h.id === handlerData.id);
+      const createdHandler = allHandlers.find((h) => h.id === handlerData.id);
       expect(createdHandler!.method).toBe("*");
     });
 
@@ -272,7 +278,7 @@ describe("handlers/controller", () => {
       expect(response.status).toBe(200);
 
       const allHandlers = getAllHandlers();
-      const createdHandler = allHandlers.find(h => h.id === handlerData.id);
+      const createdHandler = allHandlers.find((h) => h.id === handlerData.id);
       expect(createdHandler!.code).toBe(complexCode);
     });
   });
@@ -342,7 +348,8 @@ describe("handlers/controller", () => {
         json: async () => updates,
       } as any;
 
-      const response = await handlerController["/api/handlers/:id"].PUT(mockReq);
+      const response =
+        await handlerController["/api/handlers/:id"].PUT(mockReq);
 
       expect(response).toBeInstanceOf(Response);
       expect(response.status).toBe(200);
@@ -352,10 +359,12 @@ describe("handlers/controller", () => {
 
       // Verify handler was updated
       const allHandlers = getAllHandlers();
-      const updatedHandler = allHandlers.find(h => h.id === created.id);
+      const updatedHandler = allHandlers.find((h) => h.id === created.id);
       expect(updatedHandler).toBeDefined();
       expect(updatedHandler!.name).toBe("Updated Handler");
-      expect(updatedHandler!.code).toBe("resp.status = 201; resp.body = 'Updated';");
+      expect(updatedHandler!.code).toBe(
+        "resp.status = 201; resp.body = 'Updated';",
+      );
       expect(updatedHandler!.order).toBe(99);
     });
 
@@ -374,12 +383,13 @@ describe("handlers/controller", () => {
         json: async () => updates,
       } as any;
 
-      const response = await handlerController["/api/handlers/:id"].PUT(mockReq);
+      const response =
+        await handlerController["/api/handlers/:id"].PUT(mockReq);
 
       expect(response.status).toBe(200);
 
       const allHandlers = getAllHandlers();
-      const updatedHandler = allHandlers.find(h => h.id === created.id);
+      const updatedHandler = allHandlers.find((h) => h.id === created.id);
       expect(updatedHandler!.method).toBe("POST");
       expect(updatedHandler!.path).toBe("/updated-path");
     });
@@ -398,12 +408,13 @@ describe("handlers/controller", () => {
         json: async () => updates,
       } as any;
 
-      const response = await handlerController["/api/handlers/:id"].PUT(mockReq);
+      const response =
+        await handlerController["/api/handlers/:id"].PUT(mockReq);
 
       expect(response.status).toBe(200);
 
       const allHandlers = getAllHandlers();
-      const updatedHandler = allHandlers.find(h => h.id === created.id);
+      const updatedHandler = allHandlers.find((h) => h.id === created.id);
       expect(updatedHandler!.method).toBe("*");
     });
 
@@ -419,7 +430,7 @@ describe("handlers/controller", () => {
       } as any;
 
       await expect(
-        handlerController["/api/handlers/:id"].PUT(mockReq)
+        handlerController["/api/handlers/:id"].PUT(mockReq),
       ).rejects.toThrow();
     });
   });
@@ -433,7 +444,8 @@ describe("handlers/controller", () => {
         params: { id: created.id },
       } as any;
 
-      const response = await handlerController["/api/handlers/:id"].DELETE(mockReq);
+      const response =
+        await handlerController["/api/handlers/:id"].DELETE(mockReq);
 
       expect(response).toBeInstanceOf(Response);
       expect(response.status).toBe(200);
@@ -443,7 +455,7 @@ describe("handlers/controller", () => {
 
       // Verify handler was deleted
       const allHandlers = getAllHandlers();
-      const deletedHandler = allHandlers.find(h => h.id === created.id);
+      const deletedHandler = allHandlers.find((h) => h.id === created.id);
       expect(deletedHandler).toBeUndefined();
     });
 
@@ -453,7 +465,8 @@ describe("handlers/controller", () => {
         params: { id: nonExistentId },
       } as any;
 
-      const response = await handlerController["/api/handlers/:id"].DELETE(mockReq);
+      const response =
+        await handlerController["/api/handlers/:id"].DELETE(mockReq);
 
       expect(response).toBeInstanceOf(Response);
       expect(response.status).toBe(200);
@@ -466,7 +479,7 @@ describe("handlers/controller", () => {
   describe("POST /api/handlers/reorder", () => {
     test("should reorder multiple handlers", async () => {
       clearHandlers(); // Ensure clean state
-      
+
       const handler1 = createHandler({
         ...testHandler,
         id: randomUUID(),
@@ -506,7 +519,8 @@ describe("handlers/controller", () => {
         json: async () => reorderData,
       } as any;
 
-      const response = await handlerController["/api/handlers/reorder"].POST(mockReq);
+      const response =
+        await handlerController["/api/handlers/reorder"].POST(mockReq);
 
       expect(response).toBeInstanceOf(Response);
       expect(response.status).toBe(200);
@@ -516,9 +530,9 @@ describe("handlers/controller", () => {
 
       // Verify handlers were reordered
       const allHandlers = getAllHandlers();
-      const reorderedHandler1 = allHandlers.find(h => h.id === handler1.id);
-      const reorderedHandler2 = allHandlers.find(h => h.id === handler2.id);
-      const reorderedHandler3 = allHandlers.find(h => h.id === handler3.id);
+      const reorderedHandler1 = allHandlers.find((h) => h.id === handler1.id);
+      const reorderedHandler2 = allHandlers.find((h) => h.id === handler2.id);
+      const reorderedHandler3 = allHandlers.find((h) => h.id === handler3.id);
 
       expect(reorderedHandler1!.order).toBe(20);
       expect(reorderedHandler2!.order).toBe(30);
@@ -534,21 +548,20 @@ describe("handlers/controller", () => {
       createdHandlerIds.push(handler.id);
 
       const reorderData = {
-        updates: [
-          { id: handler.id, order: 10 },
-        ],
+        updates: [{ id: handler.id, order: 10 }],
       };
 
       const mockReq = {
         json: async () => reorderData,
       } as any;
 
-      const response = await handlerController["/api/handlers/reorder"].POST(mockReq);
+      const response =
+        await handlerController["/api/handlers/reorder"].POST(mockReq);
 
       expect(response.status).toBe(200);
 
       const allHandlers = getAllHandlers();
-      const reorderedHandler = allHandlers.find(h => h.id === handler.id);
+      const reorderedHandler = allHandlers.find((h) => h.id === handler.id);
       expect(reorderedHandler!.order).toBe(10);
     });
 
@@ -561,21 +574,20 @@ describe("handlers/controller", () => {
       createdHandlerIds.push(handler.id);
 
       const reorderData = {
-        updates: [
-          { id: handler.id, order: 0 },
-        ],
+        updates: [{ id: handler.id, order: 0 }],
       };
 
       const mockReq = {
         json: async () => reorderData,
       } as any;
 
-      const response = await handlerController["/api/handlers/reorder"].POST(mockReq);
+      const response =
+        await handlerController["/api/handlers/reorder"].POST(mockReq);
 
       expect(response.status).toBe(200);
 
       const allHandlers = getAllHandlers();
-      const reorderedHandler = allHandlers.find(h => h.id === handler.id);
+      const reorderedHandler = allHandlers.find((h) => h.id === handler.id);
       expect(reorderedHandler!.order).toBe(0);
     });
   });
@@ -589,7 +601,7 @@ describe("handlers/controller", () => {
       } as any;
 
       await expect(
-        handlerController["/api/handlers"].POST(mockReq)
+        handlerController["/api/handlers"].POST(mockReq),
       ).rejects.toThrow();
     });
 
@@ -605,7 +617,7 @@ describe("handlers/controller", () => {
       } as any;
 
       await expect(
-        handlerController["/api/handlers/:id"].PUT(mockReq)
+        handlerController["/api/handlers/:id"].PUT(mockReq),
       ).rejects.toThrow();
     });
 
@@ -617,7 +629,7 @@ describe("handlers/controller", () => {
       } as any;
 
       await expect(
-        handlerController["/api/handlers/reorder"].POST(mockReq)
+        handlerController["/api/handlers/reorder"].POST(mockReq),
       ).rejects.toThrow();
     });
 
@@ -635,7 +647,7 @@ describe("handlers/controller", () => {
       } as any;
 
       await expect(
-        handlerController["/api/handlers/:id"].PUT(mockReq)
+        handlerController["/api/handlers/:id"].PUT(mockReq),
       ).rejects.toThrow();
     });
 
@@ -643,7 +655,7 @@ describe("handlers/controller", () => {
       const mockReq = {} as any;
 
       await expect(
-        handlerController["/api/handlers/:id"].DELETE(mockReq)
+        handlerController["/api/handlers/:id"].DELETE(mockReq),
       ).rejects.toThrow();
     });
 
@@ -654,7 +666,7 @@ describe("handlers/controller", () => {
         { params: {} },
       ];
 
-      mockReqs.forEach(mockReq => {
+      mockReqs.forEach((mockReq) => {
         expect(() => {
           handlerController["/api/handlers/:id"].GET(mockReq as any);
         }).toThrow();
@@ -677,7 +689,7 @@ describe("handlers/controller", () => {
       } as any;
 
       await expect(
-        handlerController["/api/handlers"].POST(mockReq)
+        handlerController["/api/handlers"].POST(mockReq),
       ).rejects.toThrow();
     });
 
@@ -697,7 +709,7 @@ describe("handlers/controller", () => {
       } as any;
 
       await expect(
-        handlerController["/api/handlers/:id"].PUT(mockReq)
+        handlerController["/api/handlers/:id"].PUT(mockReq),
       ).rejects.toThrow();
     });
 
@@ -711,15 +723,13 @@ describe("handlers/controller", () => {
       } as any;
 
       await expect(
-        handlerController["/api/handlers/reorder"].POST(mockReq)
+        handlerController["/api/handlers/reorder"].POST(mockReq),
       ).rejects.toThrow();
     });
 
     test("should handle reorder with invalid UUIDs", async () => {
       const invalidReorderData = {
-        updates: [
-          { id: "not-a-uuid", order: 1 },
-        ],
+        updates: [{ id: "not-a-uuid", order: 1 }],
       };
 
       const mockReq = {
@@ -727,15 +737,13 @@ describe("handlers/controller", () => {
       } as any;
 
       await expect(
-        handlerController["/api/handlers/reorder"].POST(mockReq)
+        handlerController["/api/handlers/reorder"].POST(mockReq),
       ).rejects.toThrow();
     });
 
     test("should handle reorder with negative orders", async () => {
       const invalidReorderData = {
-        updates: [
-          { id: randomUUID(), order: -1 },
-        ],
+        updates: [{ id: randomUUID(), order: -1 }],
       };
 
       const mockReq = {
@@ -743,7 +751,7 @@ describe("handlers/controller", () => {
       } as any;
 
       await expect(
-        handlerController["/api/handlers/reorder"].POST(mockReq)
+        handlerController["/api/handlers/reorder"].POST(mockReq),
       ).rejects.toThrow();
     });
 
@@ -765,7 +773,7 @@ describe("handlers/controller", () => {
 
       // Should throw due to schema validation failures
       await expect(
-        handlerController["/api/handlers"].POST(mockReq)
+        handlerController["/api/handlers"].POST(mockReq),
       ).rejects.toThrow();
     });
   });

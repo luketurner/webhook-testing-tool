@@ -59,7 +59,16 @@ describe("handlers/model", () => {
     });
 
     test("should create handlers with different HTTP methods", () => {
-      const methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "*"] as const;
+      const methods = [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "HEAD",
+        "OPTIONS",
+        "*",
+      ] as const;
 
       methods.forEach((method, index) => {
         const handler = createHandler({
@@ -227,12 +236,13 @@ describe("handlers/model", () => {
       createdHandlerIds.push(handler3.id);
 
       const allHandlers = getAllHandlers();
-      const ourHandlers = allHandlers.filter(h => 
-        h.id === handler1.id || h.id === handler2.id || h.id === handler3.id
+      const ourHandlers = allHandlers.filter(
+        (h) =>
+          h.id === handler1.id || h.id === handler2.id || h.id === handler3.id,
       );
 
       expect(ourHandlers).toHaveLength(3);
-      
+
       // Should be ordered by order field (ascending)
       const ourHandlersSorted = ourHandlers.sort((a, b) => a.order - b.order);
       expect(ourHandlersSorted[0].order).toBe(1);
@@ -251,7 +261,7 @@ describe("handlers/model", () => {
       createdHandlerIds.push(created.id);
 
       const allHandlers = getAllHandlers();
-      const ourHandler = allHandlers.find(h => h.id === created.id);
+      const ourHandler = allHandlers.find((h) => h.id === created.id);
 
       expect(ourHandler).toBeDefined();
       expect(ourHandler).toHaveProperty("code");
@@ -262,7 +272,7 @@ describe("handlers/model", () => {
   describe("getAllHandlersMeta()", () => {
     test("should return metadata for all handlers without code", () => {
       clearHandlers(); // Ensure clean state
-      
+
       const handler1 = createHandler({
         ...testHandler,
         id: randomUUID(),
@@ -280,13 +290,13 @@ describe("handlers/model", () => {
       createdHandlerIds.push(handler2.id);
 
       const allMeta = getAllHandlersMeta();
-      const handler1Meta = allMeta.find(m => m.id === handler1.id);
-      const handler2Meta = allMeta.find(m => m.id === handler2.id);
+      const handler1Meta = allMeta.find((m) => m.id === handler1.id);
+      const handler2Meta = allMeta.find((m) => m.id === handler2.id);
 
       expect(handler1Meta).toBeDefined();
       expect(handler2Meta).toBeDefined();
 
-      [handler1Meta, handler2Meta].forEach(meta => {
+      [handler1Meta, handler2Meta].forEach((meta) => {
         expect(meta).not.toHaveProperty("code");
         expect(meta).toHaveProperty("id");
         expect(meta).toHaveProperty("name");
@@ -298,7 +308,7 @@ describe("handlers/model", () => {
 
     test("should return handlers ordered by order field", () => {
       clearHandlers(); // Ensure clean state
-      
+
       const handler1 = createHandler({
         ...testHandler,
         id: randomUUID(),
@@ -316,15 +326,15 @@ describe("handlers/model", () => {
       createdHandlerIds.push(handler2.id);
 
       const allMeta = getAllHandlersMeta();
-      const handler1Meta = allMeta.find(m => m.id === handler1.id);
-      const handler2Meta = allMeta.find(m => m.id === handler2.id);
+      const handler1Meta = allMeta.find((m) => m.id === handler1.id);
+      const handler2Meta = allMeta.find((m) => m.id === handler2.id);
 
       expect(handler1Meta).toBeDefined();
       expect(handler2Meta).toBeDefined();
-      
+
       // Verify ordering - handler2 (order 100) should come before handler1 (order 200)
-      const handler1Index = allMeta.findIndex(m => m.id === handler1.id);
-      const handler2Index = allMeta.findIndex(m => m.id === handler2.id);
+      const handler1Index = allMeta.findIndex((m) => m.id === handler1.id);
+      const handler2Index = allMeta.findIndex((m) => m.id === handler2.id);
       expect(handler2Index).toBeLessThan(handler1Index);
     });
   });
@@ -409,13 +419,13 @@ describe("handlers/model", () => {
     test("should remove handler from getAllHandlers result", () => {
       const created = createHandler(testHandler);
       const beforeDelete = getAllHandlers();
-      const foundBefore = beforeDelete.find(h => h.id === created.id);
+      const foundBefore = beforeDelete.find((h) => h.id === created.id);
       expect(foundBefore).toBeDefined();
 
       deleteHandler(created.id);
 
       const afterDelete = getAllHandlers();
-      const foundAfter = afterDelete.find(h => h.id === created.id);
+      const foundAfter = afterDelete.find((h) => h.id === created.id);
       expect(foundAfter).toBeUndefined();
     });
   });
@@ -423,7 +433,7 @@ describe("handlers/model", () => {
   describe("clearHandlers()", () => {
     test("should remove all handlers", () => {
       clearHandlers(); // Start with clean slate
-      
+
       // Create multiple handlers
       const handler1 = createHandler({
         ...testHandler,
@@ -463,7 +473,7 @@ describe("handlers/model", () => {
 
     test("should return max order + 1 when handlers exist", () => {
       clearHandlers();
-      
+
       const handler1 = createHandler({
         ...testHandler,
         id: randomUUID(),
@@ -484,7 +494,7 @@ describe("handlers/model", () => {
 
     test("should handle zero order values", () => {
       clearHandlers();
-      
+
       const handler = createHandler({
         ...testHandler,
         id: randomUUID(),
@@ -500,7 +510,7 @@ describe("handlers/model", () => {
   describe("reorderHandlers()", () => {
     test("should reorder multiple handlers", () => {
       clearHandlers(); // Ensure clean state
-      
+
       const handler1 = createHandler({
         ...testHandler,
         id: randomUUID(),
@@ -552,9 +562,7 @@ describe("handlers/model", () => {
       });
       createdHandlerIds.push(handler.id);
 
-      reorderHandlers([
-        { id: handler.id, order: 10 },
-      ]);
+      reorderHandlers([{ id: handler.id, order: 10 }]);
 
       const reorderedHandler = getHandler(handler.id);
       expect(reorderedHandler.order).toBe(10);
@@ -601,7 +609,7 @@ describe("handlers/model", () => {
   describe("error handling and edge cases", () => {
     test("should handle handlers with very long code", () => {
       const longCode = "resp.body = '" + "x".repeat(10000) + "';";
-      
+
       const handler = createHandler({
         ...testHandler,
         id: randomUUID(),
@@ -692,7 +700,7 @@ describe("handlers/model", () => {
 
       // Verify all were created
       expect(handlers).toHaveLength(5);
-      handlers.forEach(handler => {
+      handlers.forEach((handler) => {
         const retrieved = getHandler(handler.id);
         expect(retrieved.id).toBe(handler.id);
       });
