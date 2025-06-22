@@ -14,6 +14,7 @@ import { AuthorizationInspector } from "@/components/authorization-inspector";
 import { PayloadDisplay } from "@/components/payload-display";
 import { HandlerExecutionItem } from "@/components/handler-execution-item";
 import { headerNameDisplay } from "@/util/http";
+import { formatTimestamp, formatTimestampOrFallback } from "@/util/datetime";
 import type { RequestEvent } from "@/request-events/schema";
 import type { HandlerExecution } from "@/handler-executions/schema";
 
@@ -62,36 +63,13 @@ export const RequestPage = () => {
             <div>
               <span className="font-medium">Request Time:</span>
               <span className="ml-2">
-                {request.request_timestamp &&
-                  new Date(request.request_timestamp * 1000).toLocaleString(
-                    undefined,
-                    {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                    },
-                  )}
+                {formatTimestamp(request.request_timestamp)}
               </span>
             </div>
             <div>
               <span className="font-medium">Response Time:</span>
               <span className="ml-2">
-                {request.response_timestamp
-                  ? new Date(request.response_timestamp * 1000).toLocaleString(
-                      undefined,
-                      {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                      },
-                    )
-                  : "N/A"}
+                {formatTimestampOrFallback(request.response_timestamp)}
               </span>
             </div>
           </div>
