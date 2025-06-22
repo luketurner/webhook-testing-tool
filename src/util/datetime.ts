@@ -19,17 +19,3 @@ export function formatTimestamp(
 
   return dt.toLocaleString(DateTime.DATETIME_SHORT);
 }
-
-/**
- * Converts a Unix timestamp to a formatted locale string or returns fallback text
- * @param timestamp - JS date in milliseconds
- * @param fallback - Text to return if timestamp is invalid (default: "N/A")
- * @returns Formatted date string or fallback text
- */
-export function formatTimestampOrFallback(
-  timestamp: number | null | undefined,
-  fallback: string = "N/A",
-): string {
-  const formatted = formatTimestamp(timestamp);
-  return formatted ?? fallback;
-}

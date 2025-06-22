@@ -69,7 +69,7 @@ export const RequestPage = () => {
             <div>
               <span className="font-medium">Response Time:</span>
               <span className="ml-2">
-                {formatTimestampOrFallback(request.response_timestamp)}
+                {formatTimestamp(request.response_timestamp) ?? "N/A"}
               </span>
             </div>
           </div>
