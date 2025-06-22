@@ -11,7 +11,7 @@ export type ResourceFetcherAction =
 
 export type Resource = Record<string, any>;
 
-export type ResourceType = "requests" | "handlers";
+export type ResourceType = "requests" | "handlers" | "handler-executions";
 
 export interface ResourceFetcherOptions {
   action: ResourceFetcherAction;
@@ -24,10 +24,15 @@ export async function resourceFetcher(
   { action, type, id }: ResourceFetcherOptions,
   resource?: Resource,
 ) {
-  const url =
-    action === "list" || action === "create"
-      ? `/api/${type}`
-      : `/api/${type}/${id}`;
+  let url = "";
+  if (type === "handler-executions" && id) {
+    url = `/api/requests/${id}/handler-executions`;
+  } else {
+    url =
+      action === "list" || action === "create"
+        ? `/api/${type}`
+        : `/api/${type}/${id}`;
+  }
   let init: RequestInit | undefined = undefined;
   switch (action) {
     case "create":
@@ -139,5 +144,18 @@ export function useSendRequest() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["requests"] });
     },
+  });
+}
+
+export function useHandlerExecutions<T>(requestId: string) {
+  return useQuery<T[]>({
+    queryKey: ["handler-executions", requestId],
+    queryFn: () =>
+      resourceFetcher({
+        action: "list",
+        type: "handler-executions",
+        id: requestId,
+      }),
+    enabled: !!requestId,
   });
 }

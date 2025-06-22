@@ -3,6 +3,7 @@ import "@/server-only";
 import { dbController } from "@/db/controller";
 import { handlerController } from "@/handlers/controller";
 import { requestEventController } from "@/request-events/controller";
+import { handlerExecutionController } from "@/handler-executions/controller";
 import { appEvents } from "@/db/events";
 import basicAuth from "basic-auth";
 import type { BunRequest } from "bun";
@@ -28,6 +29,7 @@ export const startDashboardServer = () =>
       // api routes
       ...buildController(requestEventController),
       ...buildController(handlerController),
+      ...buildController(handlerExecutionController),
       ...buildController(dbController),
 
       // SSE endpoint
