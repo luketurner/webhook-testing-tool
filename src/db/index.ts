@@ -8,6 +8,8 @@ export const db = new Database(DB_FILE, { create: true, strict: true });
 
 // Enable WAL mode for better performance
 db.run("PRAGMA journal_mode = WAL");
+// Enable foreign key constraints
+db.run("PRAGMA foreign_keys = ON");
 
 export interface MigrationDefn {
   name: string;
