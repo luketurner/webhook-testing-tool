@@ -2,7 +2,7 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "allowJs": true,
-    "target": "es2020",
+    "target": "es2024",
 
     // Bundler mode
     "moduleResolution": "bundler",

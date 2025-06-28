@@ -33,7 +33,7 @@ async function loadMigrations() {
       name,
     });
   }
-  return migrations;
+  return migrations.toSorted((a, b) => a.name.localeCompare(b.name));
 }
 
 function getExistingMigrations() {

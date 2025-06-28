@@ -4,10 +4,11 @@ import { dbController } from "@/db/controller";
 import { handlerController } from "@/handlers/controller";
 import { requestEventController } from "@/request-events/controller";
 import { handlerExecutionController } from "@/handler-executions/controller";
+import { authController } from "@/auth/controller";
+import { withAuth } from "@/auth/middleware";
 import { appEvents } from "@/db/events";
-import basicAuth from "basic-auth";
 import type { BunRequest } from "bun";
-import { ADMIN_PASSWORD, ADMIN_USERNAME, DEV } from "../config-server";
+import { DEV } from "../config-server";
 import { ADMIN_PORT } from "../config-shared";
 import indexPage from "./index.html";
 
@@ -26,14 +27,17 @@ export const startDashboardServer = () =>
       "/handlers": indexPage,
       "/handlers/:id": indexPage,
 
-      // api routes
+      // auth routes (no auth required)
+      ...authController,
+
+      // protected api routes
       ...buildController(requestEventController),
       ...buildController(handlerController),
       ...buildController(handlerExecutionController),
       ...buildController(dbController),
 
       // SSE endpoint
-      "/api/events/stream": buildControllerMethod(sseEndpoint),
+      "/api/events/stream": withAuth(sseEndpoint),
 
       "/*": new Response(null, { status: 404 }),
     },
@@ -49,39 +53,26 @@ export type Controller = Record<
   ControllerMethod | Record<string, ControllerMethod>
 >;
 
-function buildControllerMethod<Request extends BunRequest>(
-  controller: ControllerMethod,
-) {
-  return (req: Request, server: Bun.Server) => {
-    const creds = basicAuth.parse(req.headers.get("authorization")!);
-    if (
-      !creds ||
-      creds.name !== ADMIN_USERNAME ||
-      creds.pass !== ADMIN_PASSWORD
-    ) {
-      return new Response(null, {
-        status: 401,
-        headers: { "WWW-Authenticate": "Basic" },
-      });
-    }
-    return controller(req, server);
-  };
+function buildControllerMethod(controller: ControllerMethod): ControllerMethod {
+  return withAuth(controller);
 }
 
 function buildController(controller: Controller): Controller {
-  return Object.entries(controller).reduce(
-    (m, [k, v]) => ({
-      ...m,
-      [k]:
-        typeof v === "function"
-          ? buildControllerMethod(v)
-          : Object.entries(v).reduce(
-              (m2, [k2, v2]) => ({ ...m2, [k2]: buildControllerMethod(v2) }),
-              {},
-            ),
-    }),
-    {},
-  );
+  const result: Controller = {};
+
+  for (const [k, v] of Object.entries(controller)) {
+    if (typeof v === "function") {
+      result[k] = buildControllerMethod(v);
+    } else {
+      const nested: Record<string, ControllerMethod> = {};
+      for (const [k2, v2] of Object.entries(v)) {
+        nested[k2] = buildControllerMethod(v2);
+      }
+      result[k] = nested;
+    }
+  }
+
+  return result;
 }
 
 function sseEndpoint(req: BunRequest, server: Bun.Server) {

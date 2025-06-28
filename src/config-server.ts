@@ -5,7 +5,7 @@ export const DEV = process.env.NODE_ENV === "development";
 export const PROD = process.env.NODE_ENV === "production";
 export const TEST = process.env.NODE_ENV === "test";
 
-export const ADMIN_USERNAME = "admin";
+export const ADMIN_USERNAME = "admin@example.com";
 
 export const DB_FILE = TEST
   ? ":memory:"
@@ -13,4 +13,4 @@ export const DB_FILE = TEST
 
 if (!process.env.WTT_ADMIN_PASSWORD && PROD)
   throw new Error("Must specify WTT_ADMIN_PASSWORD");
-export const ADMIN_PASSWORD = process.env.WTT_ADMIN_PASSWORD || "admin";
+export const ADMIN_PASSWORD = process.env.WTT_ADMIN_PASSWORD || "admin123";
