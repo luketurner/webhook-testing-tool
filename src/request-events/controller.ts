@@ -2,23 +2,24 @@ import "@/server-only";
 import { seedRequestData } from "@/util/seed";
 import { getAllRequestEventsMeta, getRequestEvent } from "./model";
 import { sendWebhookRequest } from "@/webhook-server/send-request";
+import { createApiResponse } from "@/shared/controller-utils";
 
 export const requestEventController = {
   "/api/requests": {
     GET: (req) => {
-      return Response.json(getAllRequestEventsMeta());
+      return createApiResponse.success(getAllRequestEventsMeta());
     },
   },
   "/api/requests/seed": {
     POST: async (req) => {
       await seedRequestData();
-      return Response.json({ status: "ok" });
+      return createApiResponse.ok();
     },
   },
   "/api/requests/send": {
     POST: async (req) => {
       await sendWebhookRequest(await req.json());
-      return Response.json({ status: "ok" });
+      return createApiResponse.ok();
     },
   },
   "/api/requests/:id": {
@@ -26,10 +27,10 @@ export const requestEventController = {
       const request = getRequestEvent(req.params.id);
 
       if (!request) {
-        return new Response(null, { status: 404 });
+        return createApiResponse.notFound();
       }
 
-      return Response.json(request);
+      return createApiResponse.success(request);
     },
   },
 };

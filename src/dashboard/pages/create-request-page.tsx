@@ -23,14 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { HTTP_METHODS } from "@/util/http";
+import { HttpMethodSelector } from "@/components/forms/http-method-selector";
 
 export const CreateRequestPage = () => {
   const webookRequestUrl = `https://${window.location.hostname}`;
@@ -74,23 +67,11 @@ export const CreateRequestPage = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Method</FormLabel>
-                  <Select
+                  <HttpMethodSelector
+                    value={field.value}
                     onValueChange={field.onChange}
                     defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger style={{ width: "10em" }}>
-                        <SelectValue placeholder="HTTP method" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {HTTP_METHODS.map((item) => (
-                        <SelectItem value={item} key={item}>
-                          {item}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  />
                   <FormMessage />
                 </FormItem>
               )}

@@ -19,15 +19,8 @@ import {
   FormMessage,
 } from "./ui/form";
 import { Input } from "./ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+import { HttpMethodSelector } from "./forms/http-method-selector";
 import { handlerSchema, type Handler } from "@/handlers/schema";
-import { HTTP_METHODS } from "@/util/http";
 
 export interface HandlerFormProps {
   initialValues?: Partial<Handler>;
@@ -69,20 +62,11 @@ export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Method</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger style={{ width: "10em" }}>
-                    <SelectValue placeholder="HTTP method" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {HTTP_METHODS.map((item) => (
-                    <SelectItem value={item} key={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <HttpMethodSelector
+                value={field.value}
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              />
               <FormMessage />
             </FormItem>
           )}
