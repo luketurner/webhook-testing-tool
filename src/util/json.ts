@@ -16,3 +16,20 @@ export function jsonFieldToSql<T>(obj: T, k: keyof T) {
   const json = toJSONString(obj[k]);
   return json ? { [k]: json } : null;
 }
+
+export function tryParseJSON(content: string): {
+  parsed: any | null;
+  pretty: string | null;
+  isValid: boolean;
+} {
+  try {
+    const parsed = JSON.parse(content);
+    return {
+      parsed,
+      pretty: JSON.stringify(parsed, null, 2),
+      isValid: true,
+    };
+  } catch {
+    return { parsed: null, pretty: null, isValid: false };
+  }
+}

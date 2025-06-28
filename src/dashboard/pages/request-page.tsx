@@ -13,6 +13,7 @@ import {
 import { AuthorizationInspector } from "@/components/authorization-inspector";
 import { PayloadDisplay } from "@/components/payload-display";
 import { HandlerExecutionItem } from "@/components/handler-execution-item";
+import { StatusBadge } from "@/components/status-badge";
 import { headerNameDisplay } from "@/util/http";
 import { formatTimestamp } from "@/util/datetime";
 import type { RequestEvent } from "@/request-events/schema";
@@ -45,17 +46,7 @@ export const RequestPage = () => {
             <span className="font-mono text-lg">
               {request.request_method} {request.request_url}
             </span>
-            <span
-              className={`text-xs px-2 py-1 rounded ${
-                request.status === "complete"
-                  ? "bg-green-100 text-green-800"
-                  : request.status === "error"
-                    ? "bg-red-100 text-red-800"
-                    : "bg-yellow-100 text-yellow-800"
-              }`}
-            >
-              {request.status}
-            </span>
+            <StatusBadge status={request.status} />
           </CardTitle>
         </CardHeader>
         <CardContent>

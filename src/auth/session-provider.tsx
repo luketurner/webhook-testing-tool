@@ -2,25 +2,7 @@ import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-
-interface User {
-  id: string;
-  email: string;
-  name?: string;
-}
-
-interface Session {
-  user: User;
-  sessionId: string;
-  expiresAt: string;
-}
-
-interface SessionContextValue {
-  session: Session | null;
-  isLoading: boolean;
-  error: Error | null;
-  refetch: () => void;
-}
+import type { Session, SessionContextValue } from "@/types/auth";
 
 const SessionContext = createContext<SessionContextValue | undefined>(
   undefined,
