@@ -14,7 +14,7 @@ import { AuthorizationInspector } from "@/components/authorization-inspector";
 import { PayloadDisplay } from "@/components/payload-display";
 import { HandlerExecutionItem } from "@/components/handler-execution-item";
 import { headerNameDisplay } from "@/util/http";
-import { formatTimestamp, formatTimestampOrFallback } from "@/util/datetime";
+import { formatTimestamp } from "@/util/datetime";
 import type { RequestEvent } from "@/request-events/schema";
 import type { HandlerExecution } from "@/handler-executions/schema";
 
