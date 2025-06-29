@@ -1,6 +1,7 @@
 import { HTTP_METHODS } from "@/util/http";
 import { uuidSchema } from "@/util/uuid";
 import { z } from "zod/v4";
+import type { EntityId } from "@/types/common";
 
 export const handlerSchema = z.object({
   id: uuidSchema,
@@ -29,5 +30,5 @@ export const bulkReorderSchema = z.object({
 
 export type Handler = z.infer<typeof handlerSchema>;
 export type HandlerMeta = z.infer<typeof handlerMetaSchema>;
-export type HandlerId = Handler["id"];
+export type HandlerId = EntityId<Handler>;
 export type BulkReorderRequest = z.infer<typeof bulkReorderSchema>;

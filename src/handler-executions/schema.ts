@@ -1,12 +1,10 @@
 import { timestampSchema } from "@/util/timestamp";
 import { uuidSchema } from "@/util/uuid";
 import { z } from "zod/v4";
+import type { EntityId } from "@/types/common";
+import { EXECUTION_STATUSES, type ExecutionStatus } from "@/types/status";
 
-export const HANDLER_EXECUTION_STATUSES = [
-  "running",
-  "success",
-  "error",
-] as const;
+export const HANDLER_EXECUTION_STATUSES = EXECUTION_STATUSES;
 
 export const handlerExecutionSchema = z.object({
   id: uuidSchema,
@@ -28,6 +26,5 @@ export const handlerExecutionMetaSchema = handlerExecutionSchema.omit({
 
 export type HandlerExecution = z.infer<typeof handlerExecutionSchema>;
 export type HandlerExecutionMeta = z.infer<typeof handlerExecutionMetaSchema>;
-export type HandlerExecutionId = HandlerExecution["id"];
-export type HandlerExecutionStatus =
-  (typeof HANDLER_EXECUTION_STATUSES)[number];
+export type HandlerExecutionId = EntityId<HandlerExecution>;
+export type HandlerExecutionStatus = ExecutionStatus;

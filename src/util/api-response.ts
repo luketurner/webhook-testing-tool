@@ -19,6 +19,8 @@ export const apiResponse = {
 
   ok: () => Response.json({ status: "ok" }),
 
+  deleted: () => Response.json({ status: "deleted" }),
+
   created: (data: any) =>
     new Response(JSON.stringify(data), {
       status: 201,

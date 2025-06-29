@@ -5,9 +5,11 @@ import { uuidSchema } from "@/util/uuid";
 import { z } from "zod/v4";
 import { HTTP_METHODS } from "@/util/http";
 import { fromJSONString } from "@/util/json";
+import type { EntityId } from "@/types/common";
+import { BASE_STATUSES, type BaseStatus } from "@/types/status";
 
 export const REQUEST_EVENT_TYPES = ["inbound", "outbound"] as const;
-export const REQUEST_EVENT_STATUSES = ["running", "complete", "error"] as const;
+export const REQUEST_EVENT_STATUSES = BASE_STATUSES;
 
 export const requestEventSchema = z.object({
   id: uuidSchema,
@@ -40,6 +42,6 @@ export interface RequestEvent extends z.infer<typeof requestEventSchema> {
 }
 
 export type RequestEventMeta = z.infer<typeof requestEventMetaSchema>;
-export type RequestId = RequestEvent["id"];
+export type RequestId = EntityId<RequestEvent>;
 export type RequestEventType = (typeof REQUEST_EVENT_TYPES)[number];
-export type RequestEventStatus = (typeof REQUEST_EVENT_STATUSES)[number];
+export type RequestEventStatus = BaseStatus;

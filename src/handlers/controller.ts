@@ -1,5 +1,7 @@
 import "@/server-only";
 
+import { apiResponse } from "@/util/api-response";
+import { parseRequestBody } from "@/util/request-helpers";
 import {
   createHandler,
   deleteHandler,
@@ -9,13 +11,12 @@ import {
   reorderHandlers,
   updateHandler,
 } from "./model";
-import { bulkReorderSchema } from "./schema";
-import { z } from "zod/v4";
+import { bulkReorderSchema, type BulkReorderRequest } from "./schema";
 
 export const handlerController = {
   "/api/handlers": {
     GET: (req) => {
-      return Response.json(getAllHandlers());
+      return apiResponse.success(getAllHandlers());
     },
     POST: async (req) => {
       const handlerData = await req.json();
@@ -26,28 +27,30 @@ export const handlerController = {
       }
 
       createHandler(handlerData);
-      return Response.json({ status: "ok" });
+      return apiResponse.ok();
     },
   },
   "/api/handlers/:id": {
     GET: (req) => {
-      return Response.json(getHandler(req.params.id));
+      return apiResponse.success(getHandler(req.params.id));
     },
     PUT: async (req) => {
       updateHandler(await req.json());
-      return Response.json({ status: "ok" });
+      return apiResponse.ok();
     },
     DELETE: async (req) => {
       deleteHandler(req.params.id);
-      return Response.json({ status: "deleted" });
+      return apiResponse.deleted();
     },
   },
   "/api/handlers/reorder": {
     POST: async (req) => {
-      const body = await req.json();
-      const validatedData = bulkReorderSchema.parse(body);
+      const validatedData = await parseRequestBody<BulkReorderRequest>(
+        req,
+        bulkReorderSchema,
+      );
       reorderHandlers(validatedData.updates);
-      return Response.json({ status: "ok" });
+      return apiResponse.ok();
     },
   },
 };
