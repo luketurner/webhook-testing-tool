@@ -28,6 +28,8 @@ export const CreateHandlerPage = () => {
         method: "*",
         path: "",
         code: "resp.status = 200;\nresp.body = { status: 'ok' };",
+        jku: "",
+        jwks: "",
       }}
       onChange={handleSaveChanges}
     />

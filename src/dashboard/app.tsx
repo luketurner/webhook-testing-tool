@@ -34,6 +34,10 @@ export function App() {
                   <Route path="/requests/new" element={<CreateRequestPage />} />
                   <Route path="/requests/:id" element={<RequestPage />} />
                   <Route path="/handlers/new" element={<CreateHandlerPage />} />
+                  <Route
+                    path="/handlers/create"
+                    element={<CreateHandlerPage />}
+                  />
                   <Route path="/handlers/:id" element={<EditHandlerPage />} />
                 </Routes>
               </Layout>

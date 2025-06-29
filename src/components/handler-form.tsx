@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
 import { CodeEditor } from "./code-editor";
 import { FormCard } from "./form/form-card";
-import { TextFormField } from "./form/form-fields";
+import { TextFormField, TextareaFormField } from "./form/form-fields";
 import { HttpMethodSelect } from "./form/http-method-select";
 import { Button } from "./ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "./ui/form";
@@ -47,6 +47,20 @@ export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
           name="path"
           label="Path"
           placeholder="/example/:id"
+        />
+        <TextFormField
+          control={form.control}
+          name="jku"
+          label="JKU (JSON Web Key Set URL)"
+          placeholder="https://example.com/.well-known/jwks.json"
+          type="url"
+        />
+        <TextareaFormField
+          control={form.control}
+          name="jwks"
+          label="JWKS (JSON Web Key Set)"
+          placeholder="Enter JWKS JSON content here..."
+          description="Provide the JWKS JSON content for JWT verification"
         />
         <FormField
           control={form.control}
