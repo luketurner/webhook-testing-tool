@@ -65,6 +65,14 @@ export const HandlerExecutionItem = ({
             </p>
           </div>
         )}
+        {execution.console_output && (
+          <div className="mb-4">
+            <h5 className="font-medium mb-1">Console Output</h5>
+            <pre className="text-xs bg-slate-900 text-green-400 p-3 rounded overflow-x-auto font-mono">
+              <code>{execution.console_output}</code>
+            </pre>
+          </div>
+        )}
         {localsData && (
           <div className="mb-4">
             <h5 className="font-medium mb-1">Locals</h5>
