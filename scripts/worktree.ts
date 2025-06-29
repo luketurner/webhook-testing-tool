@@ -177,15 +177,28 @@ async function cleanupWorktree(label: string) {
 
     if (hasUnmerged) {
       console.log(`Branch '${label}' has commits not merged into main.`);
-      const shouldMerge = await promptUser(
-        "Do you want to merge them into main first?",
+      const shouldCherryPick = await promptUser(
+        "Do you want to cherry-pick them into main first?",
       );
 
-      if (shouldMerge) {
-        console.log("Switching to main and merging...");
+      if (shouldCherryPick) {
+        console.log("Switching to main and cherry-picking commits...");
         await $`git checkout main`;
-        await $`git merge ${label}`;
-        console.log(`✓ Merged ${label} into main`);
+
+        // Get the list of commits to cherry-pick
+        const commitsResult = await $`git rev-list main..${label}`.quiet();
+        const commits = commitsResult.stdout
+          .toString()
+          .trim()
+          .split("\n")
+          .reverse();
+
+        for (const commit of commits) {
+          if (commit.trim()) {
+            await $`git cherry-pick ${commit}`;
+          }
+        }
+        console.log(`✓ Cherry-picked commits from ${label} into main`);
       }
     }
 
@@ -362,6 +375,19 @@ async function main() {
       console.log("✓ Claude Code session completed");
     } else {
       console.log(`Claude Code exited with code ${exitCode}`);
+    }
+
+    // Prompt for automatic cleanup
+    console.log("");
+    const shouldCleanup = await promptUser(
+      `Do you want to clean up the worktree '${label}'?`,
+    );
+
+    if (shouldCleanup) {
+      console.log("\n--- Starting automatic cleanup ---");
+      await cleanupWorktree(label);
+    } else {
+      console.log(`Worktree '${label}' preserved at ${worktreePath}`);
     }
   } catch (error) {
     // Ensure dev server is killed even if Claude fails
