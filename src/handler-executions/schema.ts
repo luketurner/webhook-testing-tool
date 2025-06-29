@@ -16,12 +16,14 @@ export const handlerExecutionSchema = z.object({
   error_message: z.string().nullish(),
   response_data: z.string().nullish(),
   locals_data: z.string().nullish(),
+  console_output: z.string().nullish(),
 });
 
 export const handlerExecutionMetaSchema = handlerExecutionSchema.omit({
   error_message: true,
   response_data: true,
   locals_data: true,
+  console_output: true,
 });
 
 export type HandlerExecution = z.infer<typeof handlerExecutionSchema>;
