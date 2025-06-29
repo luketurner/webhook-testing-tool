@@ -52,18 +52,51 @@ export async function handleRequest(
           error_message: null,
           response_data: null,
           locals_data: null,
+          console_output: null,
         };
 
         // Create the execution record with "running" status
         createHandlerExecution(handlerExecution);
 
+        const consoleOutput: string[] = [];
+
         try {
           const ctx = { requestEvent };
+
+          const captureConsole = {
+            log: (...args: unknown[]) => {
+              consoleOutput.push(
+                `[LOG] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+              );
+            },
+            debug: (...args: unknown[]) => {
+              consoleOutput.push(
+                `[DEBUG] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+              );
+            },
+            info: (...args: unknown[]) => {
+              consoleOutput.push(
+                `[INFO] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+              );
+            },
+            warn: (...args: unknown[]) => {
+              consoleOutput.push(
+                `[WARN] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+              );
+            },
+            error: (...args: unknown[]) => {
+              consoleOutput.push(
+                `[ERROR] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+              );
+            },
+          };
+
           await runInNewContext(handler.code, {
             req: deepFreeze(req),
             resp,
             locals,
             ctx: deepFreeze(ctx),
+            console: captureConsole,
             ...HandlerErrors,
           });
           // Update to success status with captured data
@@ -72,6 +105,8 @@ export async function handleRequest(
             status: "success",
             response_data: JSON.stringify(resp),
             locals_data: JSON.stringify(locals),
+            console_output:
+              consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
           });
           next();
         } catch (e) {
@@ -97,6 +132,8 @@ export async function handleRequest(
             error_message: e instanceof Error ? e.message : String(e),
             response_data: JSON.stringify(resp),
             locals_data: JSON.stringify(locals),
+            console_output:
+              consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
           });
           next(e);
         }
