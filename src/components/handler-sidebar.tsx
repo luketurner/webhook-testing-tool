@@ -12,6 +12,7 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/empty-state";
 import { useResourceList } from "@/dashboard/hooks";
 import type { Handler } from "@/handlers/schema";
 import { DraggableHandlerItem } from "./draggable-handler-item";
@@ -85,27 +86,31 @@ export function HandlerSidebar() {
         <SidebarContent>
           <SidebarGroup className="px-0">
             <SidebarGroupContent>
-              {handlersLoading
-                ? Array.from({ length: 3 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex flex-col gap-2 border-b p-4 last:border-b-0"
-                    >
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-3 w-full" />
-                      <Skeleton className="h-3 w-24" />
-                    </div>
-                  ))
-                : displayHandlers.map((handler, index) => (
-                    <div key={handler.id} className="border-b last:border-b-0">
-                      <DraggableHandlerItem
-                        handler={handler}
-                        index={index}
-                        moveHandler={moveHandler}
-                        onReorderComplete={handleReorderComplete}
-                      />
-                    </div>
-                  ))}
+              {handlersLoading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col gap-2 border-b p-4 last:border-b-0"
+                  >
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                ))
+              ) : displayHandlers.length === 0 ? (
+                <EmptyState message="No handlers yet. Create a handler to get started." />
+              ) : (
+                displayHandlers.map((handler, index) => (
+                  <div key={handler.id} className="border-b last:border-b-0">
+                    <DraggableHandlerItem
+                      handler={handler}
+                      index={index}
+                      moveHandler={moveHandler}
+                      onReorderComplete={handleReorderComplete}
+                    />
+                  </div>
+                ))
+              )}
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>

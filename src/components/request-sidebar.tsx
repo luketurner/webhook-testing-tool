@@ -9,6 +9,7 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/empty-state";
 import { useResourceList } from "@/dashboard/hooks";
 import { useSSEContext } from "@/util/hooks/use-sse";
 import type { RequestEventMeta } from "@/request-events/schema";
@@ -48,62 +49,66 @@ export function RequestSidebar() {
       <SidebarContent>
         <SidebarGroup className="px-0">
           <SidebarGroupContent>
-            {requestsLoading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex flex-col gap-2 border-b p-4 last:border-b-0"
+            {requestsLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col gap-2 border-b p-4 last:border-b-0"
+                >
+                  <div className="flex w-full items-center gap-2">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="ml-auto h-3 w-12" />
+                  </div>
+                  <Skeleton className="h-4 w-full" />
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-3 w-8" />
+                  </div>
+                </div>
+              ))
+            ) : requests && requests.length === 0 ? (
+              <EmptyState message="No requests yet. Send a request to get started." />
+            ) : (
+              requests?.map((request) => {
+                const statusColor =
+                  request.status === "complete"
+                    ? "text-green-600"
+                    : request.status === "error"
+                      ? "text-red-600"
+                      : "text-yellow-600";
+                const date = new Date(
+                  request.request_timestamp,
+                ).toLocaleString();
+
+                return (
+                  <NavLink
+                    to={`/requests/${request.id}`}
+                    key={request.id}
+                    className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
                   >
                     <div className="flex w-full items-center gap-2">
-                      <Skeleton className="h-4 w-16" />
-                      <Skeleton className="ml-auto h-3 w-12" />
-                    </div>
-                    <Skeleton className="h-4 w-full" />
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-3 w-16" />
-                      <Skeleton className="h-3 w-8" />
-                    </div>
-                  </div>
-                ))
-              : requests?.map((request) => {
-                  const statusColor =
-                    request.status === "complete"
-                      ? "text-green-600"
-                      : request.status === "error"
-                        ? "text-red-600"
-                        : "text-yellow-600";
-                  const date = new Date(
-                    request.request_timestamp,
-                  ).toLocaleString();
-
-                  return (
-                    <NavLink
-                      to={`/requests/${request.id}`}
-                      key={request.id}
-                      className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
-                    >
-                      <div className="flex w-full items-center gap-2">
-                        <span className={`font-medium ${statusColor}`}>
-                          {request.request_method}
-                        </span>
-                        <span className="ml-auto text-xs">{date}</span>
-                      </div>
-                      <span className="font-medium truncate w-full">
-                        {request.request_url}
+                      <span className={`font-medium ${statusColor}`}>
+                        {request.request_method}
                       </span>
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className={`capitalize ${statusColor}`}>
-                          {request.status}
+                      <span className="ml-auto text-xs">{date}</span>
+                    </div>
+                    <span className="font-medium truncate w-full">
+                      {request.request_url}
+                    </span>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className={`capitalize ${statusColor}`}>
+                        {request.status}
+                      </span>
+                      {request.response_status && (
+                        <span className="text-muted-foreground">
+                          • {request.response_status}
                         </span>
-                        {request.response_status && (
-                          <span className="text-muted-foreground">
-                            • {request.response_status}
-                          </span>
-                        )}
-                      </div>
-                    </NavLink>
-                  );
-                })}
+                      )}
+                    </div>
+                  </NavLink>
+                );
+              })
+            )}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
