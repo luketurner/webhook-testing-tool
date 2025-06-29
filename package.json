@@ -13,7 +13,8 @@
     "migrate:create": "bun run src/db/create-migration.ts",
     "build": "bun run build.ts",
     "format": "prettier --write .",
-    "compile": "tsc"
+    "compile": "tsc",
+    "worktree": "bun scripts/worktree.ts"
   },
   "author": "Luke Turner",
   "license": "MIT",
