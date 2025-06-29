@@ -1,5 +1,6 @@
-import { Circle, Plus } from "lucide-react";
+import { Circle, Plus, Search } from "lucide-react";
 import { NavLink } from "react-router";
+import { useState, useMemo } from "react";
 
 import {
   Sidebar,
@@ -9,6 +10,7 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/empty-state";
 import { useResourceList } from "@/dashboard/hooks";
 import { useSSEContext } from "@/util/hooks/use-sse";
@@ -18,6 +20,25 @@ export function RequestSidebar() {
   const { data: requests, isLoading: requestsLoading } =
     useResourceList<RequestEventMeta>("requests");
   const { connectionState } = useSSEContext();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredRequests = useMemo(() => {
+    if (!requests || !searchQuery.trim()) {
+      return requests;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return requests.filter((request) => {
+      const methodMatch = request.request_method.toLowerCase().includes(query);
+      const urlMatch = request.request_url.toLowerCase().includes(query);
+      const statusMatch = request.status.toLowerCase().includes(query);
+      const responseStatusMatch = request.response_status
+        ?.toString()
+        .includes(query);
+
+      return methodMatch || urlMatch || statusMatch || responseStatusMatch;
+    });
+  }, [requests, searchQuery]);
 
   return (
     <Sidebar collapsible="none" className="hidden flex-1 md:flex">
@@ -45,6 +66,15 @@ export function RequestSidebar() {
             <span className="sr-only">New Request</span>
           </NavLink>
         </div>
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search requests..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-8"
+          />
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup className="px-0">
@@ -68,8 +98,14 @@ export function RequestSidebar() {
               ))
             ) : requests && requests.length === 0 ? (
               <EmptyState message="No requests yet. Send a request to get started." />
+            ) : filteredRequests &&
+              filteredRequests.length === 0 &&
+              searchQuery.trim() ? (
+              <EmptyState
+                message={`No requests found matching "${searchQuery}"`}
+              />
             ) : (
-              requests?.map((request) => {
+              filteredRequests?.map((request) => {
                 const statusColor =
                   request.status === "complete"
                     ? "text-green-600"
