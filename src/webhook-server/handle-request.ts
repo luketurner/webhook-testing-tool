@@ -19,8 +19,49 @@ import {
   type HandlerResponse,
 } from "./schema";
 import { HandlerErrors, isHandlerError } from "./errors";
+import { parseAuthorizationHeader, isJWTAuth } from "@/util/authorization";
+import { verifyJWT, type JWTVerificationResult } from "@/util/jwt-verification";
 
 type NextFunction = (error?: Error) => void;
+
+async function performJWTVerification(
+  req: HandlerRequest,
+  handler: { jku?: string; jwks?: string },
+): Promise<JWTVerificationResult | null> {
+  // Only verify if handler has JWT configuration
+  if (!handler.jku && !handler.jwks) {
+    return null;
+  }
+
+  // Look for Authorization header
+  const authHeader = req.headers.find(
+    ([key]) => key.toLowerCase() === "authorization",
+  )?.[1];
+
+  if (!authHeader) {
+    return {
+      isValid: false,
+      error: "No Authorization header found for JWT verification",
+    };
+  }
+
+  // Parse the authorization header
+  const parsedAuth = parseAuthorizationHeader(authHeader);
+
+  // Check if it's a JWT
+  if (!isJWTAuth(parsedAuth)) {
+    return {
+      isValid: false,
+      error: "Authorization header does not contain a valid JWT",
+    };
+  }
+
+  // Verify the JWT
+  return await verifyJWT(parsedAuth, {
+    jku: handler.jku,
+    jwks: handler.jwks,
+  });
+}
 
 export async function handleRequest(
   requestEvent: RequestEvent,
@@ -61,7 +102,13 @@ export async function handleRequest(
         const consoleOutput: string[] = [];
 
         try {
-          const ctx = { requestEvent };
+          // Perform JWT verification if configured
+          const jwtVerification = await performJWTVerification(req, handler);
+
+          const ctx = {
+            requestEvent,
+            jwtVerification,
+          };
 
           const captureConsole = {
             log: (...args: unknown[]) => {
@@ -91,12 +138,33 @@ export async function handleRequest(
             },
           };
 
+          // Add JWT utility functions for handlers
+          const jwtUtils = {
+            isJWTVerified: () => jwtVerification?.isValid === true,
+            getJWTError: () => jwtVerification?.error || null,
+            getJWTAlgorithm: () => jwtVerification?.algorithm || null,
+            getJWTKeyId: () => jwtVerification?.keyId || null,
+            requireJWTVerification: () => {
+              if (!jwtVerification) {
+                throw new HandlerErrors.UnauthorizedError(
+                  "JWT verification not configured for this handler",
+                );
+              }
+              if (!jwtVerification.isValid) {
+                throw new HandlerErrors.UnauthorizedError(
+                  `JWT verification failed: ${jwtVerification.error}`,
+                );
+              }
+            },
+          };
+
           await runInNewContext(handler.code, {
             req: deepFreeze(req),
             resp,
             locals,
             ctx: deepFreeze(ctx),
             console: captureConsole,
+            jwt: jwtUtils,
             ...HandlerErrors,
           });
           // Update to success status with captured data
