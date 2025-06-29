@@ -274,7 +274,8 @@ async function main() {
     // Create the worktree (this will create a new branch if it doesn't exist)
     try {
       await $`git worktree add ${worktreePath} -b ${label}`;
-      await $`cd ${worktreePath} && mkdir local && bun install`;
+      await $`cp -r local ${worktreePath}/local`;
+      await $`cd ${worktreePath} && bun install`;
       console.log(`✓ Worktree created at ${worktreePath}`);
     } catch (error) {
       showError(`Failed to create worktree: ${error}`);
