@@ -70,7 +70,7 @@ async function main() {
   // Open Claude Code in the worktree directory
   console.log("Opening Claude Code...");
   try {
-    const proc = spawn(["claude"], {
+    const proc = spawn(["claude", "--dangerously-skip-permissions"], {
       cwd: worktreePath,
       stdio: ["inherit", "inherit", "inherit"],
     });
