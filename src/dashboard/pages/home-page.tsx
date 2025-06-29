@@ -76,7 +76,7 @@ export const HomePage = () => {
           {activeHandlers.length === 0 ? (
             <div className="space-y-4">
               <EmptyState message="No active handlers" />
-              <Link to="/handlers/create">
+              <Link to="/handlers/new">
                 <Button className="w-full">
                   <Plus className="mr-2 h-4 w-4" />
                   Create First Handler
@@ -124,7 +124,7 @@ export const HomePage = () => {
               Send Test Request
             </Button>
           </Link>
-          <Link to="/handlers/create">
+          <Link to="/handlers/new">
             <Button variant="outline" size="sm">
               Create Handler
             </Button>
