@@ -20,7 +20,7 @@ describe("handlers/model", () => {
 
   before(() => {
     clearHandlers();
-  })
+  });
 
   beforeEach(() => {
     testHandler = {

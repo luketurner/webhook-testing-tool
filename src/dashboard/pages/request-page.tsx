@@ -4,12 +4,25 @@ import { HandlerExecutionItem } from "@/components/handler-execution-item";
 import { TwoPaneLayout } from "@/components/layout/two-pane-layout";
 import { PayloadDisplay } from "@/components/payload-display";
 import { StatusBadge } from "@/components/status-badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useHandlerExecutions, useResource } from "@/dashboard/hooks";
+import {
+  useHandlerExecutions,
+  useResource,
+  useSendRequest,
+} from "@/dashboard/hooks";
 import type { HandlerExecution } from "@/handler-executions/schema";
 import type { RequestEvent } from "@/request-events/schema";
 import { formatTimestamp } from "@/util/datetime";
+import { requestEventToHandlerRequest } from "@/webhook-server/schema";
+import { MoreHorizontal, RotateCcw } from "lucide-react";
 import { useParams } from "react-router";
 
 export const RequestPage = () => {
@@ -18,9 +31,15 @@ export const RequestPage = () => {
     useResource<RequestEvent>("requests", id);
   const { data: handlerExecutions, isLoading: executionsLoading } =
     useHandlerExecutions<HandlerExecution>(id || "");
+  const sendRequest = useSendRequest();
 
   const requestBody = atob(request?.request_body ?? "");
   const responseBody = atob(request?.response_body ?? "");
+
+  const handleResendRequest = (requestEvent: RequestEvent) => {
+    const handlerRequest = requestEventToHandlerRequest(requestEvent);
+    sendRequest.mutate(handlerRequest);
+  };
 
   if (requestLoading) {
     return <Skeleton className="h-screen w-full" />;
@@ -40,6 +59,23 @@ export const RequestPage = () => {
               {request.request_method} {request.request_url}
             </span>
             <StatusBadge status={request.status} />
+            <div className="ml-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => handleResendRequest(request)}
+                  >
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Resend request
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
