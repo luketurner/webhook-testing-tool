@@ -3,3 +3,5 @@ local/
 .vscode
 NOTES.md
 .aider*
+.env.local
+*.log
