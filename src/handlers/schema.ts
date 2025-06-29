@@ -11,6 +11,8 @@ export const handlerSchema = z.object({
   path: z.string().min(1),
   method: z.enum(["*", ...HTTP_METHODS]),
   order: z.number().int().min(0),
+  jku: z.string().optional(),
+  jwks: z.string().optional(),
 });
 
 export const handlerMetaSchema = handlerSchema.omit({
