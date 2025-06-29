@@ -88,9 +88,9 @@ app.all("*", async (req, res) => {
     res.set(k, v.toString());
   }
   res.send(
-    response?.response_body === undefined
+    response?.response_body === null || response?.response_body === undefined
       ? { status: responseStatus }
-      : response.response_body,
+      : Buffer.from(response.response_body, "base64"),
   );
 });
 

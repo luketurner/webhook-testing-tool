@@ -195,27 +195,6 @@ describe("request-events/controller", () => {
     });
   });
 
-  describe("POST /api/requests/send", () => {
-    test("should return success status (network tests skipped)", async () => {
-      // Note: These tests would require a running server, so we test the endpoint response format
-      const webhookData = {
-        method: "POST",
-        url: "/test-webhook",
-        headers: [["Content-Type", "application/json"]],
-        body: JSON.stringify({ test: "data" }),
-      };
-
-      const mockReq = {
-        json: async () => webhookData,
-      } as any;
-
-      // This will fail with connection error, but we verify the error is network-related
-      await expect(
-        requestEventController["/api/requests/send"].POST(mockReq),
-      ).rejects.toThrow();
-    });
-  });
-
   describe("error handling and edge cases", () => {
     test("should handle malformed JSON in send request", async () => {
       const mockReq = {

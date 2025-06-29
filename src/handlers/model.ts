@@ -57,7 +57,7 @@ export function getAllHandlersMeta(): HandlerMeta[] {
     .query(
       `select ${keysForSelect(
         handlerMetaSchema,
-      )} from ${tableName} order by order asc;`,
+      )} from ${tableName} order by "order" asc;`,
     )
     .all()
     .map((v) => handlerMetaSchema.parse(v));

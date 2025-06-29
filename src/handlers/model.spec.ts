@@ -13,10 +13,14 @@ import {
 } from "./model";
 import type { Handler, HandlerId } from "./schema";
 import { randomUUID } from "@/util/uuid";
+import { before } from "node:test";
 
 describe("handlers/model", () => {
   let testHandler: Handler;
-  let createdHandlerIds: HandlerId[] = [];
+
+  before(() => {
+    clearHandlers();
+  })
 
   beforeEach(() => {
     testHandler = {
@@ -31,21 +35,12 @@ describe("handlers/model", () => {
   });
 
   afterEach(() => {
-    // Clean up created handlers
-    createdHandlerIds.forEach((id) => {
-      try {
-        deleteHandler(id);
-      } catch (error) {
-        // Ignore errors during cleanup
-      }
-    });
-    createdHandlerIds = [];
+    clearHandlers();
   });
 
   describe("createHandler()", () => {
     test("should create a handler successfully", () => {
       const created = createHandler(testHandler);
-      createdHandlerIds.push(created.id);
 
       expect(created).toMatchObject({
         id: testHandler.id,
@@ -78,7 +73,6 @@ describe("handlers/model", () => {
           path: `/test-${method.toLowerCase()}`,
           order: index + 1,
         });
-        createdHandlerIds.push(handler.id);
 
         expect(handler.method).toBe(method);
       });
@@ -94,7 +88,6 @@ describe("handlers/model", () => {
           path: `/test-order-${order}`,
           order: order,
         });
-        createdHandlerIds.push(handler.id);
 
         expect(handler.order).toBe(order);
       });
@@ -117,7 +110,6 @@ describe("handlers/model", () => {
         id: randomUUID(),
         code: complexCode,
       });
-      createdHandlerIds.push(handler.id);
 
       expect(handler.code).toBe(complexCode);
     });
@@ -129,7 +121,6 @@ describe("handlers/model", () => {
         method: "*",
         path: "/wildcard",
       });
-      createdHandlerIds.push(handler.id);
 
       expect(handler.method).toBe("*");
     });
@@ -149,7 +140,6 @@ describe("handlers/model", () => {
           path: path,
           order: index + 1,
         });
-        createdHandlerIds.push(handler.id);
 
         expect(handler.path).toBe(path);
       });
@@ -159,7 +149,6 @@ describe("handlers/model", () => {
   describe("getHandler()", () => {
     test("should retrieve an existing handler", () => {
       const created = createHandler(testHandler);
-      createdHandlerIds.push(created.id);
 
       const retrieved = getHandler(created.id);
 
@@ -187,7 +176,6 @@ describe("handlers/model", () => {
   describe("getHandlerMetadata()", () => {
     test("should retrieve metadata without code field", () => {
       const created = createHandler(testHandler);
-      createdHandlerIds.push(created.id);
 
       const meta = getHandlerMetadata(created.id);
 
@@ -217,7 +205,6 @@ describe("handlers/model", () => {
         order: 3,
         name: "Handler 3",
       });
-      createdHandlerIds.push(handler1.id);
 
       const handler2 = createHandler({
         ...testHandler,
@@ -225,7 +212,6 @@ describe("handlers/model", () => {
         order: 1,
         name: "Handler 1",
       });
-      createdHandlerIds.push(handler2.id);
 
       const handler3 = createHandler({
         ...testHandler,
@@ -233,7 +219,6 @@ describe("handlers/model", () => {
         order: 2,
         name: "Handler 2",
       });
-      createdHandlerIds.push(handler3.id);
 
       const allHandlers = getAllHandlers();
       const ourHandlers = allHandlers.filter(
@@ -258,7 +243,6 @@ describe("handlers/model", () => {
 
     test("should include all handler fields including code", () => {
       const created = createHandler(testHandler);
-      createdHandlerIds.push(created.id);
 
       const allHandlers = getAllHandlers();
       const ourHandler = allHandlers.find((h) => h.id === created.id);
@@ -278,7 +262,6 @@ describe("handlers/model", () => {
         id: randomUUID(),
         order: 1,
       });
-      createdHandlerIds.push(handler1.id);
 
       const handler2 = createHandler({
         ...testHandler,
@@ -287,7 +270,6 @@ describe("handlers/model", () => {
         name: "Handler 2",
         path: "/handler2", // Different path to avoid conflicts
       });
-      createdHandlerIds.push(handler2.id);
 
       const allMeta = getAllHandlersMeta();
       const handler1Meta = allMeta.find((m) => m.id === handler1.id);
@@ -315,7 +297,6 @@ describe("handlers/model", () => {
         order: 200, // Use higher unique orders
         path: "/order200",
       });
-      createdHandlerIds.push(handler1.id);
 
       const handler2 = createHandler({
         ...testHandler,
@@ -323,7 +304,6 @@ describe("handlers/model", () => {
         order: 100,
         path: "/order100",
       });
-      createdHandlerIds.push(handler2.id);
 
       const allMeta = getAllHandlersMeta();
       const handler1Meta = allMeta.find((m) => m.id === handler1.id);
@@ -342,7 +322,6 @@ describe("handlers/model", () => {
   describe("updateHandler()", () => {
     test("should update an existing handler", () => {
       const created = createHandler(testHandler);
-      createdHandlerIds.push(created.id);
 
       const updates = {
         ...created,
@@ -363,7 +342,6 @@ describe("handlers/model", () => {
 
     test("should update handler method and path", () => {
       const created = createHandler(testHandler);
-      createdHandlerIds.push(created.id);
 
       const updates = {
         ...created,
@@ -379,7 +357,6 @@ describe("handlers/model", () => {
 
     test("should update handler version", () => {
       const created = createHandler(testHandler);
-      createdHandlerIds.push(created.id);
 
       const updates = {
         ...created,
@@ -479,14 +456,12 @@ describe("handlers/model", () => {
         id: randomUUID(),
         order: 5,
       });
-      createdHandlerIds.push(handler1.id);
 
       const handler2 = createHandler({
         ...testHandler,
         id: randomUUID(),
         order: 10,
       });
-      createdHandlerIds.push(handler2.id);
 
       const nextOrder = getNextHandlerOrder();
       expect(nextOrder).toBe(11);
@@ -500,7 +475,6 @@ describe("handlers/model", () => {
         id: randomUUID(),
         order: 0,
       });
-      createdHandlerIds.push(handler.id);
 
       const nextOrder = getNextHandlerOrder();
       expect(nextOrder).toBe(1);
@@ -518,7 +492,6 @@ describe("handlers/model", () => {
         name: "Handler 1",
         path: "/handler1",
       });
-      createdHandlerIds.push(handler1.id);
 
       const handler2 = createHandler({
         ...testHandler,
@@ -527,7 +500,6 @@ describe("handlers/model", () => {
         name: "Handler 2",
         path: "/handler2",
       });
-      createdHandlerIds.push(handler2.id);
 
       const handler3 = createHandler({
         ...testHandler,
@@ -536,7 +508,6 @@ describe("handlers/model", () => {
         name: "Handler 3",
         path: "/handler3",
       });
-      createdHandlerIds.push(handler3.id);
 
       // Reorder: handler3 -> 10, handler1 -> 20, handler2 -> 30 (use non-conflicting orders)
       reorderHandlers([
@@ -560,7 +531,6 @@ describe("handlers/model", () => {
         id: randomUUID(),
         order: 5,
       });
-      createdHandlerIds.push(handler.id);
 
       reorderHandlers([{ id: handler.id, order: 10 }]);
 
@@ -578,14 +548,12 @@ describe("handlers/model", () => {
         id: randomUUID(),
         order: 1,
       });
-      createdHandlerIds.push(handler1.id);
 
       const handler2 = createHandler({
         ...testHandler,
         id: randomUUID(),
         order: 2,
       });
-      createdHandlerIds.push(handler2.id);
 
       const nonExistentId = randomUUID();
 
@@ -615,7 +583,6 @@ describe("handlers/model", () => {
         id: randomUUID(),
         code: longCode,
       });
-      createdHandlerIds.push(handler.id);
 
       const retrieved = getHandler(handler.id);
       expect(retrieved.code).toBe(longCode);
@@ -637,7 +604,6 @@ describe("handlers/model", () => {
           name: name,
           order: index + 1,
         });
-        createdHandlerIds.push(handler.id);
 
         expect(handler.name).toBe(name);
       });
@@ -661,7 +627,6 @@ describe("handlers/model", () => {
           path: path,
           order: index + 1,
         });
-        createdHandlerIds.push(handler.id);
 
         expect(handler.path).toBe(path);
       });
@@ -679,7 +644,6 @@ describe("handlers/model", () => {
       };
 
       const handler = createHandler(minimalHandler);
-      createdHandlerIds.push(handler.id);
 
       expect(handler).toMatchObject(minimalHandler);
     });
@@ -695,7 +659,6 @@ describe("handlers/model", () => {
           order: i,
         });
         handlers.push(handler);
-        createdHandlerIds.push(handler.id);
       }
 
       // Verify all were created

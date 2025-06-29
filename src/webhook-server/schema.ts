@@ -1,5 +1,5 @@
 import { kvListSchema, type KVList } from "@/util/kv-list";
-import type { RequestEvent } from "@/request-events/schema";
+import { requestEventSchema, type RequestEvent } from "@/request-events/schema";
 import { z } from "zod/v4";
 import { HTTP_METHODS } from "@/util/http";
 import { parseBase64 } from "@/util/base64";
@@ -45,6 +45,15 @@ export function handlerResponseToRequestEvent(
     response_status: parsed.status,
     response_status_message: parsed.statusMessage,
     response_headers: parsed.headers as KVList<string>,
-    response_body: parsed.body ? parseBase64(btoa(typeof parsed.body === "string" ? parsed.body : JSON.stringify(parsed.body))) : null,
+    response_body:
+      parsed.body === null || parsed.body === undefined
+        ? null
+        : parseBase64(
+            Buffer.from(
+              typeof parsed.body === "string"
+                ? parsed.body
+                : JSON.stringify(parsed.body),
+            ).toString("base64"),
+          ),
   };
 }
