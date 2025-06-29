@@ -1,33 +1,13 @@
+import { handlerSchema, type Handler } from "@/handlers/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
 import { CodeEditor } from "./code-editor";
+import { FormCard } from "./form/form-card";
+import { TextFormField } from "./form/form-fields";
+import { HttpMethodSelect } from "./form/http-method-select";
 import { Button } from "./ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "./ui/form";
-import { Input } from "./ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
-import { handlerSchema, type Handler } from "@/handlers/schema";
-import { HTTP_METHODS } from "@/util/http";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "./ui/form";
 
 export interface HandlerFormProps {
   initialValues?: Partial<Handler>;
@@ -50,55 +30,23 @@ export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 min-w-xl max-w-3xl m-4"
       >
-        <FormField
+        <TextFormField
           control={form.control}
           name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Handler name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Name"
+          placeholder="Handler name"
         />
-        <FormField
+        <HttpMethodSelect
           control={form.control}
           name="method"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Method</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger style={{ width: "10em" }}>
-                    <SelectValue placeholder="HTTP method" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {HTTP_METHODS.map((item) => (
-                    <SelectItem value={item} key={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Method"
+          includeWildcard={true}
         />
-        <FormField
+        <TextFormField
           control={form.control}
           name="path"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Path</FormLabel>
-              <FormControl>
-                <Input placeholder="/example/:id" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Path"
+          placeholder="/example/:id"
         />
         <FormField
           control={form.control}
@@ -106,18 +54,20 @@ export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Handler script</CardTitle>
-                    <CardDescription>
+                <FormCard
+                  title="Handler script"
+                  description={
+                    <>
                       Run when the handler is called. Provided <code>req</code>{" "}
                       and <code>resp</code> variables.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pl-0">
+                    </>
+                  }
+                  className="p-0 h-[fit-content]"
+                >
+                  <div className="-ml-6 mt-0">
                     <CodeEditor {...field} />
-                  </CardContent>
-                </Card>
+                  </div>
+                </FormCard>
               </FormControl>
               <FormMessage />
             </FormItem>

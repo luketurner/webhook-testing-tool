@@ -6,14 +6,9 @@ import { useForm } from "react-hook-form";
 import { CodeEditor } from "@/components/code-editor";
 import { KeyValuePairEditor } from "@/components/key-value-pair-editor";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { FormCard } from "@/components/form/form-card";
+import { HttpMethodSelect } from "@/components/form/http-method-select";
+import { TextFormField } from "@/components/form/form-fields";
 import {
   Form,
   FormControl,
@@ -22,15 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { HTTP_METHODS } from "@/util/http";
+import { CardFooter } from "@/components/ui/card";
 
 export const CreateRequestPage = () => {
   const webookRequestUrl = `https://${window.location.hostname}`;
@@ -59,54 +46,27 @@ export const CreateRequestPage = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)}>
-        <Card className="mt-4">
-          <CardHeader>
-            <CardTitle>Test Request</CardTitle>
-            <CardDescription>
+        <FormCard
+          className="mt-4"
+          title="Test Request"
+          description={
+            <>
               Sends a test request from your browser. (Or you can send your own
               test requests to: <code>{webookRequestUrl}/</code>)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
+            </>
+          }
+        >
+          <div className="space-y-4">
+            <HttpMethodSelect
               control={form.control}
               name="method"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Method</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger style={{ width: "10em" }}>
-                        <SelectValue placeholder="HTTP method" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {HTTP_METHODS.map((item) => (
-                        <SelectItem value={item} key={item}>
-                          {item}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Method"
             />
-            <FormField
+            <TextFormField
               control={form.control}
               name="url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Path</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Path"
+              placeholder="/"
             />
             <FormField
               control={form.control}
@@ -134,11 +94,11 @@ export const CreateRequestPage = () => {
                 </FormItem>
               )}
             />
-          </CardContent>
-          <CardFooter>
+          </div>
+          <CardFooter className="mt-6">
             <Button type="submit">Send</Button>
           </CardFooter>
-        </Card>
+        </FormCard>
       </form>
     </Form>
   );
