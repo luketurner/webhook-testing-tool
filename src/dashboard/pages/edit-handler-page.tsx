@@ -26,7 +26,11 @@ export const EditHandlerPage = () => {
       ) : (
         <HandlerForm
           key={id}
-          initialValues={handler}
+          initialValues={{
+            ...handler,
+            jku: handler.jku === null ? "" : handler.jku,
+            jwks: handler.jwks === null ? "" : handler.jwks,
+          }}
           onChange={handleSaveChanges}
         />
       )}
