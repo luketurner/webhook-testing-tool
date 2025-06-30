@@ -331,28 +331,28 @@ async function main() {
     // Kill existing session if it exists
     await $`tmux kill-session -t ${sessionName} 2>/dev/null || true`.quiet();
 
-    // Create new tmux session with two panes
-    // First pane will run claude, second pane will show dev server logs
+    // Create new tmux session with two windows
+    // First window will run claude, second window will show dev server logs
     await $`tmux new-session -d -s ${sessionName} -c ${worktreePath}`;
 
-    // Split horizontally (top/bottom)
-    await $`tmux split-window -v -t ${sessionName}:0 -c ${worktreePath}`;
+    // Create second window for dev server
+    await $`tmux new-window -t ${sessionName}:1 -c ${worktreePath}`;
 
-    // Run dev server in bottom pane (pane 1)
-    await $`tmux send-keys -t ${sessionName}:0.1 'bun run dev' Enter`;
+    // Run dev server in second window
+    await $`tmux send-keys -t ${sessionName}:1 'bun run dev' Enter`;
 
-    // Select top pane
-    await $`tmux select-pane -t ${sessionName}:0.0`;
+    // Select first window for claude
+    await $`tmux select-window -t ${sessionName}:0`;
 
     // Give dev server a moment to start
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    console.log(`✓ Dev server started in tmux pane`);
+    console.log(`✓ Dev server started in tmux window 2`);
     console.log(`Admin dashboard: http://localhost:${adminPort}`);
     console.log(`Webhook endpoint: http://localhost:${webhookPort}`);
 
-    // Run claude in top pane
-    await $`tmux send-keys -t ${sessionName}:0.0 'claude --dangerously-skip-permissions' Enter`;
+    // Run claude in first window
+    await $`tmux send-keys -t ${sessionName}:0 'claude --dangerously-skip-permissions' Enter`;
 
     console.log(`✓ Claude Code started in tmux session '${sessionName}'`);
     console.log("Attaching to tmux session...");
