@@ -314,67 +314,59 @@ async function main() {
     showError(`Failed to find available ports: ${error}`);
   }
 
-  // Start dev server in background
-  console.log("Starting dev server...");
-  const logPath = `${worktreePath}/dev-server.log`;
+  // Create tmux session with claude and dev server
+  console.log("Creating tmux session...");
+  const sessionName = `wtt-${label}`;
 
-  let devServerProc: any;
   try {
-    devServerProc = spawn(["bun", "run", "dev"], {
-      cwd: worktreePath,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
+    // Kill existing session if it exists
+    await $`tmux kill-session -t ${sessionName} 2>/dev/null || true`.quiet();
 
-    // Redirect output to log file
-    const logFile = Bun.file(logPath);
-    const logWriter = logFile.writer();
+    // Create new tmux session with two panes
+    // First pane will run claude, second pane will show dev server logs
+    await $`tmux new-session -d -s ${sessionName} -c ${worktreePath}`;
 
-    devServerProc.stdout.pipeTo(
-      new WritableStream({
-        write(chunk) {
-          logWriter.write(chunk);
-          logWriter.flush();
-        },
-      }),
-    );
+    // Split horizontally (top/bottom)
+    await $`tmux split-window -v -t ${sessionName}:0 -c ${worktreePath}`;
 
-    devServerProc.stderr.pipeTo(
-      new WritableStream({
-        write(chunk) {
-          logWriter.write(chunk);
-          logWriter.flush();
-        },
-      }),
-    );
+    // Run dev server in bottom pane (pane 1)
+    await $`tmux send-keys -t ${sessionName}:0.1 'bun run dev' Enter`;
 
-    console.log(`✓ Dev server started (logging to ${logPath})`);
+    // Select top pane
+    await $`tmux select-pane -t ${sessionName}:0.0`;
+
+    // Give dev server a moment to start
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    console.log(`✓ Dev server started in tmux pane`);
     console.log(`Admin dashboard: http://localhost:${adminPort}`);
     console.log(`Webhook endpoint: http://localhost:${webhookPort}`);
-  } catch (error) {
-    showError(`Failed to start dev server: ${error}`);
-  }
 
-  // Open Claude Code in the worktree directory
-  console.log("Opening Claude Code...");
-  try {
-    const proc = spawn(["claude", "--dangerously-skip-permissions"], {
-      cwd: worktreePath,
+    // Run claude in top pane
+    await $`tmux send-keys -t ${sessionName}:0.0 'claude --dangerously-skip-permissions' Enter`;
+
+    console.log(`✓ Claude Code started in tmux session '${sessionName}'`);
+    console.log("Attaching to tmux session...");
+
+    // Attach to the tmux session
+    const tmuxProc = spawn(["tmux", "attach-session", "-t", sessionName], {
       stdio: ["inherit", "inherit", "inherit"],
     });
 
-    const exitCode = await proc.exited;
+    const exitCode = await tmuxProc.exited;
 
-    // Kill dev server when Claude exits
-    if (devServerProc && !devServerProc.killed) {
-      console.log("Stopping dev server...");
-      devServerProc.kill();
-      console.log("✓ Dev server stopped");
+    // Kill the tmux session when we detach
+    try {
+      await $`tmux kill-session -t ${sessionName}`.quiet();
+      console.log("✓ Tmux session terminated");
+    } catch {
+      // Session might already be gone
     }
 
     if (exitCode === 0) {
-      console.log("✓ Claude Code session completed");
+      console.log("✓ Tmux session completed");
     } else {
-      console.log(`Claude Code exited with code ${exitCode}`);
+      console.log(`Tmux exited with code ${exitCode}`);
     }
 
     // Prompt for automatic cleanup
@@ -390,11 +382,13 @@ async function main() {
       console.log(`Worktree '${label}' preserved at ${worktreePath}`);
     }
   } catch (error) {
-    // Ensure dev server is killed even if Claude fails
-    if (devServerProc && !devServerProc.killed) {
-      devServerProc.kill();
+    // Ensure tmux session is killed even if something fails
+    try {
+      await $`tmux kill-session -t ${sessionName}`.quiet();
+    } catch {
+      // Session might not exist
     }
-    showError(`Failed to open Claude Code: ${error}`);
+    showError(`Failed to create tmux session: ${error}`);
   }
 }
 
