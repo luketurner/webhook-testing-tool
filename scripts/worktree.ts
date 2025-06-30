@@ -3,6 +3,7 @@
 import { $, spawn } from "bun";
 import { existsSync, writeFileSync } from "fs";
 import { createConnection } from "net";
+import { humanId } from "human-id";
 
 // AIDEV-NOTE: CLI script for creating git worktrees and opening Claude Code in them
 
@@ -12,13 +13,21 @@ function showUsage() {
   console.log(`Usage: ${SCRIPT_NAME} <command> [label]`);
   console.log("");
   console.log("Commands:");
-  console.log("  new <label>       Create a new worktree and open Claude Code");
+  console.log("  new [label]       Create a new worktree and open Claude Code");
+  console.log(
+    "                    If no label provided, generates one automatically",
+  );
   console.log("  cleanup [label]   Remove worktree and associated branch");
   console.log(
     "                    If no label provided, cleans up all worktrees",
   );
   console.log("");
   console.log("Examples:");
+  console.log(`  ${SCRIPT_NAME} new`);
+  console.log(
+    "  # Creates worktree with auto-generated label like 'funny-hippo-42'",
+  );
+  console.log("");
   console.log(`  ${SCRIPT_NAME} new feature-auth`);
   console.log(
     "  # Creates /workspaces/worktree-feature-auth and opens Claude Code",
@@ -232,7 +241,7 @@ async function main() {
   }
 
   const command = args[0];
-  const label = args[1];
+  let label = args[1];
 
   if (!["new", "cleanup"].includes(command)) {
     showError("Command must be either 'new' or 'cleanup'");
@@ -256,13 +265,13 @@ async function main() {
     }
   }
 
-  // For 'new' command, label is required
-  if (args.length < 2) {
-    showError("Label is required for 'new' command");
-  }
-
-  if (!label || label.trim() === "") {
-    showError("Label cannot be empty");
+  // For 'new' command, generate label if not provided
+  if (!label) {
+    label = humanId({
+      separator: "-",
+      capitalize: false,
+    });
+    console.log(`Auto-generated label: ${label}`);
   }
 
   // Validate label (basic git branch name rules)
