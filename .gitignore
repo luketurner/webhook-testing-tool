@@ -5,3 +5,4 @@ NOTES.md
 .aider*
 .env.local
 *.log
+.claude
