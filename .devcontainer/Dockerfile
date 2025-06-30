@@ -22,7 +22,8 @@ RUN apt update && apt install -y less \
   jq \
   sqlite3 \
   tree \
-  tmux
+  tmux \
+  vim
 
 # Ensure default node user has access to /usr/local/share
 RUN mkdir -p /usr/local/share/npm-global && \
@@ -67,6 +68,7 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
   -a "source /usr/share/doc/fzf/examples/key-bindings.zsh" \
   -a "source /usr/share/doc/fzf/examples/completion.zsh" \
   -a "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
+  -a "alias wt=\"bun run worktree\""
   -x
 
 # Install Claude
