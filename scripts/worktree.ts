@@ -331,35 +331,39 @@ async function main() {
     // Kill existing session if it exists
     await $`tmux kill-session -t ${sessionName} 2>/dev/null || true`.quiet();
 
-    // Create new tmux session with two windows
-    // First window will run claude, second window will show dev server logs
+    // Create new tmux session with a single window
     await $`tmux new-session -d -s ${sessionName} -c ${worktreePath}`;
 
-    // Create second window for dev server
-    await $`tmux new-window -t ${sessionName}:1 -c ${worktreePath} -n server${adminPort}`;
+    // Split window vertically (creates left and right panes)
+    await $`tmux split-window -t ${sessionName}:0 -h -c ${worktreePath}`;
 
-    // Run dev server in second window
-    await $`tmux send-keys -t ${sessionName}:1 'bun run dev' Enter`;
+    // Split the left pane horizontally (creates top-left and bottom-left panes)
+    await $`tmux split-window -t ${sessionName}:0.0 -v -c ${worktreePath}`;
 
-    console.log(`✓ Dev server started in tmux window 2`);
+    // Now we have:
+    // - Pane 0: Top left (will run claude)
+    // - Pane 1: Right (will run lazygit)
+    // - Pane 2: Bottom left (will run dev server)
+
+    // Run lazygit in right pane
+    await $`tmux send-keys -t ${sessionName}:0.1 'lazygit' Enter`;
+
+    console.log(`✓ lazygit started in right pane`);
+
+    // Run dev server in bottom left pane
+    await $`tmux send-keys -t ${sessionName}:0.2 'bun run dev' Enter`;
+
+    console.log(`✓ Dev server started in bottom left pane`);
     console.log(`Admin dashboard: http://localhost:${adminPort}`);
     console.log(`Webhook endpoint: http://localhost:${webhookPort}`);
 
-    // Create third window for lazygit
-    await $`tmux new-window -t ${sessionName}:2 -c ${worktreePath} -n editor`;
+    // Select top left pane for claude
+    await $`tmux select-pane -t ${sessionName}:0.0`;
 
-    // Run helix
-    await $`tmux send-keys -t ${sessionName}:2 'lazygit' Enter`;
+    // Run claude in top left pane
+    await $`tmux send-keys -t ${sessionName}:0.0 'claude --dangerously-skip-permissions' Enter`;
 
-    console.log(`✓ lazygit started in tmux window 3`);
-
-    // Select first window for claude
-    await $`tmux select-window -t ${sessionName}:0`;
-
-    // Run claude in first window
-    await $`tmux send-keys -t ${sessionName}:0 'claude --dangerously-skip-permissions' Enter`;
-
-    console.log(`✓ Claude Code started in tmux session '${sessionName}'`);
+    console.log(`✓ Claude Code started in top left pane`);
     console.log("Attaching to tmux session...");
 
     // Attach to the tmux session
