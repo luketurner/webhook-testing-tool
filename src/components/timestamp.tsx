@@ -7,6 +7,10 @@ interface TimestampProps {
   className?: string;
 }
 
+/**
+ * @deprecated Use DateDisplay component instead for interactive date displays
+ * AIDEV-NOTE: This component is kept for backward compatibility but new code should use DateDisplay
+ */
 export function Timestamp({
   timestamp,
   fallback = "N/A",

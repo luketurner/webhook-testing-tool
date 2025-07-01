@@ -1,4 +1,5 @@
 import { DataSection } from "@/components/data-section";
+import { DateDisplay } from "@/components/date-display";
 import { HeadersTable } from "@/components/display/headers-table";
 import { HandlerExecutionItem } from "@/components/handler-execution-item";
 import { TwoPaneLayout } from "@/components/layout/two-pane-layout";
@@ -83,13 +84,13 @@ export const RequestPage = () => {
             <div>
               <span className="font-medium">Request Time:</span>
               <span className="ml-2">
-                {formatTimestamp(request.request_timestamp)}
+                <DateDisplay timestamp={request.request_timestamp} />
               </span>
             </div>
             <div>
               <span className="font-medium">Response Time:</span>
               <span className="ml-2">
-                {formatTimestamp(request.response_timestamp) ?? "N/A"}
+                <DateDisplay timestamp={request.response_timestamp} />
               </span>
             </div>
           </div>

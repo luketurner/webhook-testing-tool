@@ -1,6 +1,7 @@
 import { Circle, Plus, Search } from "lucide-react";
 import { NavLink } from "react-router";
 import { useState, useMemo } from "react";
+import { DateDisplay } from "@/components/date-display";
 
 import {
   Sidebar,
@@ -112,10 +113,6 @@ export function RequestSidebar() {
                     : request.status === "error"
                       ? "text-red-600"
                       : "text-yellow-600";
-                const date = new Date(
-                  request.request_timestamp,
-                ).toLocaleString();
-
                 return (
                   <NavLink
                     to={`/requests/${request.id}`}
@@ -126,7 +123,12 @@ export function RequestSidebar() {
                       <span className={`font-medium ${statusColor}`}>
                         {request.request_method}
                       </span>
-                      <span className="ml-auto text-xs">{date}</span>
+                      <span className="ml-auto text-xs">
+                        <DateDisplay
+                          timestamp={request.request_timestamp}
+                          interactive={false}
+                        />
+                      </span>
                     </div>
                     <span className="font-medium truncate w-full">
                       {request.request_url}

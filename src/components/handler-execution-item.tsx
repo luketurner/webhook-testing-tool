@@ -5,6 +5,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { DateDisplay } from "@/components/date-display";
 import type { HandlerExecution } from "@/handler-executions/schema";
 
 export const HandlerExecutionItem = ({
@@ -46,14 +47,10 @@ export const HandlerExecutionItem = ({
           {execution.status}
         </span>
         <span className="text-xs text-muted-foreground ml-auto">
-          {new Date(execution.timestamp * 1000).toLocaleString(undefined, {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          })}
+          <DateDisplay
+            timestamp={execution.timestamp * 1000}
+            interactive={false}
+          />
         </span>
       </CollapsibleTrigger>
       <CollapsibleContent className="pl-6 pt-2">
