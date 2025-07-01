@@ -336,20 +336,25 @@ async function main() {
     await $`tmux new-session -d -s ${sessionName} -c ${worktreePath}`;
 
     // Create second window for dev server
-    await $`tmux new-window -t ${sessionName}:1 -c ${worktreePath} -n bun${adminPort}`;
+    await $`tmux new-window -t ${sessionName}:1 -c ${worktreePath} -n server${adminPort}`;
 
     // Run dev server in second window
     await $`tmux send-keys -t ${sessionName}:1 'bun run dev' Enter`;
 
-    // Select first window for claude
-    await $`tmux select-window -t ${sessionName}:0`;
-
-    // Give dev server a moment to start
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
     console.log(`✓ Dev server started in tmux window 2`);
     console.log(`Admin dashboard: http://localhost:${adminPort}`);
     console.log(`Webhook endpoint: http://localhost:${webhookPort}`);
+
+    // Create third window for lazygit
+    await $`tmux new-window -t ${sessionName}:2 -c ${worktreePath} -n editor`;
+
+    // Run helix
+    await $`tmux send-keys -t ${sessionName}:2 'lazygit' Enter`;
+
+    console.log(`✓ lazygit started in tmux window 3`);
+
+    // Select first window for claude
+    await $`tmux select-window -t ${sessionName}:0`;
 
     // Run claude in first window
     await $`tmux send-keys -t ${sessionName}:0 'claude --dangerously-skip-permissions' Enter`;
