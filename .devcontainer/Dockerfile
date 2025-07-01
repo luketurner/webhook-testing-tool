@@ -24,7 +24,10 @@ RUN apt update && apt install -y less \
   tree \
   tmux \
   vim \
-  asciinema
+  asciinema \
+  locales
+
+RUN sudo locale-gen en_US.UTF-8
 
 # Ensure default node user has access to /usr/local/share
 RUN mkdir -p /usr/local/share/npm-global && \
