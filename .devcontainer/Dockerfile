@@ -23,8 +23,7 @@ RUN apt update && apt install -y less \
   sqlite3 \
   tree \
   tmux \
-  vim \
-  lazygit
+  vim
 
 # Ensure default node user has access to /usr/local/share
 RUN mkdir -p /usr/local/share/npm-global && \
@@ -57,6 +56,13 @@ RUN ARCH=$(dpkg --print-architecture) && \
   wget "https://github.com/helix-editor/helix/releases/download/25.01.1/helix_25.1.1-1_${ARCH}.deb" && \
   sudo dpkg -i "helix_25.1.1-1_${ARCH}.deb" && \
   rm "helix_25.1.1-1_${ARCH}.deb"
+
+# install lazygit (for worktree workflows)
+RUN LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | \grep -Po '"tag_name": *"v\K[^"]*') && \
+  curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" && \
+  tar xf lazygit.tar.gz lazygit && \
+  sudo install lazygit -D -t /usr/local/bin/ && \
+  rm lazygit.tar.gz
 
 # Set up non-root user
 USER node
