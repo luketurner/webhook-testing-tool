@@ -23,7 +23,8 @@ RUN apt update && apt install -y less \
   sqlite3 \
   tree \
   tmux \
-  vim
+  vim \
+  asciinema
 
 # Ensure default node user has access to /usr/local/share
 RUN mkdir -p /usr/local/share/npm-global && \
