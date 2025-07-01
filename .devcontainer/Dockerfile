@@ -23,7 +23,8 @@ RUN apt update && apt install -y less \
   sqlite3 \
   tree \
   tmux \
-  vim
+  vim \
+  lazygit
 
 # Ensure default node user has access to /usr/local/share
 RUN mkdir -p /usr/local/share/npm-global && \
@@ -51,6 +52,12 @@ RUN ARCH=$(dpkg --print-architecture) && \
   sudo dpkg -i "git-delta_0.18.2_${ARCH}.deb" && \
   rm "git-delta_0.18.2_${ARCH}.deb"
 
+# install helix (for worktree workflows)
+RUN ARCH=$(dpkg --print-architecture) && \
+  wget "https://github.com/helix-editor/helix/releases/download/25.01.1/helix_25.1.1-1_${ARCH}.deb" && \
+  sudo dpkg -i "helix_25.1.1-1_${ARCH}.deb" && \
+  rm "helix_25.1.1-1_${ARCH}.deb"
+
 # Set up non-root user
 USER node
 
@@ -71,11 +78,17 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
   -a "alias wt=\"bun run worktree\""
   -x
 
+# tmux settings
+RUN echo "setw -g mouse on\n" > /home/node/.tmux.conf
+
+# install language server for helix
+RUN npm install -g typescript typescript-language-server
+
 # Install Claude
 RUN npm install -g @anthropic-ai/claude-code
 
 # Install Bun
-RUN npm install -g bun 
+RUN npm install -g bun
 
 # Copy and set up firewall script
 COPY init-firewall.sh /usr/local/bin/
