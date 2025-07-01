@@ -346,12 +346,12 @@ async function main() {
     // - Pane 2: Bottom left (will run dev server)
 
     // Run lazygit in right pane
-    await $`tmux send-keys -t ${sessionName}:0.1 'lazygit' Enter`;
+    await $`tmux send-keys -t ${sessionName}:0.2 'lazygit' Enter`;
 
     console.log(`✓ lazygit started in right pane`);
 
     // Run dev server in bottom left pane
-    await $`tmux send-keys -t ${sessionName}:0.2 'bun run dev' Enter`;
+    await $`tmux send-keys -t ${sessionName}:0.1 'bun run dev' Enter`;
 
     console.log(`✓ Dev server started in bottom left pane`);
     console.log(`Admin dashboard: http://localhost:${adminPort}`);
