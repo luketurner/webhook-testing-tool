@@ -1,3 +1,4 @@
+import { CopyRequestModal } from "@/components/copy-request-modal";
 import { DataSection } from "@/components/data-section";
 import { DateDisplay } from "@/components/date-display";
 import { HeadersTable } from "@/components/display/headers-table";
@@ -23,7 +24,8 @@ import type { HandlerExecution } from "@/handler-executions/schema";
 import type { RequestEvent } from "@/request-events/schema";
 import { formatTimestamp } from "@/util/datetime";
 import { requestEventToHandlerRequest } from "@/webhook-server/schema";
-import { MoreHorizontal, RotateCcw } from "lucide-react";
+import { Copy, MoreHorizontal, RotateCcw } from "lucide-react";
+import { useState } from "react";
 import { useParams } from "react-router";
 
 export const RequestPage = () => {
@@ -33,6 +35,7 @@ export const RequestPage = () => {
   const { data: handlerExecutions, isLoading: executionsLoading } =
     useHandlerExecutions<HandlerExecution>(id || "");
   const sendRequest = useSendRequest();
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
 
   const requestBody = atob(request?.request_body ?? "");
   const responseBody = atob(request?.response_body ?? "");
@@ -73,6 +76,10 @@ export const RequestPage = () => {
                   >
                     <RotateCcw className="mr-2 h-4 w-4" />
                     Resend request
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setCopyModalOpen(true)}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy as...
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -156,6 +163,15 @@ export const RequestPage = () => {
           ),
         }}
       />
+
+      {/* Copy Request Modal */}
+      {request && (
+        <CopyRequestModal
+          request={request}
+          open={copyModalOpen}
+          onOpenChange={setCopyModalOpen}
+        />
+      )}
     </div>
   );
 };
