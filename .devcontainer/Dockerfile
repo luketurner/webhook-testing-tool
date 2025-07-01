@@ -27,6 +27,10 @@ RUN apt update && apt install -y less \
   asciinema \
   locales
 
+# Fix weird locale error? From https://stackoverflow.com/a/55077451
+RUN echo "LC_ALL=en_US.UTF-8" >> /etc/environment
+RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+RUN echo "LANG=en_US.UTF-8" > /etc/locale.conf
 RUN sudo locale-gen en_US.UTF-8
 
 # Ensure default node user has access to /usr/local/share
