@@ -1,4 +1,5 @@
 import { useResourceList } from "@/dashboard/hooks";
+import { useWebhookUrl } from "@/util/hooks/use-webhook-url";
 import { DataSection } from "@/components/data-section";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import type { Handler } from "@/handlers/schema";
 export const HomePage = () => {
   const { data: requests } = useResourceList<RequestEventMeta>("requests");
   const { data: handlers } = useResourceList<Handler>("handlers");
+  const { baseUrl } = useWebhookUrl();
 
   const recentRequests = requests?.slice(0, 5) || [];
   const activeHandlers =
@@ -114,9 +116,7 @@ export const HomePage = () => {
         <h2 className="text-lg font-semibold mb-2">Quick Start</h2>
         <p className="text-sm text-muted-foreground mb-4">
           Send test requests to:{" "}
-          <code className="px-2 py-1 bg-background rounded">
-            https://{window.location.hostname}/
-          </code>
+          <code className="px-2 py-1 bg-background rounded">{baseUrl}/</code>
         </p>
         <div className="flex gap-2">
           <Link to="/requests/new">
