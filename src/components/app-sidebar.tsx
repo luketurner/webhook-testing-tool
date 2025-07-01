@@ -22,6 +22,7 @@ import { useSendDemoRequests } from "@/dashboard/hooks";
 import { Link } from "react-router";
 import { RequestSidebar } from "@/components/request-sidebar";
 import { HandlerSidebar } from "@/components/handler-sidebar";
+import { JWTInspector } from "@/components/jwt-inspector";
 
 const navMain = [
   {
@@ -38,6 +39,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [activeItem, setActiveItem] = React.useState(navMain[0]);
   const { setOpen, open } = useSidebar();
   const { mutate: handleSendDemoRequests } = useSendDemoRequests();
+  const [showJWTInspector, setShowJWTInspector] = React.useState(false);
 
   const handleDownloadDatabase = React.useCallback(() => {
     window.location.href = "/api/db/export";
@@ -131,6 +133,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       <DropdownMenuItem onSelect={handleDownloadDatabase}>
                         Export database as SQLite
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={() => setShowJWTInspector(true)}
+                      >
+                        JWT Inspector
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </SidebarMenuItem>
@@ -147,6 +154,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       ) : (
         <HandlerSidebar />
       )}
+
+      <JWTInspector
+        open={showJWTInspector}
+        onOpenChange={setShowJWTInspector}
+      />
     </Sidebar>
   );
 }
