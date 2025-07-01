@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import { useState } from "react";
 import { Calendar, Clock, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -6,6 +7,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import type { Timestamp } from "@/util/timestamp";
 
@@ -32,6 +40,8 @@ export function DateDisplay({
   className,
   interactive = true,
 }: DateDisplayProps) {
+  const [selectedZone, setSelectedZone] = useState<string>("local");
+
   if (!timestamp) {
     return <span className={className}>{fallback}</span>;
   }
@@ -42,10 +52,11 @@ export function DateDisplay({
   }
 
   const localZone = DateTime.local().zoneName;
-  const localFormatted = dt.toLocaleString(DateTime.DATETIME_SHORT);
+  const displayDt = selectedZone === "local" ? dt : dt.setZone(selectedZone);
+  const displayFormatted = displayDt.toLocaleString(DateTime.DATETIME_SHORT);
 
   if (!interactive) {
-    return <span className={className}>{localFormatted}</span>;
+    return <span className={className}>{displayFormatted}</span>;
   }
 
   return (
@@ -55,11 +66,33 @@ export function DateDisplay({
           variant="link"
           className={`h-auto p-0 font-normal hover:underline ${className}`}
         >
-          {localFormatted}
+          {displayFormatted}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-96">
         <div className="space-y-4">
+          <div>
+            <h4 className="font-medium mb-2 flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              Timezone Selection
+            </h4>
+            <Select value={selectedZone} onValueChange={setSelectedZone}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select timezone" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="local">Local ({localZone})</SelectItem>
+                {COMMON_TIMEZONES.map(({ label, zone }) => (
+                  <SelectItem key={zone} value={zone}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Separator />
+
           <div>
             <h4 className="font-medium mb-2 flex items-center gap-2">
               <Calendar className="h-4 w-4" />
@@ -67,12 +100,22 @@ export function DateDisplay({
             </h4>
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Local Time:</span>
-                <span className="font-mono">{localFormatted}</span>
+                <span className="text-muted-foreground">Selected Time:</span>
+                <span className="font-mono">{displayFormatted}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Your Timezone:</span>
-                <span className="font-mono">{localZone}</span>
+                <span className="text-muted-foreground">
+                  Selected Timezone:
+                </span>
+                <span className="font-mono">
+                  {selectedZone === "local" ? localZone : selectedZone}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Local Time:</span>
+                <span className="font-mono">
+                  {dt.toLocaleString(DateTime.DATETIME_SHORT)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">ISO Format:</span>
