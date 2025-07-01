@@ -87,7 +87,7 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
   -x
 
 # tmux settings
-RUN echo "setw -g mouse on\n" > /home/node/.tmux.conf
+RUN echo "setw -g mouse on\nbind q killw" > /home/node/.tmux.conf
 
 # install language server for helix
 RUN npm install -g typescript typescript-language-server
