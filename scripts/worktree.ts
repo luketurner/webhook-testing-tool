@@ -336,7 +336,7 @@ async function main() {
     await $`tmux new-session -d -s ${sessionName} -c ${worktreePath}`;
 
     // Create second window for dev server
-    await $`tmux new-window -t ${sessionName}:1 -c ${worktreePath}`;
+    await $`tmux new-window -t ${sessionName}:1 -c ${worktreePath} -n bun${adminPort}`;
 
     // Run dev server in second window
     await $`tmux send-keys -t ${sessionName}:1 'bun run dev' Enter`;
