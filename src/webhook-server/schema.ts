@@ -8,6 +8,7 @@ export const requestSchema = z.object({
   method: z.enum(HTTP_METHODS),
   url: z.string().min(1),
   headers: kvListSchema(z.string()),
+  query: kvListSchema(z.string()),
   body: z.any(), // TODO
 });
 
@@ -20,6 +21,7 @@ export const responseSchema = z.object({
 
 export interface HandlerRequest extends z.infer<typeof requestSchema> {
   headers: KVList<string>;
+  query: KVList<string>;
 }
 
 export interface HandlerResponse extends z.infer<typeof responseSchema> {
@@ -33,6 +35,7 @@ export function requestEventToHandlerRequest(
     method: event.request_method,
     url: event.request_url,
     headers: event.request_headers,
+    query: event.request_query_params,
     body: event.request_body, // TODO -- try base64 decode
   }) as HandlerRequest;
 }

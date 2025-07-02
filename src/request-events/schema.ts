@@ -18,6 +18,7 @@ export const requestEventSchema = z.object({
   request_method: z.enum(HTTP_METHODS),
   request_url: z.string().min(1),
   request_headers: z.preprocess(fromJSONString, kvListSchema(z.string())),
+  request_query_params: z.preprocess(fromJSONString, kvListSchema(z.string())),
   request_body: z.preprocess(fromBufferLike, base64Schema).nullish(),
   request_timestamp: timestampSchema,
   response_status: z.number().min(100).max(600).nullish(),
@@ -31,6 +32,7 @@ export const requestEventSchema = z.object({
 
 export const requestEventMetaSchema = requestEventSchema.omit({
   request_headers: true,
+  request_query_params: true,
   request_body: true,
   response_headers: true,
   response_body: true,
@@ -38,6 +40,7 @@ export const requestEventMetaSchema = requestEventSchema.omit({
 
 export interface RequestEvent extends z.infer<typeof requestEventSchema> {
   request_headers: KVList<string>;
+  request_query_params: KVList<string>;
   response_headers?: KVList<string> | undefined | null;
 }
 
