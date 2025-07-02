@@ -25,6 +25,7 @@ describe("request-events/model", () => {
       request_method: "GET",
       request_url: "/test",
       request_headers: [["Content-Type", "application/json"]],
+      request_query_params: [],
       request_body: parseBase64("dGVzdCBib2R5"), // "test body" in base64
       request_timestamp: now(),
       response_status: 200,
@@ -74,6 +75,7 @@ describe("request-events/model", () => {
         request_method: "GET",
         request_url: "/minimal",
         request_headers: [],
+        request_query_params: [],
         request_body: null,
         request_timestamp: now(),
         response_status: null,

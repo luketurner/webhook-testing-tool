@@ -403,6 +403,7 @@ describe("request-events/schema", () => {
         request_method: "GET",
         request_url: "/test",
         request_headers: [],
+        request_query_params: [],
         request_body: null,
         request_timestamp: now(),
         response_status: null,

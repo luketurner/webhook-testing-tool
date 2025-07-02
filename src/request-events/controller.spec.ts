@@ -22,6 +22,7 @@ describe("request-events/controller", () => {
       request_method: "GET",
       request_url: "/controller-test",
       request_headers: [["Content-Type", "application/json"]],
+      request_query_params: [],
       request_body: parseBase64("dGVzdCBib2R5"), // "test body" in base64
       request_timestamp: now(),
       response_status: 200,
