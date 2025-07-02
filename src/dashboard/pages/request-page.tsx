@@ -3,6 +3,7 @@ import { CopyResponseModal } from "@/components/copy-response-modal";
 import { DataSection } from "@/components/data-section";
 import { DateDisplay } from "@/components/date-display";
 import { HeadersTable } from "@/components/display/headers-table";
+import { QueryParamsTable } from "@/components/display/query-params-table";
 import { HandlerExecutionItem } from "@/components/handler-execution-item";
 import { TwoPaneLayout } from "@/components/layout/two-pane-layout";
 import { PayloadDisplay } from "@/components/payload-display";
@@ -147,6 +148,10 @@ export const RequestPage = () => {
               <HeadersTable
                 headers={request.request_headers ?? []}
                 title="Headers"
+              />
+              <QueryParamsTable
+                queryParams={request.request_query_params ?? []}
+                title="Query Parameters"
               />
               <div>
                 <h4 className="font-medium mb-2">Body</h4>

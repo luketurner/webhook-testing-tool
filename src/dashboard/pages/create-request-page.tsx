@@ -29,6 +29,7 @@ export const CreateRequestPage = () => {
       url: "/",
       body: null,
       headers: [],
+      query: [],
     },
   });
   const { mutate: sendRequest } = useSendRequest();
@@ -39,6 +40,7 @@ export const CreateRequestPage = () => {
         method: values.method ?? "GET",
         body: values.body,
         headers: values.headers,
+        query: values.query,
         url: values.url ?? "/",
       });
     },
@@ -77,6 +79,22 @@ export const CreateRequestPage = () => {
                   <FormLabel>Headers</FormLabel>
                   <FormControl>
                     <KeyValuePairEditor {...field} addButtonText="Add header" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="query"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Query Parameters</FormLabel>
+                  <FormControl>
+                    <KeyValuePairEditor
+                      {...field}
+                      addButtonText="Add query parameter"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
