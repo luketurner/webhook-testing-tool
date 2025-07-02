@@ -1,4 +1,5 @@
 import { CopyRequestModal } from "@/components/copy-request-modal";
+import { CopyResponseModal } from "@/components/copy-response-modal";
 import { DataSection } from "@/components/data-section";
 import { DateDisplay } from "@/components/date-display";
 import { HeadersTable } from "@/components/display/headers-table";
@@ -36,6 +37,7 @@ export const RequestPage = () => {
     useHandlerExecutions<HandlerExecution>(id || "");
   const sendRequest = useSendRequest();
   const [copyModalOpen, setCopyModalOpen] = useState(false);
+  const [copyResponseModalOpen, setCopyResponseModalOpen] = useState(false);
 
   const requestBody = atob(request?.request_body ?? "");
   const responseBody = atob(request?.response_body ?? "");
@@ -79,7 +81,13 @@ export const RequestPage = () => {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCopyModalOpen(true)}>
                     <Copy className="mr-2 h-4 w-4" />
-                    Copy as...
+                    Copy request as...
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setCopyResponseModalOpen(true)}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy response as...
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -170,6 +178,15 @@ export const RequestPage = () => {
           request={request}
           open={copyModalOpen}
           onOpenChange={setCopyModalOpen}
+        />
+      )}
+
+      {/* Copy Response Modal */}
+      {request && (
+        <CopyResponseModal
+          request={request}
+          open={copyResponseModalOpen}
+          onOpenChange={setCopyResponseModalOpen}
         />
       )}
     </div>
