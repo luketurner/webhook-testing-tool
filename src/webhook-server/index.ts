@@ -31,6 +31,16 @@ app.all("*", async (req, res) => {
     if (EXCLUDE_HEADER_MAP[header]) delete headers[header];
   }
 
+  // Extract query parameters from URL
+  // AIDEV-NOTE: Query parameters are extracted using URL and URLSearchParams APIs
+  // which automatically handles decoding. The base URL doesn't matter since we only
+  // care about the query string portion of req.originalUrl.
+  const url = new URL(
+    req.originalUrl,
+    `http://${req.headers.host || "localhost"}`,
+  );
+  const queryParams = [...url.searchParams.entries()];
+
   const event: RequestEvent = {
     id: randomUUID(),
     type: "inbound",
@@ -40,6 +50,7 @@ app.all("*", async (req, res) => {
     request_timestamp: now(),
     request_body: Buffer.isBuffer(req.body) ? fromBufferLike(req.body) : null,
     request_headers: fromObject(headers),
+    request_query_params: queryParams,
   };
 
   const createdEvent = createRequestEvent(event);
