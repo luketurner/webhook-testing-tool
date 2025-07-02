@@ -17,6 +17,7 @@ function showUsage() {
   console.log(
     "                    If no label provided, generates one automatically",
   );
+  console.log("  attach <label>    Attach to existing worktree tmux session");
   console.log("  cleanup [label]   Remove worktree and associated branch");
   console.log(
     "                    If no label provided, cleans up all worktrees",
@@ -31,6 +32,11 @@ function showUsage() {
   console.log(`  ${SCRIPT_NAME} new feature-auth`);
   console.log(
     "  # Creates /workspaces/worktree-feature-auth and opens Claude Code",
+  );
+  console.log("");
+  console.log(`  ${SCRIPT_NAME} attach feature-auth`);
+  console.log(
+    "  # Attaches to existing tmux session for feature-auth worktree",
   );
   console.log("");
   console.log(`  ${SCRIPT_NAME} cleanup feature-auth`);
@@ -167,6 +173,71 @@ async function cleanupAllWorktrees() {
 }
 
 /**
+ * Attach to existing worktree tmux session
+ */
+async function attachToSession(label: string) {
+  const worktreePath = `/workspaces/worktree-${label}`;
+  const sessionName = `wtt-${label}`;
+
+  // Check if worktree exists
+  if (!existsSync(worktreePath)) {
+    showError(
+      `Worktree ${worktreePath} does not exist. Use 'new' command to create it.`,
+    );
+  }
+
+  // Check if tmux session exists
+  try {
+    await $`tmux has-session -t ${sessionName}`.quiet();
+  } catch {
+    showError(
+      `Tmux session '${sessionName}' does not exist. The session may have been terminated.`,
+    );
+  }
+
+  console.log(`Attaching to tmux session: ${sessionName}`);
+
+  try {
+    // Attach to the tmux session
+    const tmuxProc = spawn(
+      ["tmux", "attach-session", "-d", "-t", sessionName],
+      {
+        stdio: ["inherit", "inherit", "inherit"],
+      },
+    );
+
+    const exitCode = await tmuxProc.exited;
+
+    if (exitCode === 0) {
+      console.log("✓ Tmux session completed");
+    } else {
+      console.log(`Tmux exited with code ${exitCode}`);
+    }
+
+    // Prompt for automatic cleanup
+    console.log("");
+    const shouldCleanup = await promptUser(
+      `Do you want to clean up the worktree '${label}'?`,
+    );
+
+    if (shouldCleanup) {
+      console.log("\n--- Starting automatic cleanup ---");
+      await cleanupWorktree(label);
+    } else {
+      console.log(`Worktree '${label}' preserved at ${worktreePath}`);
+    }
+  } catch (error) {
+    // Ensure tmux session is killed even if something fails
+    try {
+      await $`tmux kill-session -t ${sessionName}`.quiet();
+    } catch {
+      // Session might not exist
+    }
+    showError(`Failed to attach to tmux session: ${error}`);
+  }
+}
+
+/**
  * Cleanup worktree and associated branch
  */
 async function cleanupWorktree(label: string) {
@@ -243,8 +314,8 @@ async function main() {
   const command = args[0];
   let label = args[1];
 
-  if (!["new", "cleanup"].includes(command)) {
-    showError("Command must be either 'new' or 'cleanup'");
+  if (!["new", "attach", "cleanup"].includes(command)) {
+    showError("Command must be 'new', 'attach', or 'cleanup'");
   }
 
   // Handle cleanup command
@@ -263,6 +334,23 @@ async function main() {
       await cleanupWorktree(label);
       return;
     }
+  }
+
+  // Handle attach command
+  if (command === "attach") {
+    if (!label) {
+      showError("Label is required for attach command");
+    }
+
+    // Validate label
+    if (!/^[a-zA-Z0-9_-]+$/.test(label)) {
+      showError(
+        "Label must contain only letters, numbers, underscores, and hyphens",
+      );
+    }
+
+    await attachToSession(label);
+    return;
   }
 
   // For 'new' command, generate label if not provided
