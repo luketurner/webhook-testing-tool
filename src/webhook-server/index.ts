@@ -1,12 +1,23 @@
 /**
  * Implementation of the Web server that receives arbitrary HTTP requests, runs a Handler chain for the requests, and returns a response.
  * The execution of each request is tracked as a RequestEvent.
+ * This file supports both HTTP and HTTPS connections with TLS info capture.
  */
 import "@/server-only";
 import express from "express";
 import morgan from "morgan";
 import bodyParser from "body-parser";
-import { EXCLUDE_HEADER_MAP, WEBHOOK_PORT } from "../config-shared";
+import https from "https";
+import fs from "fs";
+import type { TLSSocket } from "tls";
+import {
+  EXCLUDE_HEADER_MAP,
+  WEBHOOK_PORT,
+  WEBHOOK_SSL_ENABLED,
+  WEBHOOK_SSL_PORT,
+  WEBHOOK_SSL_CERT_PATH,
+  WEBHOOK_SSL_KEY_PATH,
+} from "../config-shared";
 import type { RequestEvent } from "@/request-events/schema";
 import { randomUUID } from "@/util/uuid";
 import { now } from "@/util/timestamp";
@@ -25,6 +36,51 @@ const app = express();
 app.use(morgan("combined"));
 app.use(bodyParser.raw({ type: (_req) => true }));
 
+// Function to extract TLS info from socket
+function extractTlsInfo(socket: any): string | null {
+  if (!socket || !socket.encrypted) {
+    return null;
+  }
+
+  const tlsSocket = socket as TLSSocket;
+
+  try {
+    const tlsInfo: any = {};
+
+    // Check if methods exist before calling them
+    if (typeof tlsSocket.getProtocol === "function") {
+      tlsInfo.protocol = tlsSocket.getProtocol();
+    }
+
+    if (typeof tlsSocket.getCipher === "function") {
+      tlsInfo.cipher = tlsSocket.getCipher();
+    }
+
+    if (typeof tlsSocket.getPeerCertificate === "function") {
+      const cert = tlsSocket.getPeerCertificate();
+      if (cert && Object.keys(cert).length > 0) {
+        tlsInfo.peerCertificate = {
+          subject: cert.subject,
+          issuer: cert.issuer,
+          valid_from: cert.valid_from,
+          valid_to: cert.valid_to,
+          fingerprint: cert.fingerprint,
+        };
+      }
+    }
+
+    if (typeof tlsSocket.isSessionReused === "function") {
+      tlsInfo.isSessionReused = tlsSocket.isSessionReused();
+    }
+
+    // AIDEV-NOTE: TLS info is stored as JSON string in the database
+    return JSON.stringify(tlsInfo);
+  } catch (err) {
+    console.error("Failed to extract TLS info:", err);
+    return null;
+  }
+}
+
 app.all("*", async (req, res) => {
   const headers = { ...req.headers };
   for (const header of Object.keys(headers)) {
@@ -41,6 +97,9 @@ app.all("*", async (req, res) => {
   );
   const queryParams = [...url.searchParams.entries()];
 
+  // Extract TLS info if connection is HTTPS
+  const tlsInfo = extractTlsInfo(req.socket);
+
   const event: RequestEvent = {
     id: randomUUID(),
     type: "inbound",
@@ -51,6 +110,7 @@ app.all("*", async (req, res) => {
     request_body: Buffer.isBuffer(req.body) ? fromBufferLike(req.body) : null,
     request_headers: fromObject(headers),
     request_query_params: queryParams,
+    tls_info: tlsInfo,
   };
 
   const createdEvent = createRequestEvent(event);
@@ -110,8 +170,32 @@ app.all("*", async (req, res) => {
 export function startWebhookServer(port?: number) {
   const serverPort = port ?? WEBHOOK_PORT;
   return new Promise<any>((resolve) => {
+    // Start HTTP server
     const server = app.listen(serverPort, () => {
-      resolve(server);
+      console.log(`HTTP webhook server listening on port ${serverPort}`);
+
+      // Start HTTPS server if enabled
+      if (WEBHOOK_SSL_ENABLED) {
+        try {
+          const httpsOptions = {
+            key: fs.readFileSync(WEBHOOK_SSL_KEY_PATH),
+            cert: fs.readFileSync(WEBHOOK_SSL_CERT_PATH),
+          };
+
+          https.createServer(httpsOptions, app).listen(WEBHOOK_SSL_PORT, () => {
+            console.log(
+              `HTTPS webhook server listening on port ${WEBHOOK_SSL_PORT}`,
+            );
+            resolve(server);
+          });
+        } catch (err) {
+          console.error("Failed to start HTTPS server:", err);
+          console.log("Continuing with HTTP only");
+          resolve(server);
+        }
+      } else {
+        resolve(server);
+      }
     });
   });
 }
