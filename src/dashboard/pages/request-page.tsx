@@ -26,12 +26,22 @@ import type { HandlerExecution } from "@/handler-executions/schema";
 import type { RequestEvent } from "@/request-events/schema";
 import { formatTimestamp } from "@/util/datetime";
 import { requestEventToHandlerRequest } from "@/webhook-server/schema";
-import { Copy, MoreHorizontal, RotateCcw } from "lucide-react";
+import {
+  Copy,
+  MoreHorizontal,
+  RotateCcw,
+  Share,
+  Link,
+  Link2Off,
+} from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const RequestPage = () => {
   const { id } = useParams();
+  const queryClient = useQueryClient();
   const { data: request, isLoading: requestLoading } =
     useResource<RequestEvent>("requests", id);
   const { data: handlerExecutions, isLoading: executionsLoading } =
@@ -39,6 +49,38 @@ export const RequestPage = () => {
   const sendRequest = useSendRequest();
   const [copyModalOpen, setCopyModalOpen] = useState(false);
   const [copyResponseModalOpen, setCopyResponseModalOpen] = useState(false);
+
+  const shareRequest = useMutation({
+    mutationFn: async (enable: boolean) => {
+      const response = await fetch(`/api/requests/${id}/share`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ enable }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update sharing");
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["requests", id] });
+
+      if (data.shared) {
+        const fullUrl = `${window.location.origin}${data.shareUrl}`;
+        navigator.clipboard.writeText(fullUrl);
+        toast.success("Share link copied to clipboard!");
+      } else {
+        toast.success("Sharing disabled");
+      }
+    },
+    onError: () => {
+      toast.error("Failed to update sharing");
+    },
+  });
 
   const requestBody = atob(request?.request_body ?? "");
   const responseBody = atob(request?.response_body ?? "");
@@ -79,6 +121,22 @@ export const RequestPage = () => {
                   >
                     <RotateCcw className="mr-2 h-4 w-4" />
                     Resend request
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => shareRequest.mutate(!request.shared_id)}
+                    disabled={shareRequest.isPending}
+                  >
+                    {request.shared_id ? (
+                      <>
+                        <Link2Off className="mr-2 h-4 w-4" />
+                        Disable sharing
+                      </>
+                    ) : (
+                      <>
+                        <Link className="mr-2 h-4 w-4" />
+                        Share request
+                      </>
+                    )}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setCopyModalOpen(true)}>
                     <Copy className="mr-2 h-4 w-4" />
