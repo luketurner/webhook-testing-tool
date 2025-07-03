@@ -11,8 +11,11 @@ import { startWebhookServer } from "./webhook-server";
 import { beforeAll, afterAll, afterEach } from "bun:test";
 import { existsSync } from "fs";
 import { $ } from "bun";
+import http from "http";
+import https from "https";
 
-let server: any;
+let server: http.Server;
+let httpsServer: https.Server;
 
 beforeAll(async () => {
   await migrateDb();
@@ -32,7 +35,7 @@ beforeAll(async () => {
     throw err;
   }
 
-  server = await startWebhookServer({
+  ({ server, httpsServer } = await startWebhookServer({
     port: TEST_PORT,
     ssl: {
       enabled: true,
@@ -40,11 +43,12 @@ beforeAll(async () => {
       certPath: TEST_CERT_PATH,
       keyPath: TEST_KEY_PATH,
     },
-  });
+  }));
 });
 
 afterAll(async () => {
   server.close();
+  httpsServer?.close();
   // Clean up test certificates
   try {
     await $`rm -rf ${TEST_TEMP_DIR}`;

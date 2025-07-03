@@ -8,16 +8,10 @@ import express from "express";
 import morgan from "morgan";
 import bodyParser from "body-parser";
 import https from "https";
+import http from "http";
 import fs from "fs";
 import type { TLSSocket } from "tls";
-import {
-  EXCLUDE_HEADER_MAP,
-  WEBHOOK_PORT,
-  WEBHOOK_SSL_ENABLED,
-  WEBHOOK_SSL_PORT,
-  WEBHOOK_SSL_CERT_PATH,
-  WEBHOOK_SSL_KEY_PATH,
-} from "../config-shared";
+import { EXCLUDE_HEADER_MAP } from "../config-shared";
 import type { RequestEvent } from "@/request-events/schema";
 import { randomUUID } from "@/util/uuid";
 import { now } from "@/util/timestamp";
@@ -180,12 +174,19 @@ export interface WebhookServerOptions {
   };
 }
 
-export function startWebhookServer({ port, ssl }: WebhookServerOptions) {
-  return new Promise<any>((resolve) => {
-    // Start HTTP server
-    const server = app.listen(port, () => {
-      console.log(`HTTP webhook server listening on port ${port}`);
+export interface WebhookServerResp {
+  server: http.Server;
+  httpsServer?: https.Server;
+}
 
+export function startWebhookServer({
+  port,
+  ssl,
+}: WebhookServerOptions): Promise<WebhookServerResp> {
+  return new Promise<WebhookServerResp>((resolve) => {
+    // Start HTTP server
+    const server: http.Server = app.listen(port, () => {
+      console.log(`HTTP webhook server listening on port ${port}`);
       // Start HTTPS server if enabled
       if (ssl.enabled) {
         try {
@@ -194,17 +195,18 @@ export function startWebhookServer({ port, ssl }: WebhookServerOptions) {
             cert: fs.readFileSync(ssl.certPath),
           };
 
-          https.createServer(httpsOptions, app).listen(ssl.port, () => {
+          const httpsServer = https.createServer(httpsOptions, app);
+          httpsServer.listen(ssl.port, () => {
             console.log(`HTTPS webhook server listening on port ${ssl.port}`);
-            resolve(server);
+            resolve({ server, httpsServer });
           });
         } catch (err) {
           console.error("Failed to start HTTPS server:", err);
           console.log("Continuing with HTTP only");
-          resolve(server);
+          resolve({ server });
         }
       } else {
-        resolve(server);
+        resolve({ server });
       }
     });
   });
