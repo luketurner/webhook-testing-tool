@@ -23,6 +23,19 @@ How it works:
 - Automatically responds to any HTTP request.
 - Response behavior can be customized with Typescript code by defining **handlers**.
 
+## Protocols supported
+
+- [x] HTTP/1.1
+   - [ ] (in progress) TLS termination
+   - [ ] Binary bodies (`application/octet-stream`)
+   - [ ] Multipart bodies
+- [ ] HTTP/2
+- [ ] HTTP/3
+- [ ] gRPC
+- [ ] Websockets
+- [ ] Raw TCP
+- [ ] Raw UDP
+
 ## Limitations
 
 - Does not support multi-user login. (Users are expected to deploy their own instance of `wtt` instead of sharing.)
