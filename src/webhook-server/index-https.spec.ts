@@ -9,26 +9,24 @@ const TEST_CERT_DIR = `${process.cwd()}/test-certs`;
 process.env.WTT_WEBHOOK_SSL_CERT_PATH = `${TEST_CERT_DIR}/test-cert.pem`;
 process.env.WTT_WEBHOOK_SSL_KEY_PATH = `${TEST_CERT_DIR}/test-key.pem`;
 
-import {
-  describe,
-  test,
-  expect,
-  beforeAll,
-  afterAll,
-  beforeEach,
-} from "bun:test";
-import fs from "fs";
-import { execSync } from "child_process";
-import {
-  getAllRequestEvents,
-  deleteRequestEvent,
-} from "@/request-events/model";
-import type { RequestId } from "@/request-events/schema";
 import { clearHandlers } from "@/handlers/model";
+import {
+  clearRequestEvents,
+  getAllRequestEvents,
+} from "@/request-events/model";
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+} from "bun:test";
+import { execSync } from "child_process";
+import fs from "fs";
 
 describe("Webhook Server HTTPS/TLS Tests", () => {
   const baseUrl = `https://localhost:${TEST_SSL_PORT}`;
-  const testRequestIds: string[] = [];
   let startWebhookServer: () => Promise<void>;
 
   beforeAll(async () => {
@@ -70,24 +68,13 @@ describe("Webhook Server HTTPS/TLS Tests", () => {
       // Ignore cleanup errors
     }
 
-    // Clean up any remaining test request events
-    for (const id of testRequestIds) {
-      try {
-        deleteRequestEvent(id as RequestId);
-      } catch (error) {
-        // Ignore cleanup errors
-      }
-    }
+    clearRequestEvents();
   });
 
   beforeEach(() => {
     // Clear any existing handlers before each test
     clearHandlers();
   });
-
-  const cleanupRequestEvent = (id: string) => {
-    testRequestIds.push(id);
-  };
 
   test("HTTPS GET request captures TLS info", async () => {
     // AIDEV-NOTE: Using fetch with rejectUnauthorized: false to accept self-signed cert
@@ -104,8 +91,6 @@ describe("Webhook Server HTTPS/TLS Tests", () => {
     expect(event).toBeDefined();
 
     if (event) {
-      cleanupRequestEvent(event.id);
-
       expect(event.request_method).toBe("GET");
       expect(event.tls_info).toBeDefined();
       expect(event.tls_info).not.toBeNull();
@@ -161,8 +146,6 @@ describe("Webhook Server HTTPS/TLS Tests", () => {
     expect(event).toBeDefined();
 
     if (event) {
-      cleanupRequestEvent(event.id);
-
       expect(event.request_body).toBeDefined();
       expect(event.tls_info).toBeDefined();
       expect(event.tls_info).not.toBeNull();
@@ -225,8 +208,6 @@ describe("Webhook Server HTTPS/TLS Tests", () => {
 
     // Each event should have TLS info
     for (const event of tlsEvents) {
-      cleanupRequestEvent(event.id);
-
       expect(event.tls_info).toBeDefined();
       expect(event.tls_info).not.toBeNull();
 
@@ -266,8 +247,6 @@ describe("Webhook Server HTTPS/TLS Tests", () => {
     expect(event).toBeDefined();
 
     if (event) {
-      cleanupRequestEvent(event.id);
-
       if (event.tls_info) {
         const tlsInfo = JSON.parse(event.tls_info);
 
@@ -300,8 +279,6 @@ describe("Webhook Server HTTPS/TLS Tests", () => {
     expect(event).toBeDefined();
 
     if (event) {
-      cleanupRequestEvent(event.id);
-
       // TLS info should be null for HTTP requests
       expect(event.tls_info).toBeNull();
     }

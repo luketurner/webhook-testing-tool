@@ -2,28 +2,26 @@
 const TEST_PORT = 4123; // Use a fixed port in the 4000-5000 range for testing
 process.env.WTT_WEBHOOK_PORT = TEST_PORT.toString();
 
+import { clearHandlers, createHandler } from "@/handlers/model";
 import {
-  describe,
-  test,
-  expect,
-  beforeAll,
-  afterAll,
-  beforeEach,
-} from "bun:test";
+  clearRequestEvents,
+  getAllRequestEvents,
+} from "@/request-events/model";
 import { randomUUID } from "@/util/uuid";
 import {
-  getAllRequestEvents,
-  deleteRequestEvent,
-} from "@/request-events/model";
-import type { RequestId } from "@/request-events/schema";
-import { clearHandlers, createHandler } from "@/handlers/model";
-import { startWebhookServer } from "./index";
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+} from "bun:test";
 import * as jose from "jose";
+import { startWebhookServer } from "./index";
 
 describe("Webhook Server Integration Tests", () => {
   let server: any;
   const baseUrl = `http://localhost:${TEST_PORT}`;
-  const testRequestIds: string[] = [];
 
   beforeAll(async () => {
     // Start the webhook server on the test port
@@ -39,24 +37,13 @@ describe("Webhook Server Integration Tests", () => {
       server.close();
     }
 
-    // Clean up any remaining test request events
-    for (const id of testRequestIds) {
-      try {
-        deleteRequestEvent(id as RequestId);
-      } catch (error) {
-        // Ignore cleanup errors
-      }
-    }
+    clearRequestEvents();
   });
 
   beforeEach(() => {
     // Clear any existing handlers before each test
     clearHandlers();
   });
-
-  const cleanupRequestEvent = (id: string) => {
-    testRequestIds.push(id);
-  };
 
   test("GET request with query parameters", async () => {
     const response = await fetch(
@@ -76,8 +63,6 @@ describe("Webhook Server Integration Tests", () => {
     expect(event).toBeDefined();
 
     if (event) {
-      cleanupRequestEvent(event.id);
-
       expect(event.request_method).toBe("GET");
       expect(event.request_url).toBe(
         "/test/path?param1=value1&param2=value%202&empty=",
@@ -120,8 +105,6 @@ describe("Webhook Server Integration Tests", () => {
     expect(event).toBeDefined();
 
     if (event) {
-      cleanupRequestEvent(event.id);
-
       expect(event.request_method).toBe("POST");
       expect(event.request_body).toBeDefined();
 
@@ -166,8 +149,6 @@ describe("Webhook Server Integration Tests", () => {
     expect(event).toBeDefined();
 
     if (event) {
-      cleanupRequestEvent(event.id);
-
       expect(event.request_method).toBe("PUT");
       expect(event.request_body).toBeDefined();
 
@@ -209,8 +190,6 @@ describe("Webhook Server Integration Tests", () => {
     expect(event).toBeDefined();
 
     if (event) {
-      cleanupRequestEvent(event.id);
-
       expect(event.request_method).toBe("DELETE");
       expect(event.request_body === null || event.request_body === "").toBe(
         true,
@@ -246,8 +225,6 @@ describe("Webhook Server Integration Tests", () => {
     expect(event).toBeDefined();
 
     if (event) {
-      cleanupRequestEvent(event.id);
-
       expect(event.request_method).toBe("PATCH");
       expect(event.request_body).toBeDefined();
 
@@ -305,8 +282,6 @@ describe("Webhook Server Integration Tests", () => {
     expect(event).toBeDefined();
 
     if (event) {
-      cleanupRequestEvent(event.id);
-
       // Verify that a handler was executed by checking if the response was modified
       expect(event.response_status).toBeGreaterThanOrEqual(200);
 
@@ -364,11 +339,6 @@ describe("Webhook Server Integration Tests", () => {
     expect(urls).toContain("/test1");
     expect(urls).toContain("/test2");
     expect(urls).toContain("/test3");
-
-    // Clean up all test events
-    for (const event of testEvents) {
-      cleanupRequestEvent(event.id);
-    }
   });
 
   describe("JWT Verification with RS384", () => {
@@ -461,15 +431,6 @@ describe("Webhook Server Integration Tests", () => {
 
       // Check if custom header was set
       expect(response.headers.get("X-JWT-Algorithm")).toBe("RS384");
-
-      // Find and cleanup the request event
-      const allEvents = getAllRequestEvents();
-      const event = allEvents.find(
-        (e) => e.request_method === "POST" && e.request_url === "/jwt/rs384",
-      );
-      if (event) {
-        cleanupRequestEvent(event.id);
-      }
     });
 
     test("should reject invalid RS384 JWT signature", async () => {
@@ -514,16 +475,6 @@ describe("Webhook Server Integration Tests", () => {
 
       const responseData = await response.json();
       expect(responseData.error).toContain("signature verification failed");
-
-      // Find and cleanup the request event
-      const allEvents = getAllRequestEvents();
-      const event = allEvents.find(
-        (e) =>
-          e.request_method === "POST" && e.request_url === "/jwt/rs384-invalid",
-      );
-      if (event) {
-        cleanupRequestEvent(event.id);
-      }
     });
 
     test("should reject expired RS384 JWT", async () => {
@@ -568,16 +519,6 @@ describe("Webhook Server Integration Tests", () => {
 
       const responseData = await response.json();
       expect(responseData.error).toBe("JWT has expired");
-
-      // Find and cleanup the request event
-      const allEvents = getAllRequestEvents();
-      const event = allEvents.find(
-        (e) =>
-          e.request_method === "POST" && e.request_url === "/jwt/rs384-expired",
-      );
-      if (event) {
-        cleanupRequestEvent(event.id);
-      }
     });
 
     test("should reject RS384 JWT with wrong key ID", async () => {
@@ -621,17 +562,6 @@ describe("Webhook Server Integration Tests", () => {
 
       const responseData = await response.json();
       expect(responseData.error).toContain("signature verification failed");
-
-      // Find and cleanup the request event
-      const allEvents = getAllRequestEvents();
-      const event = allEvents.find(
-        (e) =>
-          e.request_method === "POST" &&
-          e.request_url === "/jwt/rs384-wrong-kid",
-      );
-      if (event) {
-        cleanupRequestEvent(event.id);
-      }
     });
 
     test("should reject request without JWT when RS384 verification required", async () => {
@@ -671,17 +601,6 @@ describe("Webhook Server Integration Tests", () => {
 
       const responseData = await response.json();
       expect(responseData.error).toContain("JWT verification failed");
-
-      // Find and cleanup the request event
-      const allEvents = getAllRequestEvents();
-      const event = allEvents.find(
-        (e) =>
-          e.request_method === "POST" &&
-          e.request_url === "/jwt/rs384-required",
-      );
-      if (event) {
-        cleanupRequestEvent(event.id);
-      }
     });
 
     test("should work with multiple RS384 keys in JWKS", async () => {
@@ -737,17 +656,6 @@ describe("Webhook Server Integration Tests", () => {
       const responseData = await response.json();
       expect(responseData.message).toBe("JWT verified successfully");
       expect(responseData.keyId).toBe("test-rs384-key");
-
-      // Find and cleanup the request event
-      const allEvents = getAllRequestEvents();
-      const event = allEvents.find(
-        (e) =>
-          e.request_method === "POST" &&
-          e.request_url === "/jwt/rs384-multiple",
-      );
-      if (event) {
-        cleanupRequestEvent(event.id);
-      }
     });
 
     test("should handle RS384 JWT with not-before time (nbf)", async () => {
@@ -792,16 +700,6 @@ describe("Webhook Server Integration Tests", () => {
 
       const responseData = await response.json();
       expect(responseData.error).toBe("JWT is not yet valid");
-
-      // Find and cleanup the request event
-      const allEvents = getAllRequestEvents();
-      const event = allEvents.find(
-        (e) =>
-          e.request_method === "POST" && e.request_url === "/jwt/rs384-nbf",
-      );
-      if (event) {
-        cleanupRequestEvent(event.id);
-      }
     });
   });
 });

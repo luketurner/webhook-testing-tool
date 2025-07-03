@@ -113,6 +113,10 @@ export function deleteRequestEvent(id: RequestId) {
   return db.query(`delete from "${tableName}" where id = ?`).run(id);
 }
 
+export function clearRequestEvents() {
+  return db.query(`delete from ${tableName}`).run();
+}
+
 export function getRequestEventBySharedId(
   sharedId: string,
 ): RequestEvent | null {
