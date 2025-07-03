@@ -93,7 +93,9 @@ app.all("*", async (req, res) => {
   const [error, response] = await handleRequest(event);
 
   const responseStatus =
-    typeof response?.status === "number" ? response.status : 200;
+    typeof response?.response_status === "number"
+      ? response.response_status
+      : 200;
   res.status(responseStatus);
   for (const [k, v] of response?.response_headers) {
     res.set(k, v.toString());
@@ -105,10 +107,11 @@ app.all("*", async (req, res) => {
   );
 });
 
-export function startWebhookServer() {
-  return new Promise<void>((resolve) => {
-    app.listen(WEBHOOK_PORT, () => {
-      resolve();
+export function startWebhookServer(port?: number) {
+  const serverPort = port ?? WEBHOOK_PORT;
+  return new Promise<any>((resolve) => {
+    const server = app.listen(serverPort, () => {
+      resolve(server);
     });
   });
 }
