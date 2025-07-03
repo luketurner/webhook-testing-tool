@@ -12,7 +12,7 @@ import http from "http";
 import fs from "fs";
 import type { TLSSocket } from "tls";
 import { EXCLUDE_HEADER_MAP } from "../config-shared";
-import type { RequestEvent } from "@/request-events/schema";
+import type { RequestEvent, TLSInfo } from "@/request-events/schema";
 import { randomUUID } from "@/util/uuid";
 import { now } from "@/util/timestamp";
 import { fromObject } from "@/util/kv-list";
@@ -39,7 +39,7 @@ function extractTlsInfo(socket: any) {
   const tlsSocket = socket as TLSSocket;
 
   try {
-    const tlsInfo: any = {};
+    const tlsInfo: TLSInfo = {};
 
     // Check if methods exist before calling them
     if (typeof tlsSocket.getProtocol === "function") {

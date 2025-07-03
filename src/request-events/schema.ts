@@ -11,6 +11,29 @@ import { BASE_STATUSES, type BaseStatus } from "@/types/status";
 export const REQUEST_EVENT_TYPES = ["inbound", "outbound"] as const;
 export const REQUEST_EVENT_STATUSES = BASE_STATUSES;
 
+export const certificateSchema = z.any();
+
+export const tlsInfoSchema = z.object({
+  protocol: z.string().nullish(),
+  cipher: z
+    .object({
+      name: z.string().nullish(),
+      standardName: z.string().nullish(),
+      version: z.string().nullish(),
+    })
+    .nullish(),
+  isSessionReused: z.boolean().nullish(),
+  peerCertificate: z
+    .object({
+      subject: certificateSchema.nullish(),
+      issuer: certificateSchema.nullish(),
+      valid_from: z.string().nullish(),
+      valid_to: z.string().nullish(),
+      fingerprint: z.string().nullish(),
+    })
+    .nullish(),
+});
+
 export const requestEventSchema = z.object({
   id: uuidSchema,
   type: z.enum(REQUEST_EVENT_TYPES),
@@ -29,7 +52,7 @@ export const requestEventSchema = z.object({
     .nullish(),
   response_body: z.preprocess(fromBufferLike, base64Schema).nullish(),
   response_timestamp: timestampSchema.nullish(),
-  tls_info: z.preprocess(fromJSONString, z.any()).nullish(),
+  tls_info: z.preprocess(fromJSONString, tlsInfoSchema).nullish(),
 });
 
 export const requestEventMetaSchema = requestEventSchema.omit({
@@ -51,3 +74,4 @@ export type RequestEventMeta = z.infer<typeof requestEventMetaSchema>;
 export type RequestId = EntityId<RequestEvent>;
 export type RequestEventType = (typeof REQUEST_EVENT_TYPES)[number];
 export type RequestEventStatus = BaseStatus;
+export type TLSInfo = z.infer<typeof tlsInfoSchema>;
