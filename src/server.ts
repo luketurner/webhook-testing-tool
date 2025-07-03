@@ -4,7 +4,14 @@ import { DB_FILE } from "./config-server";
 import { migrateDb } from "./db";
 import { startWebhookServer } from "./webhook-server";
 import { initializeAdminUser } from "./auth/init-user";
-import { ADMIN_PORT, WEBHOOK_PORT } from "./config-shared";
+import {
+  ADMIN_PORT,
+  WEBHOOK_PORT,
+  WEBHOOK_SSL_CERT_PATH,
+  WEBHOOK_SSL_ENABLED,
+  WEBHOOK_SSL_KEY_PATH,
+  WEBHOOK_SSL_PORT,
+} from "./config-shared";
 
 console.log(`Using database: ${DB_FILE}`);
 await migrateDb();
@@ -15,5 +22,12 @@ await initializeAdminUser();
 await startDashboardServer();
 console.log(`Admin server listening on port ${ADMIN_PORT}`);
 
-await startWebhookServer();
-console.log(`Webook server listening on port ${WEBHOOK_PORT}`);
+await startWebhookServer({
+  port: WEBHOOK_PORT,
+  ssl: {
+    enabled: WEBHOOK_SSL_ENABLED,
+    certPath: WEBHOOK_SSL_CERT_PATH,
+    keyPath: WEBHOOK_SSL_KEY_PATH,
+    port: WEBHOOK_SSL_PORT,
+  },
+});

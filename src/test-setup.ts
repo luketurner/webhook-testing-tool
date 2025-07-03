@@ -1,11 +1,16 @@
-// import from test-config first so it can adjust env vars if needed
-import { TEST_CERT_DIR, TEST_PORT } from "./test-config";
+import {
+  TEST_CERT_PATH,
+  TEST_KEY_PATH,
+  TEST_PORT,
+  TEST_SSL_PORT,
+  TEST_TEMP_DIR,
+} from "./test-config";
 
-import { execSync } from "child_process";
 import { migrateDb, resetDb } from "./db";
 import { startWebhookServer } from "./webhook-server";
 import { beforeAll, afterAll, afterEach } from "bun:test";
 import { existsSync } from "fs";
+import { $ } from "bun";
 
 let server: any;
 
@@ -13,18 +18,13 @@ beforeAll(async () => {
   await migrateDb();
   // Create test certificates directory
   try {
-    execSync(`mkdir -p ${TEST_CERT_DIR}`);
+    await $`mkdir -p ${TEST_TEMP_DIR}`;
 
     // Generate test self-signed certificate
-    execSync(
-      `openssl req -x509 -newkey rsa:2048 -keyout ${TEST_CERT_DIR}/test-key.pem -out ${TEST_CERT_DIR}/test-cert.pem -days 1 -nodes -subj "/C=US/ST=Test/L=Test/O=Test/CN=localhost"`,
-    );
+    await $`openssl req -x509 -newkey rsa:2048 -keyout ${TEST_KEY_PATH} -out ${TEST_CERT_PATH} -days 1 -nodes -subj "/C=US/ST=Test/L=Test/O=Test/CN=localhost"`;
 
     // Verify certificates were created
-    if (
-      !existsSync(process.env.WTT_WEBHOOK_SSL_CERT_PATH!) ||
-      !existsSync(process.env.WTT_WEBHOOK_SSL_KEY_PATH!)
-    ) {
+    if (!existsSync(TEST_CERT_PATH) || !existsSync(TEST_KEY_PATH)) {
       throw new Error("Test certificates were not created");
     }
   } catch (err) {
@@ -32,14 +32,22 @@ beforeAll(async () => {
     throw err;
   }
 
-  server = await startWebhookServer(TEST_PORT);
+  server = await startWebhookServer({
+    port: TEST_PORT,
+    ssl: {
+      enabled: true,
+      port: TEST_SSL_PORT,
+      certPath: TEST_CERT_PATH,
+      keyPath: TEST_KEY_PATH,
+    },
+  });
 });
 
 afterAll(async () => {
   server.close();
   // Clean up test certificates
   try {
-    execSync(`rm -rf ${TEST_CERT_DIR}`);
+    await $`rm -rf ${TEST_TEMP_DIR}`;
   } catch (err) {
     // Ignore cleanup errors
   }

@@ -5,16 +5,7 @@ import {
   getAllRequestEvents,
 } from "@/request-events/model";
 import { TEST_PORT, TEST_SSL_PORT } from "@/test-config";
-import {
-  afterAll,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  test,
-} from "bun:test";
-import { execSync } from "child_process";
-import fs from "fs";
+import { afterAll, beforeEach, describe, expect, test } from "bun:test";
 
 describe("Webhook Server HTTPS/TLS Tests", () => {
   const baseUrl = `https://localhost:${TEST_SSL_PORT}`;

@@ -167,25 +167,32 @@ app.all("*", async (req, res) => {
   );
 });
 
-export function startWebhookServer(port?: number) {
-  const serverPort = port ?? WEBHOOK_PORT;
+export interface WebhookServerOptions {
+  port: number;
+  ssl: {
+    enabled: boolean;
+    keyPath: string;
+    certPath: string;
+    port: number;
+  };
+}
+
+export function startWebhookServer({ port, ssl }: WebhookServerOptions) {
   return new Promise<any>((resolve) => {
     // Start HTTP server
-    const server = app.listen(serverPort, () => {
-      console.log(`HTTP webhook server listening on port ${serverPort}`);
+    const server = app.listen(port, () => {
+      console.log(`HTTP webhook server listening on port ${port}`);
 
       // Start HTTPS server if enabled
-      if (WEBHOOK_SSL_ENABLED) {
+      if (ssl.enabled) {
         try {
           const httpsOptions = {
-            key: fs.readFileSync(WEBHOOK_SSL_KEY_PATH),
-            cert: fs.readFileSync(WEBHOOK_SSL_CERT_PATH),
+            key: fs.readFileSync(ssl.keyPath),
+            cert: fs.readFileSync(ssl.certPath),
           };
 
-          https.createServer(httpsOptions, app).listen(WEBHOOK_SSL_PORT, () => {
-            console.log(
-              `HTTPS webhook server listening on port ${WEBHOOK_SSL_PORT}`,
-            );
+          https.createServer(httpsOptions, app).listen(ssl.port, () => {
+            console.log(`HTTPS webhook server listening on port ${ssl.port}`);
             resolve(server);
           });
         } catch (err) {
