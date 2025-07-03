@@ -1,19 +1,10 @@
-// Set test port before any imports to ensure config is loaded correctly
-const TEST_PORT = 4123; // Use a fixed port in the 4000-5000 range for testing
-const TEST_SSL_PORT = 4124; // Use a different port for HTTPS testing
-process.env.WTT_WEBHOOK_PORT = TEST_PORT.toString();
-process.env.WTT_WEBHOOK_SSL_PORT = TEST_SSL_PORT.toString();
-process.env.WTT_WEBHOOK_SSL_ENABLED = "true";
-// Use absolute paths for test certificates
-const TEST_CERT_DIR = `${process.cwd()}/test-certs`;
-process.env.WTT_WEBHOOK_SSL_CERT_PATH = `${TEST_CERT_DIR}/test-cert.pem`;
-process.env.WTT_WEBHOOK_SSL_KEY_PATH = `${TEST_CERT_DIR}/test-key.pem`;
-
+import { clearHandlerExecutions } from "@/handler-executions/model";
 import { clearHandlers } from "@/handlers/model";
 import {
   clearRequestEvents,
   getAllRequestEvents,
 } from "@/request-events/model";
+import { TEST_PORT, TEST_SSL_PORT } from "@/test-config";
 import {
   afterAll,
   beforeAll,
@@ -27,48 +18,11 @@ import fs from "fs";
 
 describe("Webhook Server HTTPS/TLS Tests", () => {
   const baseUrl = `https://localhost:${TEST_SSL_PORT}`;
-  let startWebhookServer: () => Promise<void>;
-
-  beforeAll(async () => {
-    // Create test certificates directory
-    try {
-      execSync(`mkdir -p ${TEST_CERT_DIR}`);
-
-      // Generate test self-signed certificate
-      execSync(
-        `openssl req -x509 -newkey rsa:2048 -keyout ${TEST_CERT_DIR}/test-key.pem -out ${TEST_CERT_DIR}/test-cert.pem -days 1 -nodes -subj "/C=US/ST=Test/L=Test/O=Test/CN=localhost"`,
-      );
-
-      // Verify certificates were created
-      if (
-        !fs.existsSync(process.env.WTT_WEBHOOK_SSL_CERT_PATH!) ||
-        !fs.existsSync(process.env.WTT_WEBHOOK_SSL_KEY_PATH!)
-      ) {
-        throw new Error("Test certificates were not created");
-      }
-    } catch (err) {
-      console.error("Failed to generate test certificates:", err);
-      throw err;
-    }
-
-    // Import and start the webhook server after environment is set
-    const { startWebhookServer: serverStart } = await import("./index");
-    startWebhookServer = serverStart;
-    await startWebhookServer();
-
-    // Give the server a moment to fully start
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  });
 
   afterAll(async () => {
-    // Clean up test certificates
-    try {
-      execSync(`rm -rf ${TEST_CERT_DIR}`);
-    } catch (err) {
-      // Ignore cleanup errors
-    }
-
+    clearHandlerExecutions();
     clearRequestEvents();
+    clearHandlers();
   });
 
   beforeEach(() => {

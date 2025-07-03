@@ -1,12 +1,10 @@
-// Set test port before any imports to ensure config is loaded correctly
-const TEST_PORT = 4123; // Use a fixed port in the 4000-5000 range for testing
-process.env.WTT_WEBHOOK_PORT = TEST_PORT.toString();
-
+import { clearHandlerExecutions } from "@/handler-executions/model";
 import { clearHandlers, createHandler } from "@/handlers/model";
 import {
   clearRequestEvents,
   getAllRequestEvents,
 } from "@/request-events/model";
+import { TEST_PORT } from "@/test-config";
 import { randomUUID } from "@/util/uuid";
 import {
   afterAll,
@@ -17,27 +15,14 @@ import {
   test,
 } from "bun:test";
 import * as jose from "jose";
-import { startWebhookServer } from "./index";
 
 describe("Webhook Server Integration Tests", () => {
-  let server: any;
   const baseUrl = `http://localhost:${TEST_PORT}`;
 
-  beforeAll(async () => {
-    // Start the webhook server on the test port
-    server = await startWebhookServer(TEST_PORT);
-
-    // Give the server a moment to fully start
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  });
-
   afterAll(async () => {
-    // Close the server
-    if (server) {
-      server.close();
-    }
-
+    clearHandlerExecutions();
     clearRequestEvents();
+    clearHandlers();
   });
 
   beforeEach(() => {

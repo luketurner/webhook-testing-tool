@@ -120,3 +120,7 @@ export function deleteHandlerExecutionsByRequestId(requestId: RequestId) {
     .query(`delete from ${tableName} where request_event_id = ?`)
     .run(requestId);
 }
+
+export function clearHandlerExecutions() {
+  return db.query(`delete from ${tableName}`).run();
+}
