@@ -112,3 +112,21 @@ export function updateRequestEvent(
 export function deleteRequestEvent(id: RequestId) {
   return db.query(`delete from "${tableName}" where id = ?`).run(id);
 }
+
+export function getRequestEventBySharedId(
+  sharedId: string,
+): RequestEvent | null {
+  const result = db
+    .query(
+      `select ${keysForSelect(
+        requestEventSchema,
+      )} from "${tableName}" where shared_id = $sharedId;`,
+    )
+    .get({ sharedId });
+
+  if (!result) {
+    return null;
+  }
+
+  return requestEventSchema.parse(result) as RequestEvent;
+}
