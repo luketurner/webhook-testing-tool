@@ -10,121 +10,24 @@ import {
   afterAll,
   beforeEach,
 } from "bun:test";
-import express from "express";
-import morgan from "morgan";
-import bodyParser from "body-parser";
-import { EXCLUDE_HEADER_MAP } from "../config-shared";
-import type { RequestEvent } from "@/request-events/schema";
 import { randomUUID } from "@/util/uuid";
-import { now } from "@/util/timestamp";
-import { fromObject } from "@/util/kv-list";
-import type { HttpMethod } from "@/util/http";
-import { fromBufferLike } from "@/util/base64";
 import {
-  createRequestEvent,
-  updateRequestEvent,
   getAllRequestEvents,
   deleteRequestEvent,
 } from "@/request-events/model";
 import type { RequestId } from "@/request-events/schema";
-import { appEvents } from "@/db/events";
-import { handleRequest } from "./handle-request";
 import { clearHandlers, createHandler } from "@/handlers/model";
+import { startWebhookServer } from "./index";
+import * as jose from "jose";
 
 describe("Webhook Server Integration Tests", () => {
   let server: any;
-  let app: express.Application;
   const baseUrl = `http://localhost:${TEST_PORT}`;
   const testRequestIds: string[] = [];
 
   beforeAll(async () => {
-    // Create Express app similar to the main webhook server
-    app = express();
-    app.use(morgan("combined"));
-    app.use(bodyParser.raw({ type: (_req) => true }));
-
-    app.all("*", async (req, res) => {
-      const headers = { ...req.headers };
-      for (const header of Object.keys(headers)) {
-        if (EXCLUDE_HEADER_MAP[header]) delete headers[header];
-      }
-
-      // Extract query parameters from URL
-      const url = new URL(
-        req.originalUrl,
-        `http://${req.headers.host || "localhost"}`,
-      );
-      const queryParams = [...url.searchParams.entries()];
-
-      const event: RequestEvent = {
-        id: randomUUID(),
-        type: "inbound",
-        status: "running",
-        request_url: req.originalUrl,
-        request_method: req.method as HttpMethod,
-        request_timestamp: now(),
-        request_body: Buffer.isBuffer(req.body)
-          ? fromBufferLike(req.body)
-          : null,
-        request_headers: fromObject(headers),
-        request_query_params: queryParams,
-      };
-
-      const createdEvent = createRequestEvent(event);
-      appEvents.emit("request:created", createdEvent);
-
-      // intercept response write so we can log the response info
-      const oldWrite = res.write;
-      const oldEnd = res.end;
-      const chunks: Buffer[] = [];
-
-      res.write = (...restArgs) => {
-        chunks.push(Buffer.from(restArgs[0]));
-        return oldWrite.apply(res, restArgs);
-      };
-
-      res.end = (...restArgs) => {
-        if (restArgs[0]) {
-          chunks.push(Buffer.from(restArgs[0]));
-        }
-        const body = Buffer.concat(chunks as any);
-        const result = oldEnd.apply(res, restArgs);
-
-        const updatedEvent = updateRequestEvent({
-          id: event.id,
-          status: "complete",
-          response_status: res.statusCode,
-          response_status_message: res.statusMessage,
-          response_headers: fromObject(res.getHeaders()),
-          response_body: body.length > 0 ? fromBufferLike(body) : null,
-          response_timestamp: now(),
-        });
-        appEvents.emit("request:updated", updatedEvent);
-        return result;
-      };
-
-      const [error, response] = await handleRequest(event);
-
-      const responseStatus =
-        typeof response?.status === "number" ? response.status : 200;
-      res.status(responseStatus);
-      for (const [k, v] of response?.response_headers || []) {
-        res.set(k, v.toString());
-      }
-      res.send(
-        response?.response_body === null ||
-          response?.response_body === undefined
-          ? { status: responseStatus }
-          : Buffer.from(response.response_body, "base64"),
-      );
-    });
-
-    // Start the test server
-    server = await new Promise<any>((resolve) => {
-      const srv = app.listen(TEST_PORT, () => {
-        resolve(srv);
-      });
-    });
+    // Start the webhook server on the test port
+    server = await startWebhookServer(TEST_PORT);
 
     // Give the server a moment to fully start
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -466,5 +369,439 @@ describe("Webhook Server Integration Tests", () => {
     for (const event of testEvents) {
       cleanupRequestEvent(event.id);
     }
+  });
+
+  describe("JWT Verification with RS384", () => {
+    let rsaKeyPair: CryptoKey;
+    let publicJWK: jose.JWK;
+    let privateKey: CryptoKey;
+
+    beforeAll(async () => {
+      // Generate RSA key pair for RS384 testing
+      const { publicKey, privateKey: privKey } = await jose.generateKeyPair(
+        "RS384",
+        { modulusLength: 2048 },
+      );
+      rsaKeyPair = publicKey;
+      privateKey = privKey;
+
+      // Export public key as JWK
+      publicJWK = await jose.exportJWK(publicKey);
+      publicJWK.alg = "RS384";
+      publicJWK.kid = "test-rs384-key";
+      publicJWK.use = "sig";
+    });
+
+    const createValidRS384JWT = async (payload: Record<string, any> = {}) => {
+      const defaultPayload = {
+        sub: "1234567890",
+        name: "John Doe",
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 3600, // Expires in 1 hour
+        ...payload,
+      };
+
+      return await new jose.SignJWT(defaultPayload)
+        .setProtectedHeader({ alg: "RS384", kid: "test-rs384-key" })
+        .sign(privateKey);
+    };
+
+    const createJWKS = (keys: jose.JWK[] = []) => {
+      return JSON.stringify({
+        keys: keys.length > 0 ? keys : [publicJWK],
+      });
+    };
+
+    test("should verify valid RS384 JWT in webhook request", async () => {
+      const validJWT = await createValidRS384JWT();
+      const jwks = createJWKS();
+
+      // Create handler with RS384 JWT verification
+      const handlerCode = `
+        if (!jwt.isJWTVerified()) {
+          resp.status = 401;
+          resp.body = JSON.stringify({ error: "JWT verification failed: " + jwt.getJWTError() });
+        } else {
+          resp.status = 200;
+          resp.headers = [["X-JWT-Algorithm", jwt.getJWTAlgorithm() || ""]];
+          resp.body = JSON.stringify({ 
+            message: "JWT verified successfully",
+            algorithm: jwt.getJWTAlgorithm(),
+            keyId: jwt.getJWTKeyId()
+          });
+        }
+      `;
+
+      createHandler({
+        id: randomUUID(),
+        version_id: "1",
+        name: "rs384-jwt-handler",
+        method: "POST",
+        path: "/jwt/rs384",
+        code: handlerCode,
+        order: 0,
+        jwks,
+      });
+
+      const response = await fetch(`${baseUrl}/jwt/rs384`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${validJWT}`,
+        },
+        body: JSON.stringify({ test: "data" }),
+      });
+
+      expect(response.status).toBe(200);
+
+      const responseData = await response.json();
+      expect(responseData.message).toBe("JWT verified successfully");
+      expect(responseData.algorithm).toBe("RS384");
+      expect(responseData.keyId).toBe("test-rs384-key");
+
+      // Check if custom header was set
+      expect(response.headers.get("X-JWT-Algorithm")).toBe("RS384");
+
+      // Find and cleanup the request event
+      const allEvents = getAllRequestEvents();
+      const event = allEvents.find(
+        (e) => e.request_method === "POST" && e.request_url === "/jwt/rs384",
+      );
+      if (event) {
+        cleanupRequestEvent(event.id);
+      }
+    });
+
+    test("should reject invalid RS384 JWT signature", async () => {
+      const jwks = createJWKS();
+
+      // Create JWT with wrong signature by modifying a valid one
+      const validJWT = await createValidRS384JWT();
+      const jwtParts = validJWT.split(".");
+      const invalidJWT = `${jwtParts[0]}.${jwtParts[1]}.invalid-signature`;
+
+      const handlerCode = `
+        if (!jwt.isJWTVerified()) {
+          resp.status = 401;
+          resp.body = JSON.stringify({ error: jwt.getJWTError() });
+        } else {
+          resp.status = 200;
+          resp.body = JSON.stringify({ message: "Should not reach here" });
+        }
+      `;
+
+      createHandler({
+        id: randomUUID(),
+        version_id: "1",
+        name: "rs384-invalid-jwt-handler",
+        method: "POST",
+        path: "/jwt/rs384-invalid",
+        code: handlerCode,
+        order: 0,
+        jwks,
+      });
+
+      const response = await fetch(`${baseUrl}/jwt/rs384-invalid`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${invalidJWT}`,
+        },
+        body: JSON.stringify({ test: "data" }),
+      });
+
+      expect(response.status).toBe(401);
+
+      const responseData = await response.json();
+      expect(responseData.error).toContain("signature verification failed");
+
+      // Find and cleanup the request event
+      const allEvents = getAllRequestEvents();
+      const event = allEvents.find(
+        (e) =>
+          e.request_method === "POST" && e.request_url === "/jwt/rs384-invalid",
+      );
+      if (event) {
+        cleanupRequestEvent(event.id);
+      }
+    });
+
+    test("should reject expired RS384 JWT", async () => {
+      const jwks = createJWKS();
+
+      // Create expired JWT
+      const expiredJWT = await createValidRS384JWT({
+        exp: Math.floor(Date.now() / 1000) - 3600, // Expired 1 hour ago
+      });
+
+      const handlerCode = `
+        if (!jwt.isJWTVerified()) {
+          resp.status = 401;
+          resp.body = JSON.stringify({ error: jwt.getJWTError() });
+        } else {
+          resp.status = 200;
+          resp.body = JSON.stringify({ message: "Should not reach here" });
+        }
+      `;
+
+      createHandler({
+        id: randomUUID(),
+        version_id: "1",
+        name: "rs384-expired-jwt-handler",
+        method: "POST",
+        path: "/jwt/rs384-expired",
+        code: handlerCode,
+        order: 0,
+        jwks,
+      });
+
+      const response = await fetch(`${baseUrl}/jwt/rs384-expired`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${expiredJWT}`,
+        },
+        body: JSON.stringify({ test: "data" }),
+      });
+
+      expect(response.status).toBe(401);
+
+      const responseData = await response.json();
+      expect(responseData.error).toBe("JWT has expired");
+
+      // Find and cleanup the request event
+      const allEvents = getAllRequestEvents();
+      const event = allEvents.find(
+        (e) =>
+          e.request_method === "POST" && e.request_url === "/jwt/rs384-expired",
+      );
+      if (event) {
+        cleanupRequestEvent(event.id);
+      }
+    });
+
+    test("should reject RS384 JWT with wrong key ID", async () => {
+      // Create JWKS with different key ID
+      const wrongKeyJWK = { ...publicJWK, kid: "wrong-key-id" };
+      const jwks = createJWKS([wrongKeyJWK]);
+
+      const validJWT = await createValidRS384JWT();
+
+      const handlerCode = `
+        if (!jwt.isJWTVerified()) {
+          resp.status = 401;
+          resp.body = JSON.stringify({ error: jwt.getJWTError() });
+        } else {
+          resp.status = 200;
+          resp.body = JSON.stringify({ message: "Should not reach here" });
+        }
+      `;
+
+      createHandler({
+        id: randomUUID(),
+        version_id: "1",
+        name: "rs384-wrong-kid-handler",
+        method: "POST",
+        path: "/jwt/rs384-wrong-kid",
+        code: handlerCode,
+        order: 0,
+        jwks,
+      });
+
+      const response = await fetch(`${baseUrl}/jwt/rs384-wrong-kid`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${validJWT}`,
+        },
+        body: JSON.stringify({ test: "data" }),
+      });
+
+      expect(response.status).toBe(401);
+
+      const responseData = await response.json();
+      expect(responseData.error).toContain("signature verification failed");
+
+      // Find and cleanup the request event
+      const allEvents = getAllRequestEvents();
+      const event = allEvents.find(
+        (e) =>
+          e.request_method === "POST" &&
+          e.request_url === "/jwt/rs384-wrong-kid",
+      );
+      if (event) {
+        cleanupRequestEvent(event.id);
+      }
+    });
+
+    test("should reject request without JWT when RS384 verification required", async () => {
+      const jwks = createJWKS();
+
+      const handlerCode = `
+        try {
+          jwt.requireJWTVerification();
+          resp.status = 200;
+          resp.body = JSON.stringify({ message: "JWT verified successfully" });
+        } catch (error) {
+          resp.status = 401;
+          resp.body = JSON.stringify({ error: error.message });
+        }
+      `;
+
+      createHandler({
+        id: randomUUID(),
+        version_id: "1",
+        name: "rs384-required-handler",
+        method: "POST",
+        path: "/jwt/rs384-required",
+        code: handlerCode,
+        order: 0,
+        jwks,
+      });
+
+      const response = await fetch(`${baseUrl}/jwt/rs384-required`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ test: "data" }),
+      });
+
+      expect(response.status).toBe(401);
+
+      const responseData = await response.json();
+      expect(responseData.error).toContain("JWT verification failed");
+
+      // Find and cleanup the request event
+      const allEvents = getAllRequestEvents();
+      const event = allEvents.find(
+        (e) =>
+          e.request_method === "POST" &&
+          e.request_url === "/jwt/rs384-required",
+      );
+      if (event) {
+        cleanupRequestEvent(event.id);
+      }
+    });
+
+    test("should work with multiple RS384 keys in JWKS", async () => {
+      // Create additional key for testing multiple key scenario
+      const { publicKey: publicKey2, privateKey: privateKey2 } =
+        await jose.generateKeyPair("RS384", { modulusLength: 2048 });
+      const publicJWK2 = await jose.exportJWK(publicKey2);
+      publicJWK2.alg = "RS384";
+      publicJWK2.kid = "test-rs384-key-2";
+      publicJWK2.use = "sig";
+
+      // Create JWKS with multiple keys
+      const jwks = createJWKS([publicJWK, publicJWK2]);
+
+      // Create JWT with first key
+      const validJWT = await createValidRS384JWT();
+
+      const handlerCode = `
+        if (!jwt.isJWTVerified()) {
+          resp.status = 401;
+          resp.body = JSON.stringify({ error: jwt.getJWTError() });
+        } else {
+          resp.status = 200;
+          resp.body = JSON.stringify({ 
+            message: "JWT verified successfully",
+            keyId: jwt.getJWTKeyId()
+          });
+        }
+      `;
+
+      createHandler({
+        id: randomUUID(),
+        version_id: "1",
+        name: "rs384-multiple-keys-handler",
+        method: "POST",
+        path: "/jwt/rs384-multiple",
+        code: handlerCode,
+        order: 0,
+        jwks,
+      });
+
+      const response = await fetch(`${baseUrl}/jwt/rs384-multiple`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${validJWT}`,
+        },
+        body: JSON.stringify({ test: "data" }),
+      });
+
+      expect(response.status).toBe(200);
+
+      const responseData = await response.json();
+      expect(responseData.message).toBe("JWT verified successfully");
+      expect(responseData.keyId).toBe("test-rs384-key");
+
+      // Find and cleanup the request event
+      const allEvents = getAllRequestEvents();
+      const event = allEvents.find(
+        (e) =>
+          e.request_method === "POST" &&
+          e.request_url === "/jwt/rs384-multiple",
+      );
+      if (event) {
+        cleanupRequestEvent(event.id);
+      }
+    });
+
+    test("should handle RS384 JWT with not-before time (nbf)", async () => {
+      const jwks = createJWKS();
+
+      // Create JWT that's not valid yet (nbf in future)
+      const futureJWT = await createValidRS384JWT({
+        nbf: Math.floor(Date.now() / 1000) + 3600, // Not valid for 1 hour
+      });
+
+      const handlerCode = `
+        if (!jwt.isJWTVerified()) {
+          resp.status = 401;
+          resp.body = JSON.stringify({ error: jwt.getJWTError() });
+        } else {
+          resp.status = 200;
+          resp.body = JSON.stringify({ message: "Should not reach here" });
+        }
+      `;
+
+      createHandler({
+        id: randomUUID(),
+        version_id: "1",
+        name: "rs384-nbf-handler",
+        method: "POST",
+        path: "/jwt/rs384-nbf",
+        code: handlerCode,
+        order: 0,
+        jwks,
+      });
+
+      const response = await fetch(`${baseUrl}/jwt/rs384-nbf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${futureJWT}`,
+        },
+        body: JSON.stringify({ test: "data" }),
+      });
+
+      expect(response.status).toBe(401);
+
+      const responseData = await response.json();
+      expect(responseData.error).toBe("JWT is not yet valid");
+
+      // Find and cleanup the request event
+      const allEvents = getAllRequestEvents();
+      const event = allEvents.find(
+        (e) =>
+          e.request_method === "POST" && e.request_url === "/jwt/rs384-nbf",
+      );
+      if (event) {
+        cleanupRequestEvent(event.id);
+      }
+    });
   });
 });
