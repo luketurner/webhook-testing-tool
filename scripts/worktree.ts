@@ -70,22 +70,22 @@ function isPortAvailable(port: number): Promise<boolean> {
 }
 
 /**
- * Find two adjacent available ports in the 3000-4000 range
+ * Find two adjacent available ports in the 3002-4000 range
  */
 async function findAvailablePorts(): Promise<{
   adminPort: number;
   webhookPort: number;
 }> {
-  for (let port = 3000; port < 4000; port++) {
-    const adminAvailable = await isPortAvailable(port);
-    const webhookAvailable = await isPortAvailable(port + 1);
+  for (let port = 3002; port < 4000; port++) {
+    const webhookAvailable = await isPortAvailable(port);
+    const adminAvailable = await isPortAvailable(port + 1);
 
     if (adminAvailable && webhookAvailable) {
-      return { adminPort: port, webhookPort: port + 1 };
+      return { adminPort: port + 1, webhookPort: port };
     }
   }
 
-  throw new Error("No adjacent ports available in range 3000-4000");
+  throw new Error("No adjacent ports available in range 3002-4000");
 }
 
 /**
