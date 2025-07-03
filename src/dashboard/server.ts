@@ -6,6 +6,7 @@ import { requestEventController } from "@/request-events/controller";
 import { handlerExecutionController } from "@/handler-executions/controller";
 import { authController } from "@/auth/controller";
 import { withAuth } from "@/auth/middleware";
+import { getRequestEventBySharedId } from "@/request-events/model";
 import { appEvents } from "@/db/events";
 import type { BunRequest } from "bun";
 import { DEV } from "../config-server";
@@ -26,9 +27,22 @@ export const startDashboardServer = () =>
       "/requests/:id": indexPage,
       "/handlers": indexPage,
       "/handlers/:id": indexPage,
+      "/shared/:sharedId": indexPage,
 
       // auth routes (no auth required)
       ...authController,
+
+      // public shared request endpoint (no auth required)
+      "/api/shared/:sharedId": (req) => {
+        const request = getRequestEventBySharedId(req.params.sharedId);
+
+        if (!request) {
+          return new Response(null, { status: 404 });
+        }
+
+        // Return request without handler executions for security
+        return Response.json(request);
+      },
 
       // protected api routes
       ...buildController(requestEventController),
