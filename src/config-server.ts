@@ -5,7 +5,8 @@ export const DEV = NODE_ENV === "development";
 export const PROD = NODE_ENV === "production";
 export const TEST = NODE_ENV === "test";
 
-export const ADMIN_USERNAME = "admin@example.com";
+export const ADMIN_USERNAME =
+  process.env.WTT_ADMIN_USERNAME || "admin@example.com";
 
 export const DB_FILE = TEST
   ? ":memory:"
