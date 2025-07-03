@@ -29,6 +29,7 @@ export const requestEventSchema = z.object({
     .nullish(),
   response_body: z.preprocess(fromBufferLike, base64Schema).nullish(),
   response_timestamp: timestampSchema.nullish(),
+  tls_info: z.string().nullish(),
 });
 
 export const requestEventMetaSchema = requestEventSchema.omit({
@@ -37,6 +38,7 @@ export const requestEventMetaSchema = requestEventSchema.omit({
   request_body: true,
   response_headers: true,
   response_body: true,
+  tls_info: true,
 });
 
 export interface RequestEvent extends z.infer<typeof requestEventSchema> {
