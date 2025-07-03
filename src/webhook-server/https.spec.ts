@@ -24,7 +24,6 @@ describe("Webhook Server HTTPS/TLS Tests", () => {
   test("HTTPS GET request captures TLS info", async () => {
     // AIDEV-NOTE: Using fetch with rejectUnauthorized: false to accept self-signed cert
     const response = await fetch(`${baseUrl}/tls-test`, {
-      // @ts-ignore - Bun supports this option
       tls: { rejectUnauthorized: false },
     });
     expect(response.status).toBe(200);

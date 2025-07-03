@@ -6,7 +6,6 @@ import {
   type JWTVerificationConfig,
 } from "./jwt-verification";
 
-// AIDEV-NOTE: Test utility functions for JWT verification tests
 // These helpers create valid test data for different JWT scenarios
 
 // Mock JWKS with test RSA key (simplified for testing)

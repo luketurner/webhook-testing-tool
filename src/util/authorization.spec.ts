@@ -13,7 +13,6 @@ import {
   tryParseJWTHeader,
 } from "./authorization";
 
-// AIDEV-NOTE: Test utilities for authorization header parsing
 // These tests cover all authorization header formats supported by the system
 
 describe("Authorization Header Parsing", () => {

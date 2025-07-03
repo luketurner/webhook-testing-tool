@@ -72,7 +72,6 @@ describe("handler-executions controller", () => {
       const response = getHandler(mockReq);
       expect(response).toBeInstanceOf(Response);
 
-      // AIDEV-NOTE: Parse response JSON to verify content
       const jsonPromise = response.json();
       return jsonPromise.then((data) => {
         expect(Array.isArray(data)).toBe(true);
