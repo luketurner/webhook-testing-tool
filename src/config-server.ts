@@ -1,9 +1,9 @@
 import "@/server-only";
 
 export const NODE_ENV = process.env.NODE_ENV;
-export const DEV = process.env.NODE_ENV === "development";
-export const PROD = process.env.NODE_ENV === "production";
-export const TEST = process.env.NODE_ENV === "test";
+export const DEV = NODE_ENV === "development";
+export const PROD = NODE_ENV === "production";
+export const TEST = NODE_ENV === "test";
 
 export const ADMIN_USERNAME = "admin@example.com";
 
