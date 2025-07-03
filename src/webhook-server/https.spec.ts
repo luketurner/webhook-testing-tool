@@ -41,7 +41,7 @@ describe("Webhook Server HTTPS/TLS Tests", () => {
 
       // Parse and verify TLS info
       if (event.tls_info) {
-        const tlsInfo = JSON.parse(event.tls_info);
+        const tlsInfo = event.tls_info;
 
         // In a real TLS environment, we expect these fields
         // In test environment, they may be missing or have defaults
@@ -105,7 +105,7 @@ describe("Webhook Server HTTPS/TLS Tests", () => {
 
       // Verify TLS info exists and is valid JSON
       if (event.tls_info) {
-        const tlsInfo = JSON.parse(event.tls_info);
+        const tlsInfo = event.tls_info;
         expect(typeof tlsInfo).toBe("object");
 
         // Check for TLS-specific fields if available
@@ -156,7 +156,7 @@ describe("Webhook Server HTTPS/TLS Tests", () => {
       expect(event.tls_info).not.toBeNull();
 
       if (event.tls_info) {
-        const tlsInfo = JSON.parse(event.tls_info);
+        const tlsInfo = event.tls_info;
         expect(typeof tlsInfo).toBe("object");
 
         // Check for TLS-specific fields if available
@@ -192,7 +192,7 @@ describe("Webhook Server HTTPS/TLS Tests", () => {
 
     if (event) {
       if (event.tls_info) {
-        const tlsInfo = JSON.parse(event.tls_info);
+        const tlsInfo = event.tls_info;
 
         // Even without client cert, we should still capture server TLS info
         expect(typeof tlsInfo).toBe("object");

@@ -29,7 +29,7 @@ export const requestEventSchema = z.object({
     .nullish(),
   response_body: z.preprocess(fromBufferLike, base64Schema).nullish(),
   response_timestamp: timestampSchema.nullish(),
-  tls_info: z.string().nullish(),
+  tls_info: z.preprocess(fromJSONString, z.any()).nullish(),
 });
 
 export const requestEventMetaSchema = requestEventSchema.omit({

@@ -37,7 +37,7 @@ app.use(morgan("combined"));
 app.use(bodyParser.raw({ type: (_req) => true }));
 
 // Function to extract TLS info from socket
-function extractTlsInfo(socket: any): string | null {
+function extractTlsInfo(socket: any) {
   if (!socket || !socket.encrypted) {
     return null;
   }
@@ -73,8 +73,11 @@ function extractTlsInfo(socket: any): string | null {
       tlsInfo.isSessionReused = tlsSocket.isSessionReused();
     }
 
-    // AIDEV-NOTE: TLS info is stored as JSON string in the database
-    return JSON.stringify(tlsInfo);
+    if (Object.keys(tlsInfo).length === 0) {
+      return null;
+    }
+
+    return tlsInfo;
   } catch (err) {
     console.error("Failed to extract TLS info:", err);
     return null;
