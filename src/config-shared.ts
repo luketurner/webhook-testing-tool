@@ -11,3 +11,15 @@ export const EXCLUDE_HEADER_MAP = EXCLUDE_HEADERS.split(",").reduce(
   },
   {},
 );
+
+// SSL/TLS Configuration
+export const WEBHOOK_SSL_ENABLED =
+  process.env.WTT_WEBHOOK_SSL_ENABLED === "true";
+export const WEBHOOK_SSL_PORT = parseInt(
+  process.env.WTT_WEBHOOK_SSL_PORT || "3443",
+  10,
+);
+export const WEBHOOK_SSL_CERT_PATH =
+  process.env.WTT_WEBHOOK_SSL_CERT_PATH || "certs/cert.pem";
+export const WEBHOOK_SSL_KEY_PATH =
+  process.env.WTT_WEBHOOK_SSL_KEY_PATH || "certs/key.pem";
