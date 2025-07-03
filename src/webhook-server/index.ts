@@ -31,6 +31,8 @@ app.use(morgan("combined"));
 app.use(bodyParser.raw({ type: (_req) => true }));
 
 // Function to extract TLS info from socket
+// NOTE: This does not work in Bun due to https://github.com/oven-sh/bun/issues/16834
+// Hopefully it'll start working someday!
 function extractTlsInfo(socket: any) {
   if (!socket || !socket.encrypted) {
     return null;

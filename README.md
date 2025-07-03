@@ -26,7 +26,7 @@ How it works:
 ## Protocols supported
 
 - [x] HTTP/1.1
-   - [ ] (in progress) TLS termination
+   - [ ] TLS socket info -- not available in Bun. [related issue](https://github.com/oven-sh/bun/issues/16834)
    - [ ] Binary bodies (`application/octet-stream`)
    - [ ] Multipart bodies
 - [ ] HTTP/2
