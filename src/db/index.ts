@@ -3,6 +3,9 @@ import { Glob } from "bun";
 import { Database } from "bun:sqlite";
 import path, { join } from "path";
 import { DB_FILE } from "../config-server";
+import { clearHandlerExecutions } from "@/handler-executions/model";
+import { clearRequestEvents } from "@/request-events/model";
+import { clearHandlers } from "@/handlers/model";
 
 export const db = new Database(DB_FILE, { create: true, strict: true });
 
@@ -74,4 +77,11 @@ const runMigrations = db.transaction((migrations: MigrationDefn[]) => {
 export const migrateDb = async () => {
   const migrations = await loadMigrations();
   runMigrations(migrations);
+};
+
+export const resetDb = () => {
+  // AIDEV-NOTE: When adding a new model, update this function
+  clearHandlerExecutions();
+  clearRequestEvents();
+  clearHandlers();
 };

@@ -1,11 +1,10 @@
-import { expect, test, describe, beforeAll } from "bun:test";
+import { beforeAll, describe, expect, test } from "bun:test";
+import type { ParsedAuthJWT } from "./authorization";
 import {
   verifyJWT,
-  type JWTVerificationConfig,
   type JWKS,
-  type JWK,
+  type JWTVerificationConfig,
 } from "./jwt-verification";
-import type { ParsedAuthJWT } from "./authorization";
 
 // AIDEV-NOTE: Test utility functions for JWT verification tests
 // These helpers create valid test data for different JWT scenarios

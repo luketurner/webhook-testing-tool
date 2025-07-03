@@ -11,7 +11,6 @@ import { randomUUID } from "@/util/uuid";
 
 describe("handlers/controller", () => {
   let testHandler: Handler;
-  let createdHandlerIds: HandlerId[] = [];
 
   beforeEach(() => {
     testHandler = {
@@ -25,18 +24,6 @@ describe("handlers/controller", () => {
     };
   });
 
-  afterEach(() => {
-    // Clean up created handlers
-    createdHandlerIds.forEach((id) => {
-      try {
-        deleteHandler(id);
-      } catch (error) {
-        // Ignore errors during cleanup
-      }
-    });
-    createdHandlerIds = [];
-  });
-
   describe("GET /api/handlers", () => {
     test("should return all handlers", async () => {
       // Create test handlers
@@ -45,7 +32,6 @@ describe("handlers/controller", () => {
         id: randomUUID(),
         order: 1,
       });
-      createdHandlerIds.push(handler1.id);
 
       const handler2 = createHandler({
         ...testHandler,
@@ -53,7 +39,6 @@ describe("handlers/controller", () => {
         name: "Handler 2",
         order: 2,
       });
-      createdHandlerIds.push(handler2.id);
 
       const mockReq = {} as any;
       const response = handlerController["/api/handlers"].GET(mockReq);
@@ -107,7 +92,6 @@ describe("handlers/controller", () => {
         order: 3,
         name: "Third",
       });
-      createdHandlerIds.push(handler1.id);
 
       const handler2 = createHandler({
         ...testHandler,
@@ -115,7 +99,6 @@ describe("handlers/controller", () => {
         order: 1,
         name: "First",
       });
-      createdHandlerIds.push(handler2.id);
 
       const handler3 = createHandler({
         ...testHandler,
@@ -123,7 +106,6 @@ describe("handlers/controller", () => {
         order: 2,
         name: "Second",
       });
-      createdHandlerIds.push(handler3.id);
 
       const mockReq = {} as any;
       const response = handlerController["/api/handlers"].GET(mockReq);
@@ -152,7 +134,6 @@ describe("handlers/controller", () => {
       } as any;
 
       const response = await handlerController["/api/handlers"].POST(mockReq);
-      createdHandlerIds.push(handlerData.id);
 
       expect(response).toBeInstanceOf(Response);
       expect(response.status).toBe(200);
@@ -174,7 +155,6 @@ describe("handlers/controller", () => {
         id: randomUUID(),
         order: 5,
       });
-      createdHandlerIds.push(existingHandler.id);
 
       const handlerDataWithoutOrder = {
         id: randomUUID(),
@@ -191,7 +171,6 @@ describe("handlers/controller", () => {
       } as any;
 
       const response = await handlerController["/api/handlers"].POST(mockReq);
-      createdHandlerIds.push(handlerDataWithoutOrder.id);
 
       expect(response.status).toBe(200);
 
@@ -216,7 +195,6 @@ describe("handlers/controller", () => {
       } as any;
 
       const response = await handlerController["/api/handlers"].POST(mockReq);
-      createdHandlerIds.push(handlerDataWithNullOrder.id);
 
       expect(response.status).toBe(200);
 
@@ -241,7 +219,6 @@ describe("handlers/controller", () => {
       } as any;
 
       const response = await handlerController["/api/handlers"].POST(mockReq);
-      createdHandlerIds.push(handlerData.id);
 
       expect(response.status).toBe(200);
 
@@ -273,7 +250,6 @@ describe("handlers/controller", () => {
       } as any;
 
       const response = await handlerController["/api/handlers"].POST(mockReq);
-      createdHandlerIds.push(handlerData.id);
 
       expect(response.status).toBe(200);
 
@@ -286,7 +262,6 @@ describe("handlers/controller", () => {
   describe("GET /api/handlers/:id", () => {
     test("should return specific handler by ID", async () => {
       const created = createHandler(testHandler);
-      createdHandlerIds.push(created.id);
 
       const mockReq = {
         params: { id: created.id },
@@ -334,7 +309,6 @@ describe("handlers/controller", () => {
   describe("PUT /api/handlers/:id", () => {
     test("should update an existing handler", async () => {
       const created = createHandler(testHandler);
-      createdHandlerIds.push(created.id);
 
       const updates = {
         ...created,
@@ -370,7 +344,6 @@ describe("handlers/controller", () => {
 
     test("should update handler method and path", async () => {
       const created = createHandler(testHandler);
-      createdHandlerIds.push(created.id);
 
       const updates = {
         ...created,
@@ -396,7 +369,6 @@ describe("handlers/controller", () => {
 
     test("should update handler to wildcard method", async () => {
       const created = createHandler(testHandler);
-      createdHandlerIds.push(created.id);
 
       const updates = {
         ...created,
@@ -487,7 +459,6 @@ describe("handlers/controller", () => {
         name: "Handler 1",
         path: "/reorder1",
       });
-      createdHandlerIds.push(handler1.id);
 
       const handler2 = createHandler({
         ...testHandler,
@@ -496,7 +467,6 @@ describe("handlers/controller", () => {
         name: "Handler 2",
         path: "/reorder2",
       });
-      createdHandlerIds.push(handler2.id);
 
       const handler3 = createHandler({
         ...testHandler,
@@ -505,7 +475,6 @@ describe("handlers/controller", () => {
         name: "Handler 3",
         path: "/reorder3",
       });
-      createdHandlerIds.push(handler3.id);
 
       const reorderData = {
         updates: [
@@ -545,7 +514,6 @@ describe("handlers/controller", () => {
         id: randomUUID(),
         order: 5,
       });
-      createdHandlerIds.push(handler.id);
 
       const reorderData = {
         updates: [{ id: handler.id, order: 10 }],
@@ -571,7 +539,6 @@ describe("handlers/controller", () => {
         id: randomUUID(),
         order: 5,
       });
-      createdHandlerIds.push(handler.id);
 
       const reorderData = {
         updates: [{ id: handler.id, order: 0 }],
@@ -607,7 +574,6 @@ describe("handlers/controller", () => {
 
     test("should handle malformed JSON in PUT request", async () => {
       const created = createHandler(testHandler);
-      createdHandlerIds.push(created.id);
 
       const mockReq = {
         params: { id: created.id },
@@ -695,7 +661,6 @@ describe("handlers/controller", () => {
 
     test("should handle invalid schema data in PUT", async () => {
       const created = createHandler(testHandler);
-      createdHandlerIds.push(created.id);
 
       const invalidUpdates = {
         ...created,

@@ -1,21 +1,16 @@
-import { expect, test, describe } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import {
-  parseAuthorizationHeader,
-  tryParseBasicHeader,
-  tryParseDigestHeader,
-  tryParseGenericBearerHeader,
-  tryParseJWTHeader,
-  parseUnknownHeader,
   isBasicAuth,
   isDigestAuth,
   isGenericBearerAuth,
   isJWTAuth,
   isUnknownAuth,
-  type ParsedAuthBasic,
-  type ParsedAuthDigest,
-  type ParsedAuthGenericBearer,
-  type ParsedAuthJWT,
-  type ParsedAuthUnknown,
+  parseAuthorizationHeader,
+  parseUnknownHeader,
+  tryParseBasicHeader,
+  tryParseDigestHeader,
+  tryParseGenericBearerHeader,
+  tryParseJWTHeader,
 } from "./authorization";
 
 // AIDEV-NOTE: Test utilities for authorization header parsing

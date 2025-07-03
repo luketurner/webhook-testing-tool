@@ -12,7 +12,6 @@ import { parseBase64 } from "@/util/base64";
 
 describe("request-events/controller", () => {
   let testRequestEvent: RequestEvent;
-  let createdRequestIds: RequestId[] = [];
 
   beforeEach(() => {
     testRequestEvent = {
@@ -33,18 +32,6 @@ describe("request-events/controller", () => {
     };
   });
 
-  afterEach(() => {
-    // Clean up created request events
-    createdRequestIds.forEach((id) => {
-      try {
-        deleteRequestEvent(id);
-      } catch (error) {
-        // Ignore errors during cleanup
-      }
-    });
-    createdRequestIds = [];
-  });
-
   describe("GET /api/requests", () => {
     test("should return all request event metadata", async () => {
       // Create test events
@@ -52,14 +39,12 @@ describe("request-events/controller", () => {
         ...testRequestEvent,
         id: randomUUID(),
       });
-      createdRequestIds.push(event1.id);
 
       const event2 = createRequestEvent({
         ...testRequestEvent,
         id: randomUUID(),
         type: "outbound",
       });
-      createdRequestIds.push(event2.id);
 
       const mockReq = {} as any;
       const response = requestEventController["/api/requests"].GET(mockReq);
@@ -112,7 +97,6 @@ describe("request-events/controller", () => {
   describe("GET /api/requests/:id", () => {
     test("should return full request event data for existing ID", async () => {
       const created = createRequestEvent(testRequestEvent);
-      createdRequestIds.push(created.id);
 
       const mockReq = {
         params: { id: created.id },

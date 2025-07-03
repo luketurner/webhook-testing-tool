@@ -1,24 +1,21 @@
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
+import { createRequestEvent } from "@/request-events/model";
+import { now, timestampSchema } from "@/util/timestamp";
+import { randomUUID } from "@/util/uuid";
+import { describe, expect, test } from "bun:test";
 import {
-  getHandlerExecution,
-  getHandlerExecutionsByRequestId,
-  getHandlerExecutionsByHandlerId,
-  getAllHandlerExecutions,
-  getAllHandlerExecutionsMeta,
   createHandlerExecution,
-  updateHandlerExecution,
   deleteHandlerExecution,
   deleteHandlerExecutionsByRequestId,
+  getAllHandlerExecutions,
+  getAllHandlerExecutionsMeta,
+  getHandlerExecution,
+  getHandlerExecutionsByHandlerId,
+  getHandlerExecutionsByRequestId,
+  updateHandlerExecution,
 } from "./model";
-import type { HandlerExecution, HandlerExecutionId } from "./schema";
-import { randomUUID, type UUID } from "@/util/uuid";
-import { now, timestampSchema } from "@/util/timestamp";
-import { createRequestEvent, deleteRequestEvent } from "@/request-events/model";
+import type { HandlerExecution } from "./schema";
 
 describe("handler-executions model", () => {
-  let createdHandlerExecutionIds: HandlerExecutionId[] = [];
-  let createdRequestEventIds: string[] = [];
-
   const createTestRequestEvent = () => {
     const requestEvent = {
       id: randomUUID(),
@@ -36,7 +33,6 @@ describe("handler-executions model", () => {
       response_timestamp: now(),
     };
     const created = createRequestEvent(requestEvent as any);
-    createdRequestEventIds.push(created.id);
     return created;
   };
 
@@ -57,29 +53,8 @@ describe("handler-executions model", () => {
       ...overrides,
     };
     const created = createHandlerExecution(execution as HandlerExecution);
-    createdHandlerExecutionIds.push(created.id);
     return created;
   };
-
-  afterEach(() => {
-    createdHandlerExecutionIds.forEach((id) => {
-      try {
-        deleteHandlerExecution(id);
-      } catch (error) {
-        // Ignore errors during cleanup
-      }
-    });
-    createdHandlerExecutionIds = [];
-
-    createdRequestEventIds.forEach((id) => {
-      try {
-        deleteRequestEvent(id as UUID);
-      } catch (error) {
-        // Ignore errors during cleanup
-      }
-    });
-    createdRequestEventIds = [];
-  });
 
   describe("createHandlerExecution", () => {
     test("creates handler execution with valid data", () => {
@@ -97,7 +72,6 @@ describe("handler-executions model", () => {
       };
 
       const result = createHandlerExecution(execution);
-      createdHandlerExecutionIds.push(result.id);
 
       expect(result).toMatchObject(execution);
       expect(result.id).toBe(execution.id);
@@ -118,7 +92,6 @@ describe("handler-executions model", () => {
       };
 
       const result = createHandlerExecution(execution);
-      createdHandlerExecutionIds.push(result.id);
 
       expect(result.status).toBe("error");
       expect(result.error_message).toBe("Handler execution failed");
@@ -361,9 +334,6 @@ describe("handler-executions model", () => {
       deleteHandlerExecution(created.id);
 
       expect(() => getHandlerExecution(created.id)).toThrow();
-      createdHandlerExecutionIds = createdHandlerExecutionIds.filter(
-        (id) => id !== created.id,
-      );
     });
 
     test("does not throw when deleting non-existent handler execution", () => {
@@ -386,9 +356,6 @@ describe("handler-executions model", () => {
 
       expect(() => getHandlerExecution(execution1.id)).toThrow();
       expect(() => getHandlerExecution(execution2.id)).toThrow();
-      createdHandlerExecutionIds = createdHandlerExecutionIds.filter(
-        (id) => id !== execution1.id && id !== execution2.id,
-      );
     });
 
     test("does not affect handler executions for other request events", () => {
@@ -405,9 +372,6 @@ describe("handler-executions model", () => {
 
       expect(() => getHandlerExecution(execution1.id)).toThrow();
       expect(() => getHandlerExecution(execution2.id)).not.toThrow();
-      createdHandlerExecutionIds = createdHandlerExecutionIds.filter(
-        (id) => id !== execution1.id,
-      );
     });
 
     test("does not throw when deleting from non-existent request event", () => {

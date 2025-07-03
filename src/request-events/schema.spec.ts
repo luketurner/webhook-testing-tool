@@ -1,15 +1,14 @@
-import { expect, test, describe } from "bun:test";
+import { now } from "@/util/timestamp";
+import { randomUUID } from "@/util/uuid";
+import { describe, expect, test } from "bun:test";
 import {
-  requestEventSchema,
-  requestEventMetaSchema,
-  REQUEST_EVENT_TYPES,
   REQUEST_EVENT_STATUSES,
+  REQUEST_EVENT_TYPES,
+  requestEventMetaSchema,
+  requestEventSchema,
   type RequestEvent,
   type RequestEventMeta,
 } from "./schema";
-import { randomUUID } from "@/util/uuid";
-import { now } from "@/util/timestamp";
-import { parseBase64 } from "@/util/base64";
 
 describe("request-events/schema", () => {
   const validRequestEvent = {
@@ -21,6 +20,7 @@ describe("request-events/schema", () => {
     request_headers: JSON.stringify([["Content-Type", "application/json"]]),
     request_body: Buffer.from("test body"),
     request_timestamp: now(),
+    request_query_params: [],
     response_status: 200,
     response_status_message: "OK",
     response_headers: JSON.stringify([["Content-Type", "application/json"]]),
@@ -60,6 +60,7 @@ describe("request-events/schema", () => {
         request_headers: JSON.stringify([]),
         request_body: null,
         request_timestamp: now(),
+        request_query_params: [],
         response_status: null,
         response_status_message: null,
         response_headers: null,

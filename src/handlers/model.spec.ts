@@ -34,10 +34,6 @@ describe("handlers/model", () => {
     };
   });
 
-  afterEach(() => {
-    clearHandlers();
-  });
-
   describe("createHandler()", () => {
     test("should create a handler successfully", () => {
       const created = createHandler(testHandler);

@@ -1,15 +1,12 @@
+import { getHandlerExecutionsByRequestId } from "@/handler-executions/model";
+import { createRequestEvent } from "@/request-events/model";
 import type { RequestEvent } from "@/request-events/schema";
-import { expect, test, describe, beforeEach, afterEach } from "bun:test";
-import { clearHandlers, createHandler } from "../handlers/model";
-import { randomUUID } from "@/util/uuid";
-import { now } from "@/util/timestamp";
-import { handleRequest } from "@/webhook-server/handle-request";
 import { parseBase64 } from "@/util/base64";
-import {
-  getHandlerExecutionsByRequestId,
-  deleteHandlerExecutionsByRequestId,
-} from "@/handler-executions/model";
-import { createRequestEvent, deleteRequestEvent } from "@/request-events/model";
+import { now } from "@/util/timestamp";
+import { randomUUID } from "@/util/uuid";
+import { handleRequest } from "@/webhook-server/handle-request";
+import { beforeEach, describe, expect, test } from "bun:test";
+import { createHandler } from "../handlers/model";
 
 describe("handleRequest()", () => {
   let request: RequestEvent;
@@ -28,23 +25,6 @@ describe("handleRequest()", () => {
 
     // Create the request event in the database
     request = createRequestEvent(requestData as RequestEvent);
-    clearHandlers();
-  });
-
-  afterEach(() => {
-    // Clean up handler executions created during tests
-    try {
-      deleteHandlerExecutionsByRequestId(request.id);
-    } catch (error) {
-      // Ignore errors during cleanup
-    }
-
-    // Clean up request event
-    try {
-      deleteRequestEvent(request.id);
-    } catch (error) {
-      // Ignore errors during cleanup
-    }
   });
 
   const defineHandler = (order, method, path, code) => {

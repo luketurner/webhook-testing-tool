@@ -1,15 +1,12 @@
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { handlerExecutionController } from "./controller";
-import { createHandlerExecution, deleteHandlerExecution } from "./model";
-import { createRequestEvent, deleteRequestEvent } from "@/request-events/model";
-import type { HandlerExecution, HandlerExecutionId } from "./schema";
-import { randomUUID, type UUID } from "@/util/uuid";
+import { createRequestEvent } from "@/request-events/model";
 import { now } from "@/util/timestamp";
+import { randomUUID } from "@/util/uuid";
+import { describe, expect, test } from "bun:test";
+import { handlerExecutionController } from "./controller";
+import { createHandlerExecution } from "./model";
+import type { HandlerExecution } from "./schema";
 
 describe("handler-executions controller", () => {
-  let createdHandlerExecutionIds: HandlerExecutionId[] = [];
-  let createdRequestEventIds: string[] = [];
-
   const createTestRequestEvent = () => {
     const requestEvent = {
       id: randomUUID(),
@@ -27,7 +24,6 @@ describe("handler-executions controller", () => {
       response_timestamp: now(),
     };
     const created = createRequestEvent(requestEvent as any);
-    createdRequestEventIds.push(created.id);
     return created;
   };
 
@@ -48,29 +44,8 @@ describe("handler-executions controller", () => {
       ...overrides,
     };
     const created = createHandlerExecution(execution as HandlerExecution);
-    createdHandlerExecutionIds.push(created.id);
     return created;
   };
-
-  afterEach(() => {
-    createdHandlerExecutionIds.forEach((id) => {
-      try {
-        deleteHandlerExecution(id);
-      } catch (error) {
-        // Ignore errors during cleanup
-      }
-    });
-    createdHandlerExecutionIds = [];
-
-    createdRequestEventIds.forEach((id) => {
-      try {
-        deleteRequestEvent(id as UUID);
-      } catch (error) {
-        // Ignore errors during cleanup
-      }
-    });
-    createdRequestEventIds = [];
-  });
 
   describe("GET /api/requests/:requestId/handler-executions", () => {
     const getHandler =

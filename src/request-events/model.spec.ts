@@ -15,7 +15,6 @@ import { parseBase64 } from "@/util/base64";
 
 describe("request-events/model", () => {
   let testRequestEvent: RequestEvent;
-  let createdRequestIds: RequestId[] = [];
 
   beforeEach(() => {
     testRequestEvent = {
@@ -36,22 +35,9 @@ describe("request-events/model", () => {
     };
   });
 
-  afterEach(() => {
-    // Clean up created request events
-    createdRequestIds.forEach((id) => {
-      try {
-        deleteRequestEvent(id);
-      } catch (error) {
-        // Ignore errors during cleanup
-      }
-    });
-    createdRequestIds = [];
-  });
-
   describe("createRequestEvent()", () => {
     test("should create a request event successfully", () => {
       const created = createRequestEvent(testRequestEvent);
-      createdRequestIds.push(created.id);
 
       expect(created).toMatchObject({
         id: testRequestEvent.id,
@@ -86,7 +72,6 @@ describe("request-events/model", () => {
       };
 
       const created = createRequestEvent(minimalEvent);
-      createdRequestIds.push(created.id);
 
       expect(created).toMatchObject({
         id: minimalEvent.id,
@@ -110,7 +95,6 @@ describe("request-events/model", () => {
       };
 
       const created = createRequestEvent(outboundEvent);
-      createdRequestIds.push(created.id);
 
       expect(created.type).toBe("outbound");
       expect(created.request_url).toBe("https://example.com/webhook");
@@ -120,7 +104,6 @@ describe("request-events/model", () => {
   describe("getRequestEvent()", () => {
     test("should retrieve an existing request event", () => {
       const created = createRequestEvent(testRequestEvent);
-      createdRequestIds.push(created.id);
 
       const retrieved = getRequestEvent(created.id);
 
@@ -148,7 +131,6 @@ describe("request-events/model", () => {
   describe("getRequestEventMeta()", () => {
     test("should retrieve metadata without body/header fields", () => {
       const created = createRequestEvent(testRequestEvent);
-      createdRequestIds.push(created.id);
 
       const meta = getRequestEventMeta(created.id);
 
@@ -179,14 +161,12 @@ describe("request-events/model", () => {
         id: randomUUID(),
         request_timestamp: now(),
       });
-      createdRequestIds.push(firstEvent.id);
 
       const secondEvent = createRequestEvent({
         ...testRequestEvent,
         id: randomUUID(),
         request_timestamp: now(), // now
       });
-      createdRequestIds.push(secondEvent.id);
 
       const allEvents = getAllRequestEvents();
 
@@ -226,14 +206,12 @@ describe("request-events/model", () => {
         ...testRequestEvent,
         id: randomUUID(),
       });
-      createdRequestIds.push(event1.id);
 
       const event2 = createRequestEvent({
         ...testRequestEvent,
         id: randomUUID(),
         type: "outbound",
       });
-      createdRequestIds.push(event2.id);
 
       const allMeta = getAllRequestEventsMeta();
 
@@ -255,7 +233,6 @@ describe("request-events/model", () => {
   describe("updateRequestEvent()", () => {
     test("should update an existing request event", () => {
       const created = createRequestEvent(testRequestEvent);
-      createdRequestIds.push(created.id);
 
       const updates = {
         id: created.id,
@@ -279,7 +256,6 @@ describe("request-events/model", () => {
 
     test("should update only specified fields", () => {
       const created = createRequestEvent(testRequestEvent);
-      createdRequestIds.push(created.id);
 
       const originalUrl = created.request_url;
       const updates = {
@@ -295,7 +271,6 @@ describe("request-events/model", () => {
 
     test("should handle partial updates with null values", () => {
       const created = createRequestEvent(testRequestEvent);
-      createdRequestIds.push(created.id);
 
       const updates = {
         id: created.id,
@@ -344,7 +319,6 @@ describe("request-events/model", () => {
           id: randomUUID(),
           request_method: method,
         });
-        createdRequestIds.push(event.id);
 
         expect(event.request_method).toBe(method);
       });
@@ -359,7 +333,6 @@ describe("request-events/model", () => {
           id: randomUUID(),
           status: status,
         });
-        createdRequestIds.push(event.id);
 
         expect(event.status).toBe(status);
       });
@@ -376,7 +349,6 @@ describe("request-events/model", () => {
         id: randomUUID(),
         request_body: largeBase64,
       });
-      createdRequestIds.push(event.id);
 
       const retrieved = getRequestEvent(event.id);
       expect(retrieved.request_body).toEqual(largeBase64);
@@ -389,7 +361,6 @@ describe("request-events/model", () => {
         request_headers: [],
         response_headers: [],
       });
-      createdRequestIds.push(event.id);
 
       const retrieved = getRequestEvent(event.id);
       expect(retrieved.request_headers).toEqual([]);
@@ -410,7 +381,6 @@ describe("request-events/model", () => {
         request_headers: complexHeaders,
         response_headers: complexHeaders,
       });
-      createdRequestIds.push(event.id);
 
       const retrieved = getRequestEvent(event.id);
       expect(retrieved.request_headers).toEqual(complexHeaders);

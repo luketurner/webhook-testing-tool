@@ -1,13 +1,11 @@
-import { describe, test, expect } from "bun:test";
-import {
-  handlerExecutionSchema,
-  handlerExecutionMetaSchema,
-  HANDLER_EXECUTION_STATUSES,
-  type HandlerExecution,
-  type HandlerExecutionMeta,
-} from "./schema";
-import { randomUUID } from "@/util/uuid";
 import { now } from "@/util/timestamp";
+import { randomUUID } from "@/util/uuid";
+import { describe, expect, test } from "bun:test";
+import {
+  HANDLER_EXECUTION_STATUSES,
+  handlerExecutionMetaSchema,
+  handlerExecutionSchema,
+} from "./schema";
 
 describe("handler-executions schema", () => {
   const validHandlerExecution = {

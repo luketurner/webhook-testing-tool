@@ -2,9 +2,9 @@
 import { TEST_CERT_DIR, TEST_PORT } from "./test-config";
 
 import { execSync } from "child_process";
-import { migrateDb } from "./db";
+import { migrateDb, resetDb } from "./db";
 import { startWebhookServer } from "./webhook-server";
-import { beforeAll, afterAll } from "bun:test";
+import { beforeAll, afterAll, afterEach } from "bun:test";
 import { existsSync } from "fs";
 
 let server: any;
@@ -43,4 +43,9 @@ afterAll(async () => {
   } catch (err) {
     // Ignore cleanup errors
   }
+});
+
+afterEach(() => {
+  // AIDEV-NOTE: This resets the DB after each test case. Do not do any additional DB cleanup in afterEach blocks.
+  resetDb();
 });
