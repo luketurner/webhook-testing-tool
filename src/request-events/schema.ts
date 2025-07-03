@@ -15,6 +15,7 @@ export const requestEventSchema = z.object({
   id: uuidSchema,
   type: z.enum(REQUEST_EVENT_TYPES),
   status: z.enum(REQUEST_EVENT_STATUSES),
+  shared_id: z.string().nullish(),
   request_method: z.enum(HTTP_METHODS),
   request_url: z.string().min(1),
   request_headers: z.preprocess(fromJSONString, kvListSchema(z.string())),
