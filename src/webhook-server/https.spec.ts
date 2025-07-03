@@ -1,25 +1,9 @@
-import { clearHandlerExecutions } from "@/handler-executions/model";
-import { clearHandlers } from "@/handlers/model";
-import {
-  clearRequestEvents,
-  getAllRequestEvents,
-} from "@/request-events/model";
+import { getAllRequestEvents } from "@/request-events/model";
 import { TEST_PORT, TEST_SSL_PORT } from "@/test-config";
-import { afterAll, beforeEach, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 
 describe("Webhook Server HTTPS/TLS Tests", () => {
   const baseUrl = `https://localhost:${TEST_SSL_PORT}`;
-
-  afterAll(async () => {
-    clearHandlerExecutions();
-    clearRequestEvents();
-    clearHandlers();
-  });
-
-  beforeEach(() => {
-    // Clear any existing handlers before each test
-    clearHandlers();
-  });
 
   test("HTTPS GET request captures TLS info", async () => {
     // AIDEV-NOTE: Using fetch with rejectUnauthorized: false to accept self-signed cert

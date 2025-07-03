@@ -1,34 +1,12 @@
-import { clearHandlerExecutions } from "@/handler-executions/model";
-import { clearHandlers, createHandler } from "@/handlers/model";
-import {
-  clearRequestEvents,
-  getAllRequestEvents,
-} from "@/request-events/model";
+import { createHandler } from "@/handlers/model";
+import { getAllRequestEvents } from "@/request-events/model";
 import { TEST_PORT } from "@/test-config";
 import { randomUUID } from "@/util/uuid";
-import {
-  afterAll,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  test,
-} from "bun:test";
+import { beforeAll, describe, expect, test } from "bun:test";
 import * as jose from "jose";
 
 describe("Webhook Server Integration Tests", () => {
   const baseUrl = `http://localhost:${TEST_PORT}`;
-
-  afterAll(async () => {
-    clearHandlerExecutions();
-    clearRequestEvents();
-    clearHandlers();
-  });
-
-  beforeEach(() => {
-    // Clear any existing handlers before each test
-    clearHandlers();
-  });
 
   test("GET request with query parameters", async () => {
     const response = await fetch(
