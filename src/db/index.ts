@@ -6,6 +6,7 @@ import { DB_FILE } from "../config-server";
 import { clearHandlerExecutions } from "@/handler-executions/model";
 import { clearRequestEvents } from "@/request-events/model";
 import { clearHandlers } from "@/handlers/model";
+import { updateSharedState } from "@/shared-state/model";
 
 export const db = new Database(DB_FILE, { create: true, strict: true });
 
@@ -81,6 +82,7 @@ export const migrateDb = async () => {
 
 export const resetDb = () => {
   // AIDEV-NOTE: When adding a new model, update this function
+  updateSharedState({});
   clearHandlerExecutions();
   clearRequestEvents();
   clearHandlers();
