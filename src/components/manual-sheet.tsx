@@ -31,10 +31,7 @@ export function ManualSheet() {
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent
-        side="left"
-        className="w-[400px] sm:w-[540px] overflow-y-auto"
-      >
+      <SheetContent side="right" className="sm:max-w-[720px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Manual</SheetTitle>
           <SheetDescription>
@@ -53,7 +50,7 @@ export function ManualSheet() {
             </div>
           ) : content ? (
             <div
-              className="prose prose-sm dark:prose-invert max-w-none"
+              className="m-2 prose prose-sm dark:prose-invert max-w-none"
               dangerouslySetInnerHTML={{ __html: content }}
             />
           ) : null}

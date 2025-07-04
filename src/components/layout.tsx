@@ -1,7 +1,7 @@
 import React from "react";
 import { AppSidebar } from "./app-sidebar";
 import { SidebarInset, SidebarTrigger } from "./ui/sidebar";
-import { ManualSheet } from "@/dashboard/manual/manual-sheet";
+import { ManualSheet } from "@/components/manual-sheet";
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
