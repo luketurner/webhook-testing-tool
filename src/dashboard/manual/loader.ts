@@ -1,7 +1,5 @@
 // AIDEV-NOTE: Manual page loader - loads markdown files from src/docs via API
-// Available pages are determined by the presence of .md files in src/docs/
-
-const availablePages = ["home"]; // AIDEV-TODO: Make this dynamic
+// Available pages are determined dynamically using the useManualPages hook
 
 export async function loadManualPage(pageName: string): Promise<string | null> {
   try {
@@ -19,8 +17,4 @@ export async function loadManualPage(pageName: string): Promise<string | null> {
     console.error(`Failed to load manual page: ${pageName}`, error);
     return null;
   }
-}
-
-export function getAvailablePages(): string[] {
-  return availablePages;
 }

@@ -147,3 +147,16 @@ export function useHandlerExecutions<T>(requestId: string) {
     enabled: !!requestId,
   });
 }
+
+export function useManualPages() {
+  return useQuery({
+    queryKey: ["manual-pages"],
+    queryFn: async (): Promise<string[]> => {
+      const response = await fetch("/api/manual");
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    },
+  });
+}

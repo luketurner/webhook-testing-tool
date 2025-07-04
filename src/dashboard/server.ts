@@ -12,7 +12,7 @@ import type { BunRequest } from "bun";
 import { DEV } from "../config-server";
 import { ADMIN_PORT } from "../config-shared";
 import indexPage from "./index.html";
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { marked } from "marked";
 
@@ -76,6 +76,22 @@ export const startDashboardServer = () =>
           });
         } catch (error) {
           console.error(`Failed to load manual page: ${pageName}`, error);
+          return new Response(null, { status: 500 });
+        }
+      },
+
+      // Manual pages list endpoint
+      "/api/manual": async () => {
+        const docsPath = join(import.meta.dir, "..", "docs");
+
+        try {
+          const files = readdirSync(docsPath)
+            .filter((file) => file.endsWith(".md"))
+            .map((file) => file.replace(".md", ""));
+
+          return Response.json(files);
+        } catch (error) {
+          console.error("Failed to list manual pages:", error);
           return new Response(null, { status: 500 });
         }
       },
