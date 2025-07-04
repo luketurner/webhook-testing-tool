@@ -21,6 +21,8 @@ import {
 import { HandlerErrors, isHandlerError } from "./errors";
 import { parseAuthorizationHeader, isJWTAuth } from "@/util/authorization";
 import { verifyJWT, type JWTVerificationResult } from "@/util/jwt-verification";
+import { getSharedState, updateSharedState } from "@/shared-state/model";
+import type { SharedStateData } from "@/shared-state/schema";
 
 type NextFunction = (error?: Error) => void;
 
@@ -70,6 +72,9 @@ export async function handleRequest(
   const router = Router();
   const locals: Record<string, unknown> = {};
   let executionOrder = 0;
+
+  // Load shared state for all handlers
+  const shared = getSharedState();
 
   for (const handler of handlers) {
     router[handler.method === "*" ? "use" : handler.method.toLowerCase()](
@@ -165,6 +170,7 @@ export async function handleRequest(
             ctx: deepFreeze(ctx),
             console: captureConsole,
             jwt: jwtUtils,
+            shared: shared.data,
             ...HandlerErrors,
           });
           // Update to success status with captured data
@@ -221,6 +227,10 @@ export async function handleRequest(
       response,
       (err?: Error) => {
         if (err) error = err;
+
+        // Save the shared state after all handlers have executed
+        updateSharedState(shared.data);
+
         resolve([error, handlerResponseToRequestEvent(response)]);
       },
     );
