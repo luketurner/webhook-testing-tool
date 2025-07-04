@@ -15,7 +15,3 @@ Welcome to the WTT manual! This documentation will help you understand and use a
 - Multiple endpoint support
 - TLS information display
 - Export capabilities
-
-## Navigation
-
-Use the sidebar to navigate through different sections of this manual.
