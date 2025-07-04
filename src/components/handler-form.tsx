@@ -8,6 +8,8 @@ import { TextFormField, TextareaFormField } from "./form/form-fields";
 import { HttpMethodSelect } from "./form/http-method-select";
 import { Button } from "./ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "./ui/form";
+import { useSearchParams } from "react-router";
+import { BookOpen } from "lucide-react";
 
 export interface HandlerFormProps {
   initialValues?: Partial<Handler>;
@@ -19,10 +21,16 @@ export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
     resolver: zodResolver(handlerSchema.omit({ order: true }) as any), // TODO
     defaultValues: initialValues,
   });
+  const [searchParams, setSearchParams] = useSearchParams();
 
   function onSubmit(values: z.infer<typeof handlerSchema>) {
     onChange(values as Handler);
   }
+
+  const handleOpenHandlerDocs = () => {
+    searchParams.set("manual", "handlers");
+    setSearchParams(searchParams);
+  };
 
   return (
     <Form {...form}>
@@ -83,6 +91,18 @@ export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
                   </div>
                 </FormCard>
               </FormControl>
+              <div className="mt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleOpenHandlerDocs}
+                  className="text-xs"
+                >
+                  <BookOpen className="h-3 w-3 mr-1" />
+                  Handler Documentation
+                </Button>
+              </div>
               <FormMessage />
             </FormItem>
           )}
