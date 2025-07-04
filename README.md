@@ -30,8 +30,6 @@ How it works:
    - [ ] Binary bodies (`application/octet-stream`)
    - [ ] Multipart bodies
 - [ ] HTTP/2
-- [ ] HTTP/3
-- [ ] gRPC
 - [ ] Websockets
 - [ ] Raw TCP
 - [ ] Raw UDP
