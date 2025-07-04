@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 import {
   Sheet,
@@ -7,7 +6,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { loadManualPage } from "./loader";
+import { useManualPage } from "@/dashboard/hooks";
 import { Loader2 } from "lucide-react";
 
 // AIDEV-NOTE: ManualSheet displays manual pages in a slide-out panel
@@ -15,27 +14,15 @@ import { Loader2 } from "lucide-react";
 
 export function ManualSheet() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [content, setContent] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const manualPage = searchParams.get("manual");
   const isOpen = !!manualPage;
 
-  useEffect(() => {
-    if (!manualPage) {
-      setContent(null);
-      return;
-    }
-
-    setLoading(true);
-    loadManualPage(manualPage)
-      .then((html) => {
-        setContent(html);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [manualPage]);
+  const {
+    data: content,
+    isLoading: loading,
+    error,
+  } = useManualPage(manualPage);
 
   const handleClose = () => {
     searchParams.delete("manual");
@@ -60,16 +47,16 @@ export function ManualSheet() {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
+          ) : error ? (
+            <div className="text-center py-8 text-muted-foreground">
+              {error.message || "Manual page not found"}
+            </div>
           ) : content ? (
             <div
               className="prose prose-sm dark:prose-invert max-w-none"
               dangerouslySetInnerHTML={{ __html: content }}
             />
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              Manual page not found
-            </div>
-          )}
+          ) : null}
         </div>
       </SheetContent>
     </Sheet>

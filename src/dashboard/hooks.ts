@@ -160,3 +160,24 @@ export function useManualPages() {
     },
   });
 }
+
+export function useManualPage(pageName: string | null) {
+  return useQuery({
+    queryKey: ["manual-page", pageName],
+    queryFn: async (): Promise<string> => {
+      if (!pageName) {
+        throw new Error("Page name is required");
+      }
+
+      const response = await fetch(`/api/manual/${pageName}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error(`Manual page '${pageName}' not found`);
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.text();
+    },
+    enabled: !!pageName,
+  });
+}
