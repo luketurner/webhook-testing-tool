@@ -1,4 +1,4 @@
-import { Activity, Webhook, Settings, Cog } from "lucide-react";
+import { Activity, Webhook, Settings, Cog, BookOpen } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSendDemoRequests } from "@/dashboard/hooks";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { RequestSidebar } from "@/components/request-sidebar";
 import { HandlerSidebar } from "@/components/handler-sidebar";
 import { JWTInspector } from "@/components/jwt-inspector";
@@ -40,10 +40,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { setOpen, open } = useSidebar();
   const { mutate: handleSendDemoRequests } = useSendDemoRequests();
   const [showJWTInspector, setShowJWTInspector] = React.useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const handleDownloadDatabase = React.useCallback(() => {
     window.location.href = "/api/db/export";
   }, []);
+
+  const handleOpenManual = React.useCallback(() => {
+    searchParams.set("manual", "home");
+    setSearchParams(searchParams);
+  }, [searchParams, setSearchParams]);
 
   return (
     <Sidebar
@@ -137,6 +143,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         onSelect={() => setShowJWTInspector(true)}
                       >
                         JWT Inspector
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={handleOpenManual}>
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Documentation
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
