@@ -12,6 +12,9 @@ import type { BunRequest } from "bun";
 import { DEV } from "../config-server";
 import { ADMIN_PORT } from "../config-shared";
 import indexPage from "./index.html";
+import { readFileSync, existsSync } from "fs";
+import { join } from "path";
+import { marked } from "marked";
 
 export const startDashboardServer = () =>
   Bun.serve({
@@ -52,6 +55,30 @@ export const startDashboardServer = () =>
 
       // SSE endpoint
       "/api/events/stream": withAuth(sseEndpoint),
+
+      // Manual pages endpoint
+      "/api/manual/:pageName": async (req) => {
+        const pageName = req.params.pageName;
+        const filePath = join(import.meta.dir, "..", "docs", `${pageName}.md`);
+
+        if (!existsSync(filePath)) {
+          return new Response(null, { status: 404 });
+        }
+
+        try {
+          const markdown = readFileSync(filePath, "utf-8");
+          const html = await marked(markdown, {
+            breaks: true,
+            gfm: true,
+          });
+          return new Response(html, {
+            headers: { "Content-Type": "text/html" },
+          });
+        } catch (error) {
+          console.error(`Failed to load manual page: ${pageName}`, error);
+          return new Response(null, { status: 500 });
+        }
+      },
 
       "/*": new Response(null, { status: 404 }),
     },
