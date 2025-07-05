@@ -20,8 +20,6 @@ export function withAuth(controller: ControllerMethod): ControllerMethod {
 
       // Add session to request for use in controllers
       (req as any).session = session;
-
-      return await controller(req, server);
     } catch (error) {
       console.error("Auth middleware error:", error);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
@@ -29,5 +27,6 @@ export function withAuth(controller: ControllerMethod): ControllerMethod {
         headers: { "Content-Type": "application/json" },
       });
     }
+    return await controller(req, server);
   };
 }
