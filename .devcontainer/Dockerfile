@@ -110,6 +110,13 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 # tmux settings
 RUN echo "setw -g mouse on\nbind q killw" > /home/node/.tmux.conf
 
+# zellij settings
+RUN mkdir -p /home/node/.config/zellij
+RUN zellij setup --dump-config > /home/node/.config/zellij/config.kdl
+RUN echo "default_mode \"locked\"\n" >> /home/node/.config/zellij/config.kdl
+RUN sed -i 's/Ctrl g/Ctrl b/g' /home/node/.config/zellij/config.kdl
+RUN sed -i 's/Ctrl q/q/g' /home/node/.config/zellij/config.kdl
+
 # lazygit settings
 RUN mkdir -p /home/node/.config/lazygit/
 RUN echo "{ git: { paging: { externalDiffCommand: \"difft --color=always\" } } }" > /home/node/.config/lazygit/config.yml
