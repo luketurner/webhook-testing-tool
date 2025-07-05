@@ -17,7 +17,6 @@ function showUsage() {
   console.log(
     "                    If no label provided, generates one automatically",
   );
-  console.log("  attach <label>    Attach to existing worktree tmux session");
   console.log("  cleanup [label]   Remove worktree and associated branch");
   console.log(
     "                    If no label provided, cleans up all worktrees",
@@ -32,11 +31,6 @@ function showUsage() {
   console.log(`  ${SCRIPT_NAME} new feature-auth`);
   console.log(
     "  # Creates /workspaces/worktree-feature-auth and opens Claude Code",
-  );
-  console.log("");
-  console.log(`  ${SCRIPT_NAME} attach feature-auth`);
-  console.log(
-    "  # Attaches to existing tmux session for feature-auth worktree",
   );
   console.log("");
   console.log(`  ${SCRIPT_NAME} cleanup feature-auth`);
@@ -173,71 +167,6 @@ async function cleanupAllWorktrees() {
 }
 
 /**
- * Attach to existing worktree tmux session
- */
-async function attachToSession(label: string) {
-  const worktreePath = `/workspaces/worktree-${label}`;
-  const sessionName = `wtt-${label}`;
-
-  // Check if worktree exists
-  if (!existsSync(worktreePath)) {
-    showError(
-      `Worktree ${worktreePath} does not exist. Use 'new' command to create it.`,
-    );
-  }
-
-  // Check if tmux session exists
-  try {
-    await $`tmux has-session -t ${sessionName}`.quiet();
-  } catch {
-    showError(
-      `Tmux session '${sessionName}' does not exist. The session may have been terminated.`,
-    );
-  }
-
-  console.log(`Attaching to tmux session: ${sessionName}`);
-
-  try {
-    // Attach to the tmux session
-    const tmuxProc = spawn(
-      ["tmux", "attach-session", "-d", "-t", sessionName],
-      {
-        stdio: ["inherit", "inherit", "inherit"],
-      },
-    );
-
-    const exitCode = await tmuxProc.exited;
-
-    if (exitCode === 0) {
-      console.log("✓ Tmux session completed");
-    } else {
-      console.log(`Tmux exited with code ${exitCode}`);
-    }
-
-    // Prompt for automatic cleanup
-    console.log("");
-    const shouldCleanup = await promptUser(
-      `Do you want to clean up the worktree '${label}'?`,
-    );
-
-    if (shouldCleanup) {
-      console.log("\n--- Starting automatic cleanup ---");
-      await cleanupWorktree(label);
-    } else {
-      console.log(`Worktree '${label}' preserved at ${worktreePath}`);
-    }
-  } catch (error) {
-    // Ensure tmux session is killed even if something fails
-    try {
-      await $`tmux kill-session -t ${sessionName}`.quiet();
-    } catch {
-      // Session might not exist
-    }
-    showError(`Failed to attach to tmux session: ${error}`);
-  }
-}
-
-/**
  * Cleanup worktree and associated branch
  */
 async function cleanupWorktree(label: string) {
@@ -314,8 +243,8 @@ async function main() {
   const command = args[0];
   let label = args[1];
 
-  if (!["new", "attach", "cleanup"].includes(command)) {
-    showError("Command must be 'new', 'attach', or 'cleanup'");
+  if (!["new", "cleanup"].includes(command)) {
+    showError("Command must be 'new' or 'cleanup'");
   }
 
   // Handle cleanup command
@@ -334,23 +263,6 @@ async function main() {
       await cleanupWorktree(label);
       return;
     }
-  }
-
-  // Handle attach command
-  if (command === "attach") {
-    if (!label) {
-      showError("Label is required for attach command");
-    }
-
-    // Validate label
-    if (!/^[a-zA-Z0-9_-]+$/.test(label)) {
-      showError(
-        "Label must contain only letters, numbers, underscores, and hyphens",
-      );
-    }
-
-    await attachToSession(label);
-    return;
   }
 
   // For 'new' command, generate label if not provided
@@ -411,68 +323,23 @@ async function main() {
     showError(`Failed to find available ports: ${error}`);
   }
 
-  // Create tmux session with claude and dev server
-  console.log("Creating tmux session...");
+  console.log("Creating zellij session...");
   const sessionName = `wtt-${label}`;
 
   try {
-    // Kill existing session if it exists
-    await $`tmux kill-session -t ${sessionName} 2>/dev/null || true`.quiet();
+    const zellijProc = spawn(
+      ["zellij", "-n", ".zellij/worktree.kdl", "-s", sessionName],
+      {
+        stdio: ["inherit", "inherit", "inherit"],
+      },
+    );
 
-    // Create new tmux session with a single window
-    await $`tmux new-session -d -s ${sessionName} -c ${worktreePath}`;
-
-    // Split window vertically (creates left and right panes)
-    await $`tmux split-window -t ${sessionName}:0 -h -c ${worktreePath}`;
-
-    // Split the left pane horizontally (creates top-left and bottom-left panes)
-    await $`tmux split-window -t ${sessionName}:0.0 -v -c ${worktreePath}`;
-
-    // Now we have:
-    // - Pane 0: Top left (will run claude)
-    // - Pane 1: Right (will run lazygit)
-    // - Pane 2: Bottom left (will run dev server)
-
-    // Run lazygit in right pane
-    await $`tmux send-keys -t ${sessionName}:0.2 'lazygit' Enter`;
-
-    console.log(`✓ lazygit started in right pane`);
-
-    // Run dev server in bottom left pane
-    await $`tmux send-keys -t ${sessionName}:0.1 'bun run dev' Enter`;
-
-    console.log(`✓ Dev server started in bottom left pane`);
-    console.log(`Admin dashboard: http://localhost:${adminPort}`);
-    console.log(`Webhook endpoint: http://localhost:${webhookPort}`);
-
-    // Select top left pane for claude
-    await $`tmux select-pane -t ${sessionName}:0.0`;
-
-    // Run claude in top left pane
-    await $`tmux send-keys -t ${sessionName}:0.0 'claude --dangerously-skip-permissions' Enter`;
-
-    console.log(`✓ Claude Code started in top left pane`);
-    console.log("Attaching to tmux session...");
-
-    // Attach to the tmux session
-    const tmuxProc = spawn(["tmux", "attach-session", "-t", sessionName], {
-      stdio: ["inherit", "inherit", "inherit"],
-    });
-
-    const exitCode = await tmuxProc.exited;
-
-    // Kill the tmux session when we detach
-    try {
-      await $`tmux kill-session -t ${sessionName}`.quiet();
-      console.log("✓ Tmux session terminated");
-    } catch {
-      // Session might already be gone
-    }
+    const exitCode = await zellijProc.exited;
 
     if (exitCode === 0) {
-      console.log("✓ Tmux session completed");
+      console.log("✓ Worktree session completed");
     } else {
-      console.log(`Tmux exited with code ${exitCode}`);
+      console.log(`Worktree exited with code ${exitCode}`);
     }
 
     // Prompt for automatic cleanup
@@ -488,13 +355,7 @@ async function main() {
       console.log(`Worktree '${label}' preserved at ${worktreePath}`);
     }
   } catch (error) {
-    // Ensure tmux session is killed even if something fails
-    try {
-      await $`tmux kill-session -t ${sessionName}`.quiet();
-    } catch {
-      // Session might not exist
-    }
-    showError(`Failed to create tmux session: ${error}`);
+    showError(`Failed to create zellij session: ${error}`);
   }
 }
 
