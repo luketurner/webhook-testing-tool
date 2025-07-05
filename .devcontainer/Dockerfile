@@ -75,7 +75,13 @@ RUN LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygi
   sudo install lazygit -D -t /usr/local/bin/ && \
   rm lazygit.tar.gz
 
-# Set up non-root user
+# install difftastic (for worktree workflows)
+RUN curl -Lo difftastic.tar.gz "https://github.com/Wilfred/difftastic/releases/download/0.64.0/difft-x86_64-unknown-linux-gnu.tar.gz" && \
+  tar xf difftastic.tar.gz difft && \
+  sudo install difft -D -t /usr/local/bin/ && \
+  rm difftastic.tar.gz
+
+  # Set up non-root user
 USER node
 
 # Install global packages
@@ -97,6 +103,10 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 
 # tmux settings
 RUN echo "setw -g mouse on\nbind q killw" > /home/node/.tmux.conf
+
+# lazygit settings
+RUN mkdir -p /home/node/.config/lazygit/
+RUN echo "{ git: { paging: { externalDiffCommand: \"difft --color=always\" } } }" > /home/node/.config/lazygit/config.yml
 
 # install language server for helix
 RUN npm install -g typescript typescript-language-server
