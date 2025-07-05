@@ -25,7 +25,8 @@ RUN apt update && apt install -y less \
   tmux \
   vim \
   asciinema \
-  locales
+  locales \
+  visidata
 
 # Fix weird locale error? From https://stackoverflow.com/a/55077451
 RUN echo "LC_ALL=en_US.UTF-8" >> /etc/environment
