@@ -19,17 +19,12 @@ describe("Webhook Server Integration Tests", () => {
 
     // Find the request event in the database
     const allEvents = getAllRequestEvents();
-    const event = allEvents.find(
-      (e) =>
-        e.request_url === "/test/path?param1=value1&param2=value%202&empty=",
-    );
+    const event = allEvents.find((e) => e.request_url === "/test/path");
     expect(event).toBeDefined();
 
     if (event) {
       expect(event.request_method).toBe("GET");
-      expect(event.request_url).toBe(
-        "/test/path?param1=value1&param2=value%202&empty=",
-      );
+      expect(event.request_url).toBe("/test/path");
       expect(event.status).toBe("complete");
       expect(event.request_body).toBeNull();
 

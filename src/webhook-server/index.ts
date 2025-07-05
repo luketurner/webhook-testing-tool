@@ -103,7 +103,7 @@ app.all("*", async (req, res) => {
     id: randomUUID(),
     type: "inbound",
     status: "running",
-    request_url: req.originalUrl,
+    request_url: url.pathname,
     request_method: req.method as HttpMethod,
     request_timestamp: now(),
     request_body: Buffer.isBuffer(req.body) ? fromBufferLike(req.body) : null,
