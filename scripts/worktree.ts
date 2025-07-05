@@ -331,6 +331,7 @@ async function main() {
       ["zellij", "-n", ".zellij/worktree.kdl", "-s", sessionName],
       {
         stdio: ["inherit", "inherit", "inherit"],
+        cwd: worktreePath,
       },
     );
 
