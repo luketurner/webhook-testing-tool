@@ -29,7 +29,22 @@ export const CopyRequestModal = ({
 
   const requestBody = request.request_body ? atob(request.request_body) : "";
   const headers = request.request_headers || [];
-  const fullUrl = getFullUrl(request.request_url);
+  const queryParams = request.request_query_params || [];
+
+  // Build URL with query parameters
+  const buildUrlWithParams = (baseUrl: string) => {
+    if (queryParams.length === 0) {
+      return baseUrl;
+    }
+    const url = new URL(baseUrl);
+    queryParams.forEach(([key, value]) => {
+      url.searchParams.append(key, value);
+    });
+    return url.toString();
+  };
+
+  const baseUrl = getFullUrl(request.request_url);
+  const fullUrl = buildUrlWithParams(baseUrl);
 
   const generateCurlCommand = () => {
     let curlParts = [`curl -X ${request.request_method}`];
