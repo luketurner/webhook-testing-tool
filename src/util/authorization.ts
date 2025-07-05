@@ -1,5 +1,5 @@
 export interface IParsedAuth {
-  authType: "basic" | "digest" | "bearer" | "jwt" | "unknown";
+  authType: "basic" | "digest" | "bearer" | "jwt" | "hmac" | "unknown";
   isValid: boolean;
   rawHeader: string;
   error?: Error;
@@ -37,6 +37,12 @@ export interface ParsedAuthJWT extends IParsedAuth {
   rawSignature?: string;
 }
 
+export interface ParsedAuthHMAC extends IParsedAuth {
+  authType: "hmac";
+  algorithm?: string;
+  signature?: string;
+}
+
 export function isBasicAuth(v: IParsedAuth): v is ParsedAuthBasic {
   return v.authType === "basic";
 }
@@ -57,6 +63,10 @@ export function isJWTAuth(v: IParsedAuth): v is ParsedAuthJWT {
 
 export function isUnknownAuth(v: IParsedAuth): v is ParsedAuthUnknown {
   return v.authType === "unknown";
+}
+
+export function isHMACAuth(v: IParsedAuth): v is ParsedAuthHMAC {
+  return v.authType === "hmac";
 }
 
 export function tryParseBasicHeader(rawHeader: string): ParsedAuthBasic | null {
@@ -168,11 +178,36 @@ export function parseUnknownHeader(rawHeader: string): ParsedAuthUnknown {
   };
 }
 
+export function tryParseHMACHeader(rawHeader: string): ParsedAuthHMAC | null {
+  // HMAC format: HMAC-SHA256 <signature> or HMAC <algorithm> <signature>
+  const match = rawHeader.match(/^HMAC(?:-(\w+))? ([a-fA-F0-9]+)$/i);
+  if (!match) return null;
+
+  try {
+    const [, algorithm, signature] = match;
+    return {
+      authType: "hmac",
+      isValid: true,
+      rawHeader,
+      algorithm: algorithm ? algorithm.toUpperCase() : "SHA256", // Default to SHA256
+      signature,
+    };
+  } catch (e) {
+    return {
+      authType: "hmac",
+      isValid: false,
+      rawHeader,
+      error: e,
+    };
+  }
+}
+
 export function parseAuthorizationHeader(rawHeader: string): IParsedAuth {
   return (
     tryParseBasicHeader(rawHeader) ||
     tryParseDigestHeader(rawHeader) ||
     tryParseJWTHeader(rawHeader) ||
+    tryParseHMACHeader(rawHeader) ||
     tryParseGenericBearerHeader(rawHeader) ||
     parseUnknownHeader(rawHeader)
   );

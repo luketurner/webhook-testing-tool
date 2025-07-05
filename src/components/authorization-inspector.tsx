@@ -17,6 +17,7 @@ import {
   isDigestAuth,
   isGenericBearerAuth,
   isJWTAuth,
+  isHMACAuth,
 } from "@/util/authorization";
 
 export const AuthorizationInspector = ({ value }: { value: string }) => {
@@ -39,7 +40,9 @@ export const AuthorizationInspector = ({ value }: { value: string }) => {
                   ? "Bearer"
                   : isJWTAuth(parsed)
                     ? "JWT"
-                    : "Unrecognized"}{" "}
+                    : isHMACAuth(parsed)
+                      ? "HMAC"
+                      : "Unrecognized"}{" "}
             Authorization
           </DialogTitle>
           <DialogDescription>
@@ -112,6 +115,34 @@ export const AuthorizationInspector = ({ value }: { value: string }) => {
                 <TableCell>Signature</TableCell>
                 <TableCell>{parsed.rawSignature}</TableCell>
               </TableRow>
+            </TableBody>
+          </Table>
+        ) : isHMACAuth(parsed) ? (
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>Raw Header</TableCell>
+                <TableCell>{parsed.rawHeader}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Algorithm</TableCell>
+                <TableCell>{parsed.algorithm}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Signature</TableCell>
+                <TableCell className="font-mono text-xs break-all">
+                  {parsed.signature}
+                </TableCell>
+              </TableRow>
+              {parsed.signature && (
+                <TableRow>
+                  <TableCell>Signature Length</TableCell>
+                  <TableCell>
+                    {parsed.signature.length / 2} bytes (
+                    {parsed.signature.length} hex chars)
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         ) : (

@@ -5,12 +5,14 @@ import {
   isGenericBearerAuth,
   isJWTAuth,
   isUnknownAuth,
+  isHMACAuth,
   parseAuthorizationHeader,
   parseUnknownHeader,
   tryParseBasicHeader,
   tryParseDigestHeader,
   tryParseGenericBearerHeader,
   tryParseJWTHeader,
+  tryParseHMACHeader,
 } from "./authorization";
 
 // These tests cover all authorization header formats supported by the system
@@ -274,6 +276,80 @@ describe("Authorization Header Parsing", () => {
     });
   });
 
+  describe("tryParseHMACHeader", () => {
+    test("should parse HMAC-SHA256 format", () => {
+      const signature =
+        "88a7e45e5c4f666e37db9f5e6431f7c882fd6c5c3a2c3e45c90e5540d5c4f0a2";
+      const header = `HMAC-SHA256 ${signature}`;
+
+      const result = tryParseHMACHeader(header);
+
+      expect(result).not.toBeNull();
+      expect(result!.authType).toBe("hmac");
+      expect(result!.isValid).toBe(true);
+      expect(result!.algorithm).toBe("SHA256");
+      expect(result!.signature).toBe(signature);
+      expect(result!.rawHeader).toBe(header);
+    });
+
+    test("should parse HMAC-SHA1 format", () => {
+      const signature = "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12";
+      const header = `HMAC-SHA1 ${signature}`;
+
+      const result = tryParseHMACHeader(header);
+
+      expect(result).not.toBeNull();
+      expect(result!.algorithm).toBe("SHA1");
+      expect(result!.signature).toBe(signature);
+    });
+
+    test("should parse HMAC-SHA512 format", () => {
+      const signature =
+        "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e";
+      const header = `HMAC-SHA512 ${signature}`;
+
+      const result = tryParseHMACHeader(header);
+
+      expect(result).not.toBeNull();
+      expect(result!.algorithm).toBe("SHA512");
+    });
+
+    test("should parse HMAC without algorithm (defaults to SHA256)", () => {
+      const signature =
+        "88a7e45e5c4f666e37db9f5e6431f7c882fd6c5c3a2c3e45c90e5540d5c4f0a2";
+      const header = `HMAC ${signature}`;
+
+      const result = tryParseHMACHeader(header);
+
+      expect(result).not.toBeNull();
+      expect(result!.algorithm).toBe("SHA256");
+      expect(result!.signature).toBe(signature);
+    });
+
+    test("should handle case-insensitive HMAC prefix", () => {
+      const signature = "abc123";
+      const header = `hmac-sha256 ${signature}`;
+
+      const result = tryParseHMACHeader(header);
+
+      expect(result).not.toBeNull();
+      expect(result!.algorithm).toBe("SHA256");
+    });
+
+    test("should return null for non-HMAC headers", () => {
+      expect(tryParseHMACHeader("Bearer token123")).toBeNull();
+      expect(tryParseHMACHeader("Basic dXNlcjpwYXNz")).toBeNull();
+      expect(tryParseHMACHeader("Digest realm=test")).toBeNull();
+    });
+
+    test("should return null for invalid HMAC formats", () => {
+      expect(tryParseHMACHeader("HMAC")).toBeNull();
+      expect(tryParseHMACHeader("HMAC-")).toBeNull();
+      expect(tryParseHMACHeader("HMAC-SHA256")).toBeNull(); // No signature
+      expect(tryParseHMACHeader("HMAC-SHA256 invalid!@#")).toBeNull(); // Invalid hex
+    });
+  });
+
   describe("parseUnknownHeader", () => {
     test("should parse any header as unknown type", () => {
       const header = "Custom auth-scheme param1=value1";
@@ -354,7 +430,7 @@ describe("Authorization Header Parsing", () => {
     });
 
     test("should follow correct parsing priority order", () => {
-      // The parser should try in order: Basic, Digest, JWT, Generic Bearer, Unknown
+      // The parser should try in order: Basic, Digest, JWT, HMAC, Generic Bearer, Unknown
 
       // Test that Basic takes precedence
       const basicHeader = `Basic ${btoa("user:pass")}`;
@@ -367,6 +443,11 @@ describe("Authorization Header Parsing", () => {
       // Test that JWT takes precedence over generic Bearer
       const jwtHeader = `Bearer ${btoa('{"alg":"RS256"}')}.${btoa('{"sub":"123"}')}.sig`;
       expect(parseAuthorizationHeader(jwtHeader).authType).toBe("jwt");
+
+      // Test that HMAC is parsed correctly
+      const hmacHeader =
+        "HMAC-SHA256 88a7e45e5c4f666e37db9f5e6431f7c882fd6c5c3a2c3e45c90e5540d5c4f0a2";
+      expect(parseAuthorizationHeader(hmacHeader).authType).toBe("hmac");
 
       // Test that generic Bearer is used when JWT parsing fails
       const bearerHeader = "Bearer simple-token";
@@ -411,6 +492,16 @@ describe("Authorization Header Parsing", () => {
 
       expect(isJWTAuth(jwtAuth!)).toBe(true);
       expect(isJWTAuth(bearerAuth!)).toBe(false);
+    });
+
+    test("isHMACAuth should correctly identify HMAC auth", () => {
+      const hmacAuth = tryParseHMACHeader(
+        "HMAC-SHA256 88a7e45e5c4f666e37db9f5e6431f7c882fd6c5c3a2c3e45c90e5540d5c4f0a2",
+      );
+      const basicAuth = tryParseBasicHeader(`Basic ${btoa("user:pass")}`);
+
+      expect(isHMACAuth(hmacAuth!)).toBe(true);
+      expect(isHMACAuth(basicAuth!)).toBe(false);
     });
 
     test("isUnknownAuth should correctly identify unknown auth", () => {

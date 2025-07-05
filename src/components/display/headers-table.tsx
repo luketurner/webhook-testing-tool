@@ -7,8 +7,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AuthorizationInspector } from "@/components/authorization-inspector";
+import { SignatureInspector } from "@/components/signature-inspector";
 import { headerNameDisplay } from "@/util/http";
 import type { KVList } from "@/util/kv-list";
+import { isSignatureHeader } from "@/util/hmac-signature";
 
 // AIDEV-NOTE: Extracted headers table component to reduce duplication in request-page.tsx
 
@@ -49,6 +51,12 @@ export function HeadersTable({
                   <>
                     {" "}
                     <AuthorizationInspector value={value} />
+                  </>
+                )}
+                {showAuthInspector && isSignatureHeader(key) && (
+                  <>
+                    {" "}
+                    <SignatureInspector value={value} headerName={key} />
                   </>
                 )}
               </TableCell>
