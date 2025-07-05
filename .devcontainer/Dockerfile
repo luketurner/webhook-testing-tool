@@ -81,7 +81,13 @@ RUN curl -Lo difftastic.tar.gz "https://github.com/Wilfred/difftastic/releases/d
   sudo install difft -D -t /usr/local/bin/ && \
   rm difftastic.tar.gz
 
-  # Set up non-root user
+# install zellij (for worktree workflows)
+RUN curl -Lo zellij.tar.gz "https://github.com/zellij-org/zellij/releases/download/v0.42.2/zellij-x86_64-unknown-linux-musl.tar.gz" && \
+  tar xf zellij.tar.gz zellij && \
+  sudo install zellij -D -t /usr/local/bin/ && \
+  rm zellij.tar.gz
+
+# Set up non-root user
 USER node
 
 # Install global packages
