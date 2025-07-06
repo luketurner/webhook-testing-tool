@@ -1,3 +1,9 @@
+import {
+  type HMACAuthVerificationResult,
+  type IParsedSignature,
+  verifyHMACSignature,
+} from "./hmac";
+
 export interface IParsedAuth {
   authType: "basic" | "digest" | "bearer" | "jwt" | "hmac" | "unknown";
   isValid: boolean;
@@ -211,4 +217,40 @@ export function parseAuthorizationHeader(rawHeader: string): IParsedAuth {
     tryParseGenericBearerHeader(rawHeader) ||
     parseUnknownHeader(rawHeader)
   );
+}
+
+/**
+ * Verifies an HMAC authorization header against a payload
+ * @param parsedAuth The parsed authorization header from parseAuthorizationHeader
+ * @param payload The raw payload (request body) to verify
+ * @param secret The secret key used for HMAC
+ * @returns Verification result with details
+ */
+export async function verifyHMACAuthorization(
+  parsedAuth: IParsedAuth,
+  payload: string | Uint8Array,
+  secret: string,
+): Promise<HMACAuthVerificationResult> {
+  if (!isHMACAuth(parsedAuth)) {
+    return {
+      isValid: false,
+      expectedSignature: "",
+      actualSignature: "",
+      algorithm: "UNKNOWN",
+      error: "Not an HMAC authorization",
+    };
+  }
+
+  // Convert ParsedAuthHMAC to IParsedSignature format for hmac.ts
+  const parsedSignature: IParsedSignature = {
+    signatureType: "hmac",
+    isValid: parsedAuth.isValid,
+    rawHeader: parsedAuth.rawHeader,
+    algorithm: parsedAuth.algorithm,
+    signature: parsedAuth.signature,
+    error: parsedAuth.error,
+  };
+
+  // Use the verifyHMACSignature function from hmac.ts
+  return verifyHMACSignature(parsedSignature, payload, secret);
 }
