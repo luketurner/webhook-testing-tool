@@ -17,6 +17,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSendRequest } from "@/dashboard/hooks";
 import { Link, useSearchParams } from "react-router";
@@ -132,14 +135,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent side="right" align="start">
-                      {seedRequests.map((request) => (
-                        <DropdownMenuItem
-                          key={request.id}
-                          onSelect={() => handleSendRequest(request)}
-                        >
-                          Send: {request.name}
-                        </DropdownMenuItem>
-                      ))}
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                          Send test request...
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              seedRequests.forEach((request) => {
+                                handleSendRequest(request);
+                              });
+                            }}
+                          >
+                            Send all test requests
+                          </DropdownMenuItem>
+                          {seedRequests.map((request) => (
+                            <DropdownMenuItem
+                              key={request.id}
+                              onSelect={() => handleSendRequest(request)}
+                            >
+                              {request.name}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuSubContent>
+                      </DropdownMenuSub>
                       <DropdownMenuItem onSelect={handleDownloadDatabase}>
                         Export database as SQLite
                       </DropdownMenuItem>
