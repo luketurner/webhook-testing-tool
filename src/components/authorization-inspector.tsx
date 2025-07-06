@@ -16,20 +16,19 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   parseAuthorizationHeader,
-  parseSignatureHeader,
   isBasicAuth,
   isDigestAuth,
   isGenericBearerAuth,
   isJWTAuth,
   isHMACAuth,
-  isHMACSignature,
-  verifyHMACAuthorizationBrowser,
-  verifyHMACSignatureBrowser,
-  getSignatureHeaderInfo,
-  type IParsedAuth,
-  type IParsedSignature,
 } from "@/util/authorization";
 import { useState } from "react";
+import {
+  getSignatureHeaderInfo,
+  isHMACSignature,
+  parseSignatureHeader,
+  verifyHMACSignature,
+} from "@/util/hmac";
 
 export const AuthorizationInspector = ({
   value,
@@ -53,7 +52,7 @@ export const AuthorizationInspector = ({
 
   const [secret, setSecret] = useState("");
   const [verificationResult, setVerificationResult] = useState<Awaited<
-    ReturnType<typeof verifyHMACAuthorizationBrowser>
+    ReturnType<typeof verifyHMACSignature>
   > | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
 
@@ -63,14 +62,15 @@ export const AuthorizationInspector = ({
     setIsVerifying(true);
     try {
       if (isSignatureHeader && parsedSignature) {
-        const result = await verifyHMACSignatureBrowser(
+        const result = await verifyHMACSignature(
           parsedSignature,
           requestBody,
           secret,
         );
         setVerificationResult(result);
-      } else if (parsedAuth) {
-        const result = await verifyHMACAuthorizationBrowser(
+      } else if (isHMACAuth(parsedAuth)) {
+        // TODO
+        const result = await verifyHMACSignature(
           parsedAuth,
           requestBody,
           secret,

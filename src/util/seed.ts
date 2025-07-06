@@ -1,4 +1,4 @@
-import { generateHMACSignature } from "./authorization";
+import { generateHMACSignature } from "./hmac";
 import type { HandlerRequest } from "@/webhook-server/schema";
 
 export interface SeedRequest extends HandlerRequest {
