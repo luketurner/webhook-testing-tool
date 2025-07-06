@@ -22,17 +22,15 @@ How it works:
 - Easy to deploy; runs in a single container.
 - Automatically responds to any HTTP request.
 - Response behavior can be customized with Typescript code by defining **handlers**.
-
-## Protocols supported
-
-- [x] HTTP/1.1
-   - [ ] TLS socket info -- not available in Bun. [related issue](https://github.com/oven-sh/bun/issues/16834)
-   - [ ] Binary bodies (`application/octet-stream`)
-   - [ ] Multipart bodies
-- [ ] HTTP/2
-- [ ] Websockets
-- [ ] Raw TCP
-- [ ] Raw UDP
+   - Each handler execution is stored in the DB, including `console` output logged by the handler code.
+- TLS termination with self-signed certificate (work in progress, TLS socket info not currently available in Bun. See [related issue](https://github.com/oven-sh/bun/issues/16834))
+- JWT parsing and signature verification against a JWKS or JWK URL.
+- Formatting and syntax highlighting for JSON request/response bodies.
+- Viewing request/response bodies in multiple encodings including UTF8, Latin-1, base64, hex, and binary.
+- Downloading request/response bodies as files, with extensions guessed based on the `Content-Type` header.
+- `Authorization` header inspector that parses Basic, Bearer, JWT, and HMAC authorization schemes.
+- Composing and sending test requests directly from the UI.
+- Datetime inspector that displays timestamps in multiple formats and timezones.
 
 ## Limitations
 
