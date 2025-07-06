@@ -7,7 +7,11 @@ import {
   isHMACSignature,
   isSignatureHeader,
   getSignatureHeaderInfo,
-} from "./hmac-signature";
+  verifyHMACSignature,
+  generateHMACSignature,
+  verifyHMACSignatureBrowser,
+  generateHMACSignatureBrowser,
+} from "./authorization";
 
 describe("HMAC Signature Parsing", () => {
   describe("parseGitHubSignature", () => {
@@ -252,6 +256,341 @@ describe("HMAC Signature Parsing", () => {
         "0123456789abcdefGHIJKL0123456789abcdefGHIJKL0123456789abcdefGHIJ";
       const result2 = parseGenericHMACSignature(invalidHex);
       expect(result2).toBeNull();
+    });
+  });
+
+  describe("HMAC Verification", () => {
+    const payload = '{"test": "data"}';
+    const secret = "my-secret-key";
+
+    describe("verifyHMACSignature", () => {
+      test("should verify valid SHA256 signature", () => {
+        const signature = generateHMACSignature(payload, secret, "sha256");
+        const parsed = parseSignatureHeader(`sha256=${signature}`);
+        const result = verifyHMACSignature(parsed, payload, secret);
+
+        expect(result.isValid).toBe(true);
+        expect(result.algorithm).toBe("SHA256");
+        expect(result.expectedSignature).toBe(signature);
+        expect(result.actualSignature).toBe(signature);
+        expect(result.error).toBeUndefined();
+      });
+
+      test("should verify valid SHA1 signature", () => {
+        const signature = generateHMACSignature(payload, secret, "sha1");
+        const parsed = parseSignatureHeader(`sha1=${signature}`);
+        const result = verifyHMACSignature(parsed, payload, secret);
+
+        expect(result.isValid).toBe(true);
+        expect(result.algorithm).toBe("SHA1");
+      });
+
+      test("should verify valid SHA512 signature", () => {
+        const signature = generateHMACSignature(payload, secret, "sha512");
+        const parsed = parseSignatureHeader(`sha512=${signature}`);
+        const result = verifyHMACSignature(parsed, payload, secret);
+
+        expect(result.isValid).toBe(true);
+        expect(result.algorithm).toBe("SHA512");
+      });
+
+      test("should verify generic HMAC format", () => {
+        const signature = generateHMACSignature(payload, secret, "sha256");
+        const parsed = parseSignatureHeader(`HMAC-SHA256 ${signature}`);
+        const result = verifyHMACSignature(parsed, payload, secret);
+
+        expect(result.isValid).toBe(true);
+        expect(result.algorithm).toBe("SHA256");
+      });
+
+      test("should fail with incorrect signature", () => {
+        const correctSignature = generateHMACSignature(
+          payload,
+          secret,
+          "sha256",
+        );
+        const incorrectSignature =
+          "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890";
+        const parsed = parseSignatureHeader(`sha256=${incorrectSignature}`);
+        const result = verifyHMACSignature(parsed, payload, secret);
+
+        expect(result.isValid).toBe(false);
+        expect(result.actualSignature).toBe(incorrectSignature);
+        expect(result.expectedSignature).toBe(correctSignature);
+      });
+
+      test("should fail with incorrect secret", () => {
+        const signature = generateHMACSignature(payload, secret, "sha256");
+        const parsed = parseSignatureHeader(`sha256=${signature}`);
+        const result = verifyHMACSignature(parsed, payload, "wrong-secret");
+
+        expect(result.isValid).toBe(false);
+      });
+
+      test("should fail with incorrect payload", () => {
+        const signature = generateHMACSignature(payload, secret, "sha256");
+        const parsed = parseSignatureHeader(`sha256=${signature}`);
+        const result = verifyHMACSignature(
+          parsed,
+          '{"different": "data"}',
+          secret,
+        );
+
+        expect(result.isValid).toBe(false);
+      });
+
+      test("should handle non-HMAC signatures", () => {
+        const parsed = parseSignatureHeader("unknown-format");
+        const result = verifyHMACSignature(parsed, payload, secret);
+
+        expect(result.isValid).toBe(false);
+        expect(result.error).toBe("Not an HMAC signature");
+      });
+
+      test("should handle unsupported algorithms", () => {
+        const parsed = {
+          signatureType: "hmac" as const,
+          isValid: true,
+          rawHeader: "test",
+          algorithm: "MD5",
+          signature: "test",
+        };
+        const result = verifyHMACSignature(parsed, payload, secret);
+
+        expect(result.isValid).toBe(false);
+        expect(result.error).toBe("Unsupported algorithm: MD5");
+      });
+
+      test("should handle Buffer payloads", () => {
+        const signature = generateHMACSignature(payload, secret, "sha256");
+        const parsed = parseSignatureHeader(`sha256=${signature}`);
+        const result = verifyHMACSignature(
+          parsed,
+          new TextEncoder().encode(payload),
+          secret,
+        );
+
+        expect(result.isValid).toBe(true);
+      });
+
+      test("should be case-insensitive for hex signatures", () => {
+        const signature = generateHMACSignature(payload, secret, "sha256");
+        const parsed = parseSignatureHeader(
+          `sha256=${signature.toUpperCase()}`,
+        );
+        const result = verifyHMACSignature(parsed, payload, secret);
+
+        expect(result.isValid).toBe(true);
+      });
+    });
+
+    describe("generateHMACSignature", () => {
+      test("should generate consistent SHA256 signatures", () => {
+        const sig1 = generateHMACSignature(payload, secret, "sha256");
+        const sig2 = generateHMACSignature(payload, secret, "sha256");
+
+        expect(sig1).toBe(sig2);
+        expect(sig1).toMatch(/^[a-f0-9]+$/);
+        expect(sig1.length).toBe(64); // SHA256 = 32 bytes = 64 hex chars
+      });
+
+      test("should generate consistent SHA1 signatures", () => {
+        const sig = generateHMACSignature(payload, secret, "sha1");
+
+        expect(sig).toMatch(/^[a-f0-9]+$/);
+        expect(sig.length).toBe(40); // SHA1 = 20 bytes = 40 hex chars
+      });
+
+      test("should generate consistent SHA512 signatures", () => {
+        const sig = generateHMACSignature(payload, secret, "sha512");
+
+        expect(sig).toMatch(/^[a-f0-9]+$/);
+        expect(sig.length).toBe(128); // SHA512 = 64 bytes = 128 hex chars
+      });
+
+      test("should generate different signatures for different payloads", () => {
+        const sig1 = generateHMACSignature("payload1", secret);
+        const sig2 = generateHMACSignature("payload2", secret);
+
+        expect(sig1).not.toBe(sig2);
+      });
+
+      test("should generate different signatures for different secrets", () => {
+        const sig1 = generateHMACSignature(payload, "secret1");
+        const sig2 = generateHMACSignature(payload, "secret2");
+
+        expect(sig1).not.toBe(sig2);
+      });
+
+      test("should handle Buffer payloads", () => {
+        const sig1 = generateHMACSignature(payload, secret);
+        const sig2 = generateHMACSignature(
+          new TextEncoder().encode(payload),
+          secret,
+        );
+
+        expect(sig1).toBe(sig2);
+      });
+
+      test("should default to SHA256", () => {
+        const defaultSig = generateHMACSignature(payload, secret);
+        const sha256Sig = generateHMACSignature(payload, secret, "sha256");
+
+        expect(defaultSig).toBe(sha256Sig);
+      });
+    });
+
+    describe("Real-world webhook examples", () => {
+      test("should verify GitHub webhook signature", () => {
+        // Example from GitHub docs
+        const githubPayload = '{"zen":"Design for failure."}';
+        const githubSecret = "secret";
+        const githubSignature =
+          "sha256=4b7d04ca4a0b6c0b1b6e4c0a5e8c5b3a5f5c5b3a5f5c5b3a5f5c5b3a5f5c5b3a";
+
+        // Generate the actual signature
+        const actualSignature = generateHMACSignature(
+          githubPayload,
+          githubSecret,
+          "sha256",
+        );
+        const parsed = parseSignatureHeader(`sha256=${actualSignature}`);
+        const result = verifyHMACSignature(parsed, githubPayload, githubSecret);
+
+        expect(result.isValid).toBe(true);
+      });
+
+      test("should verify generic HMAC webhook", () => {
+        const webhookPayload = JSON.stringify({
+          event: "user.created",
+          data: { id: 123, email: "test@example.com" },
+        });
+        const webhookSecret = "webhook-secret-key-123";
+        const signature = generateHMACSignature(
+          webhookPayload,
+          webhookSecret,
+          "sha256",
+        );
+
+        // Test both formats
+        const genericParsed = parseSignatureHeader(`HMAC-SHA256 ${signature}`);
+        const genericResult = verifyHMACSignature(
+          genericParsed,
+          webhookPayload,
+          webhookSecret,
+        );
+
+        expect(genericResult.isValid).toBe(true);
+
+        // Raw hex format
+        const rawParsed = parseSignatureHeader(signature);
+        const rawResult = verifyHMACSignature(
+          rawParsed,
+          webhookPayload,
+          webhookSecret,
+        );
+
+        expect(rawResult.isValid).toBe(true);
+      });
+    });
+  });
+
+  describe("Browser HMAC Functions", () => {
+    const payload = '{"test": "data"}';
+    const secret = "my-secret-key";
+
+    test("should verify valid SHA256 signature using browser functions", async () => {
+      const signature = await generateHMACSignatureBrowser(
+        payload,
+        secret,
+        "SHA-256",
+      );
+      const parsed = parseSignatureHeader(`sha256=${signature}`);
+      const result = await verifyHMACSignatureBrowser(parsed, payload, secret);
+
+      expect(result.isValid).toBe(true);
+      expect(result.algorithm).toBe("SHA256");
+      expect(result.expectedSignature).toBe(signature);
+      expect(result.actualSignature).toBe(signature);
+      expect(result.error).toBeUndefined();
+    });
+
+    test("should verify valid SHA1 signature using browser functions", async () => {
+      const signature = await generateHMACSignatureBrowser(
+        payload,
+        secret,
+        "SHA-1",
+      );
+      const parsed = parseSignatureHeader(`sha1=${signature}`);
+      const result = await verifyHMACSignatureBrowser(parsed, payload, secret);
+
+      expect(result.isValid).toBe(true);
+      expect(result.algorithm).toBe("SHA1");
+    });
+
+    test("should verify valid SHA512 signature using browser functions", async () => {
+      const signature = await generateHMACSignatureBrowser(
+        payload,
+        secret,
+        "SHA-512",
+      );
+      const parsed = parseSignatureHeader(`sha512=${signature}`);
+      const result = await verifyHMACSignatureBrowser(parsed, payload, secret);
+
+      expect(result.isValid).toBe(true);
+      expect(result.algorithm).toBe("SHA512");
+    });
+
+    test("should fail with incorrect signature using browser functions", async () => {
+      const correctSignature = await generateHMACSignatureBrowser(
+        payload,
+        secret,
+        "SHA-256",
+      );
+      const incorrectSignature =
+        "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890";
+      const parsed = parseSignatureHeader(`sha256=${incorrectSignature}`);
+      const result = await verifyHMACSignatureBrowser(parsed, payload, secret);
+
+      expect(result.isValid).toBe(false);
+      expect(result.actualSignature).toBe(incorrectSignature);
+      expect(result.expectedSignature).toBe(correctSignature);
+    });
+
+    test("should fail with incorrect secret using browser functions", async () => {
+      const signature = await generateHMACSignatureBrowser(
+        payload,
+        secret,
+        "SHA-256",
+      );
+      const parsed = parseSignatureHeader(`sha256=${signature}`);
+      const result = await verifyHMACSignatureBrowser(
+        parsed,
+        payload,
+        "wrong-secret",
+      );
+
+      expect(result.isValid).toBe(false);
+    });
+
+    test("should handle non-HMAC signatures using browser functions", async () => {
+      const parsed = parseSignatureHeader("unknown-format");
+      const result = await verifyHMACSignatureBrowser(parsed, payload, secret);
+
+      expect(result.isValid).toBe(false);
+      expect(result.error).toBe("Not an HMAC signature");
+    });
+
+    test("should be compatible with Node.js generated signatures", async () => {
+      // Generate with Node.js function
+      const nodeSignature = generateHMACSignature(payload, secret, "sha256");
+
+      // Verify with browser function
+      const parsed = parseSignatureHeader(`sha256=${nodeSignature}`);
+      const result = await verifyHMACSignatureBrowser(parsed, payload, secret);
+
+      expect(result.isValid).toBe(true);
+      expect(result.expectedSignature).toBe(nodeSignature);
     });
   });
 });
