@@ -7,10 +7,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AuthorizationInspector } from "@/components/authorization-inspector";
-import { SignatureInspector } from "@/components/signature-inspector";
 import { headerNameDisplay } from "@/util/http";
 import type { KVList } from "@/util/kv-list";
-import { isSignatureHeader } from "@/util/hmac-signature";
+import { isSignatureHeader } from "@/util/authorization";
 
 // AIDEV-NOTE: Extracted headers table component to reduce duplication in request-page.tsx
 
@@ -18,12 +17,14 @@ interface HeadersTableProps {
   headers: KVList<string>;
   title?: string;
   showAuthInspector?: boolean;
+  requestBody?: string;
 }
 
 export function HeadersTable({
   headers,
   title,
   showAuthInspector = true,
+  requestBody,
 }: HeadersTableProps) {
   if (headers.length === 0) {
     return null;
@@ -50,13 +51,21 @@ export function HeadersTable({
                 {showAuthInspector && key.toLowerCase() === "authorization" && (
                   <>
                     {" "}
-                    <AuthorizationInspector value={value} />
+                    <AuthorizationInspector
+                      value={value}
+                      requestBody={requestBody}
+                    />
                   </>
                 )}
                 {showAuthInspector && isSignatureHeader(key) && (
                   <>
                     {" "}
-                    <SignatureInspector value={value} headerName={key} />
+                    <AuthorizationInspector
+                      value={value}
+                      headerName={key}
+                      requestBody={requestBody}
+                      isSignatureHeader={true}
+                    />
                   </>
                 )}
               </TableCell>
