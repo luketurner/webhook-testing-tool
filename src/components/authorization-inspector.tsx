@@ -21,6 +21,7 @@ import {
   isGenericBearerAuth,
   isJWTAuth,
   isHMACAuth,
+  verifyHMACAuthorization,
 } from "@/util/authorization";
 import { useState } from "react";
 import {
@@ -69,8 +70,7 @@ export const AuthorizationInspector = ({
         );
         setVerificationResult(result);
       } else if (isHMACAuth(parsedAuth)) {
-        // TODO
-        const result = await verifyHMACSignature(
+        const result = await verifyHMACAuthorization(
           parsedAuth,
           requestBody,
           secret,
