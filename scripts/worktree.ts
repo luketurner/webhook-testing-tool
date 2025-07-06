@@ -254,8 +254,9 @@ async function openWorktree(label: string) {
 
   // Check if session already exists
   try {
-    const result = await $`zellij list-sessions`.quiet();
-    const sessions = result.stdout.toString().trim().split("\n");
+    const result = await $`zellij list-sessions -ns`.quiet().nothrow();
+    const sessions =
+      result.exitCode === 0 ? result.stdout.toString().trim().split("\n") : [];
     const sessionExists = sessions.some((s) => s.includes(sessionName));
 
     if (sessionExists) {
