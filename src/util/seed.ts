@@ -1,35 +1,56 @@
-import "@/server-only";
-import { sendWebhookRequest } from "../webhook-server/send-request";
 import { generateHMACSignature } from "./authorization";
+import type { HandlerRequest } from "@/webhook-server/schema";
 
-export async function seedRequestData() {
-  await sendWebhookRequest({
+export interface SeedRequest extends HandlerRequest {
+  id: string;
+  name: string;
+}
+
+function createSeedRequests(): SeedRequest[] {
+  const requests: SeedRequest[] = [];
+
+  // Simple GET request
+  requests.push({
+    id: "simple",
+    name: "Simple GET",
     method: "GET",
     url: "/simple",
     headers: [],
     query: [],
     body: null,
   });
-  await sendWebhookRequest({
+
+  // Basic auth
+  requests.push({
+    id: "auth_basic",
+    name: "Basic Auth",
     method: "GET",
     url: "/auth_basic",
     headers: [
       [
         "Authorization",
-        `Basic ${Buffer.from("testuser:testpass", "utf8").toString("base64")}`,
+        "Basic dGVzdHVzZXI6dGVzdHBhc3M=", // testuser:testpass
       ],
     ],
     query: [],
     body: null,
   });
-  await sendWebhookRequest({
+
+  // Bearer token
+  requests.push({
+    id: "auth_bearer",
+    name: "Bearer Token",
     method: "GET",
     url: "/auth_bearer",
     headers: [["Authorization", "Bearer test-bearer-token"]],
     query: [],
     body: null,
   });
-  await sendWebhookRequest({
+
+  // JWT token
+  requests.push({
+    id: "auth_jwt",
+    name: "JWT Token",
     method: "GET",
     url: "/auth_jwt",
     headers: [
@@ -41,20 +62,29 @@ export async function seedRequestData() {
     query: [],
     body: null,
   });
-  await sendWebhookRequest({
+
+  // Unknown auth scheme
+  requests.push({
+    id: "auth_unknown",
+    name: "Unknown Auth",
     method: "GET",
     url: "/auth_unknown",
     headers: [["Authorization", "MyRandomScheme foobar"]],
     query: [],
     body: null,
   });
-  await sendWebhookRequest({
+
+  // POST with JSON
+  requests.push({
+    id: "post_json",
+    name: "POST JSON",
     method: "POST",
     url: "/post_json",
     headers: [["content-type", "application/json"]],
     query: [],
-    body: Buffer.from(JSON.stringify({ foo: "bar" })).toString("base64"),
+    body: btoa(JSON.stringify({ foo: "bar" })),
   });
+
   // GitHub webhook with valid HMAC signatures
   const githubSecret = "github-webhook-secret";
   const githubPayload = JSON.stringify({
@@ -70,7 +100,9 @@ export async function seedRequestData() {
     "sha256",
   );
 
-  await sendWebhookRequest({
+  requests.push({
+    id: "github_webhook",
+    name: "GitHub Webhook",
     method: "POST",
     url: "/github_webhook",
     headers: [
@@ -82,6 +114,7 @@ export async function seedRequestData() {
     query: [],
     body: Buffer.from(githubPayload).toString("base64"),
   });
+
   // Gitea webhook with valid HMAC signature
   const giteaSecret = "gitea-webhook-secret";
   const giteaPayload = JSON.stringify({
@@ -96,7 +129,9 @@ export async function seedRequestData() {
     "sha256",
   );
 
-  await sendWebhookRequest({
+  requests.push({
+    id: "gitea_webhook",
+    name: "Gitea Webhook",
     method: "POST",
     url: "/gitea_webhook",
     headers: [
@@ -107,6 +142,7 @@ export async function seedRequestData() {
     query: [],
     body: Buffer.from(giteaPayload).toString("base64"),
   });
+
   // HMAC Authorization header with valid signature
   const hmacSecret = "hmac-auth-secret";
   const hmacPayload = JSON.stringify({
@@ -120,7 +156,9 @@ export async function seedRequestData() {
     "sha256",
   );
 
-  await sendWebhookRequest({
+  requests.push({
+    id: "hmac_auth",
+    name: "HMAC Auth",
     method: "POST",
     url: "/hmac_auth",
     headers: [
@@ -130,6 +168,7 @@ export async function seedRequestData() {
     query: [],
     body: Buffer.from(hmacPayload).toString("base64"),
   });
+
   // Custom signature headers with valid signatures
   const customSecret = "custom-service-secret";
   const customPayload = JSON.stringify({
@@ -143,7 +182,9 @@ export async function seedRequestData() {
   );
   const customSha1 = generateHMACSignature(customPayload, customSecret, "sha1");
 
-  await sendWebhookRequest({
+  requests.push({
+    id: "custom_signature",
+    name: "Custom Signature",
     method: "POST",
     url: "/custom_signature",
     headers: [
@@ -168,4 +209,8 @@ export async function seedRequestData() {
     query: [],
     body: "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAjSURBVAiZY2RgYPjPAAQMDAwMjEwMDIzMDAwM/1kYGBiZAAAARgAF/I7j+QAAAABJRU5ErkJggg==",
   });
+
+  return requests;
 }
+
+export const seedRequests = createSeedRequests();

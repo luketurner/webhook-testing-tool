@@ -18,11 +18,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSendDemoRequests } from "@/dashboard/hooks";
+import { useSendRequest } from "@/dashboard/hooks";
 import { Link, useSearchParams } from "react-router";
 import { RequestSidebar } from "@/components/request-sidebar";
 import { HandlerSidebar } from "@/components/handler-sidebar";
 import { JWTInspector } from "@/components/jwt-inspector";
+import { seedRequests } from "@/util/seed";
 
 const navMain = [
   {
@@ -38,7 +39,7 @@ const navMain = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [activeItem, setActiveItem] = React.useState(navMain[0]);
   const { setOpen, open } = useSidebar();
-  const { mutate: handleSendDemoRequests } = useSendDemoRequests();
+  const { mutate: handleSendRequest } = useSendRequest();
   const [showJWTInspector, setShowJWTInspector] = React.useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -131,11 +132,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent side="right" align="start">
-                      <DropdownMenuItem
-                        onSelect={() => handleSendDemoRequests()}
-                      >
-                        Send demo requests
-                      </DropdownMenuItem>
+                      {seedRequests.map((request) => (
+                        <DropdownMenuItem
+                          key={request.id}
+                          onSelect={() => handleSendRequest(request)}
+                        >
+                          Send: {request.name}
+                        </DropdownMenuItem>
+                      ))}
                       <DropdownMenuItem onSelect={handleDownloadDatabase}>
                         Export database as SQLite
                       </DropdownMenuItem>

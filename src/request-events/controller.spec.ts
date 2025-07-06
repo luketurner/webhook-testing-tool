@@ -160,26 +160,6 @@ describe("request-events/controller", () => {
     });
   });
 
-  describe("POST /api/requests/seed", () => {
-    test("should handle seed request (may fail due to network)", async () => {
-      const mockReq = {} as any;
-
-      // This may fail due to network dependencies in seed function
-      try {
-        const response =
-          await requestEventController["/api/requests/seed"].POST(mockReq);
-        expect(response).toBeInstanceOf(Response);
-        expect(response.status).toBe(200);
-
-        const data = await response.json();
-        expect(data).toEqual({ status: "ok" });
-      } catch (error) {
-        // Expected to fail in test environment without running server
-        expect(error).toBeDefined();
-      }
-    });
-  });
-
   describe("error handling and edge cases", () => {
     test("should handle malformed JSON in send request", async () => {
       const mockReq = {

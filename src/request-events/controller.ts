@@ -1,5 +1,4 @@
 import "@/server-only";
-import { seedRequestData } from "@/util/seed";
 import {
   getAllRequestEventsMeta,
   getRequestEvent,
@@ -12,12 +11,6 @@ export const requestEventController = {
   "/api/requests": {
     GET: (req) => {
       return Response.json(getAllRequestEventsMeta());
-    },
-  },
-  "/api/requests/seed": {
-    POST: async (req) => {
-      await seedRequestData();
-      return Response.json({ status: "ok" });
     },
   },
   "/api/requests/send": {

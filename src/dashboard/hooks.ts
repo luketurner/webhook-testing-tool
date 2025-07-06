@@ -88,21 +88,6 @@ export function useResourceDeleter(type: ResourceType, id: string) {
   });
 }
 
-export function useSendDemoRequests() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      await fetch("/api/requests/seed", {
-        method: "POST",
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["requests"] });
-    },
-  });
-}
-
 export function useSendRequest() {
   const queryClient = useQueryClient();
 
