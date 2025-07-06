@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import type { Timestamp } from "@/util/timestamp";
+import type { Timestamp } from "@/util/datetime";
 
 interface DateDisplayProps {
   timestamp: Timestamp | number | null | undefined;

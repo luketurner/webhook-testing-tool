@@ -1,7 +1,6 @@
 import "@/server-only";
 import { auth } from "./index";
 import { apiResponse } from "@/util/api-response";
-import { withErrorHandling } from "@/util/controller-wrapper";
 
 export const authController = {
   "/api/auth/sign-in": {
@@ -38,3 +37,17 @@ export const authController = {
     }),
   },
 };
+
+function withErrorHandling(handler: (req: Request) => Promise<Response>) {
+  return async (req: Request) => {
+    try {
+      return await handler(req);
+    } catch (error) {
+      console.error(`Handler error:`, error);
+      return apiResponse.error(
+        error instanceof Error ? error.message : "Internal server error",
+        500,
+      );
+    }
+  };
+}

@@ -14,7 +14,7 @@ import type { TLSSocket } from "tls";
 import { EXCLUDE_HEADER_MAP } from "../config-shared";
 import type { RequestEvent, TLSInfo } from "@/request-events/schema";
 import { randomUUID } from "@/util/uuid";
-import { now } from "@/util/timestamp";
+import { now } from "@/util/datetime";
 import { fromObject } from "@/util/kv-list";
 import type { HttpMethod } from "@/util/http";
 import { fromBufferLike } from "@/util/base64";

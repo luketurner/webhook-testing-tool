@@ -3,7 +3,7 @@ import Router from "router";
 
 import { getAllHandlers } from "@/handlers/model";
 import type { RequestEvent } from "@/request-events/schema";
-import { now } from "@/util/timestamp";
+import { now } from "@/util/datetime";
 import { runInNewContext } from "vm";
 import { deepFreeze } from "@/util/object";
 import { randomUUID } from "@/util/uuid";

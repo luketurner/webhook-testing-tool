@@ -1,4 +1,4 @@
-import { timestampSchema } from "@/util/timestamp";
+import { timestampSchema } from "@/util/datetime";
 import { uuidSchema } from "@/util/uuid";
 import { z } from "zod/v4";
 import type { EntityId } from "@/types/common";

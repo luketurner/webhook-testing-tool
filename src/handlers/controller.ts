@@ -1,7 +1,6 @@
 import "@/server-only";
 
 import { apiResponse } from "@/util/api-response";
-import { parseRequestBody } from "@/util/request-helpers";
 import {
   createHandler,
   deleteHandler,
@@ -45,10 +44,7 @@ export const handlerController = {
   },
   "/api/handlers/reorder": {
     POST: async (req) => {
-      const validatedData = await parseRequestBody<BulkReorderRequest>(
-        req,
-        bulkReorderSchema,
-      );
+      const validatedData = bulkReorderSchema.parse(await req.json());
       reorderHandlers(validatedData.updates);
       return apiResponse.ok();
     },

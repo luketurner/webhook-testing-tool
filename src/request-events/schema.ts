@@ -1,6 +1,6 @@
 import { kvListSchema, type KVList } from "@/util/kv-list";
 import { base64Schema, fromBufferLike } from "@/util/base64";
-import { timestampSchema } from "@/util/timestamp";
+import { timestampSchema } from "@/util/datetime";
 import { uuidSchema } from "@/util/uuid";
 import { z } from "zod/v4";
 import { HTTP_METHODS } from "@/util/http";

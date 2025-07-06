@@ -2,7 +2,7 @@ import { getHandlerExecutionsByRequestId } from "@/handler-executions/model";
 import { createRequestEvent } from "@/request-events/model";
 import type { RequestEvent } from "@/request-events/schema";
 import { parseBase64 } from "@/util/base64";
-import { now } from "@/util/timestamp";
+import { now } from "@/util/datetime";
 import { randomUUID } from "@/util/uuid";
 import { handleRequest } from "@/webhook-server/handle-request";
 import { beforeEach, describe, expect, test } from "bun:test";

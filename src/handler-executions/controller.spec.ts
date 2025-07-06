@@ -1,5 +1,5 @@
 import { createRequestEvent } from "@/request-events/model";
-import { now } from "@/util/timestamp";
+import { now } from "@/util/datetime";
 import { randomUUID } from "@/util/uuid";
 import { describe, expect, test } from "bun:test";
 import { handlerExecutionController } from "./controller";

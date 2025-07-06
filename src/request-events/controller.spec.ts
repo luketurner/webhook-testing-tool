@@ -7,7 +7,7 @@ import {
 } from "./model";
 import type { RequestEvent, RequestId } from "./schema";
 import { randomUUID } from "@/util/uuid";
-import { now } from "@/util/timestamp";
+import { now } from "@/util/datetime";
 import { parseBase64 } from "@/util/base64";
 
 describe("request-events/controller", () => {
