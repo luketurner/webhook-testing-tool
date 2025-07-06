@@ -29,6 +29,7 @@ How it works:
 - Viewing request/response bodies in multiple encodings including UTF8, Latin-1, base64, hex, and binary.
 - Downloading request/response bodies as files, with extensions guessed based on the `Content-Type` header.
 - `Authorization` header inspector that parses Basic, Bearer, JWT, and HMAC authorization schemes.
+- Parse and verify `X-Signature-*` headers as sent by e.g. Github/Gitlab/etc.
 - Composing and sending test requests directly from the UI.
 - Datetime inspector that displays timestamps in multiple formats and timezones.
 
