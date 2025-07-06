@@ -244,7 +244,7 @@ export async function generateHMACSignature(
   const cryptoKey = await crypto.subtle.importKey(
     "raw",
     keyData,
-    { name: "HMAC", hash: algorithm },
+    { name: "HMAC", hash: normalizedAlgorithm },
     false,
     ["sign"],
   );
