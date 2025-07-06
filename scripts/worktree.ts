@@ -221,6 +221,9 @@ async function cleanupWorktree(label: string) {
     await $`git branch -D ${label}`;
     console.log(`✓ Deleted branch ${label}`);
 
+    // delete zellij session -- removes it from list of ressurectable sessions
+    await $`zellij delete-session wtt-${label}`;
+
     console.log("✓ Cleanup completed successfully");
   } catch (error) {
     showError(`Failed to cleanup worktree: ${error}`);
