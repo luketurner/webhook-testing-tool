@@ -697,4 +697,37 @@ describe("handleRequest()", () => {
       expect(executions).toHaveLength(2); // Third handler should not execute
     });
   });
+
+  describe("body_raw functionality", () => {
+    test("it should use body_raw when set instead of body", async () => {
+      const base64Data = "SGVsbG8gV29ybGQ="; // "Hello World" in base64
+      defineHandler(1, "GET", "/", `resp.body_raw = "${base64Data}";`);
+      const [err, resp] = await handleRequest(request);
+      expect(err).toBeNull();
+      expect(resp.response_body).toBe(parseBase64(base64Data));
+    });
+
+    test("it should use body when body_raw is not set", async () => {
+      defineHandler(1, "GET", "/", `resp.body = "Hello World";`);
+      const [err, resp] = await handleRequest(request);
+      expect(err).toBeNull();
+      // body should be converted to base64
+      expect(resp.response_body).toBe(
+        parseBase64(Buffer.from("Hello World").toString("base64")),
+      );
+    });
+
+    test("it should prioritize body_raw over body when both are set", async () => {
+      const base64Data = "SGVsbG8gV29ybGQ="; // "Hello World" in base64
+      defineHandler(
+        1,
+        "GET",
+        "/",
+        `resp.body = "This should be ignored"; resp.body_raw = "${base64Data}";`,
+      );
+      const [err, resp] = await handleRequest(request);
+      expect(err).toBeNull();
+      expect(resp.response_body).toBe(parseBase64(base64Data));
+    });
+  });
 });
