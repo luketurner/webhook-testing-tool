@@ -82,8 +82,8 @@ export const RequestPage = () => {
     },
   });
 
-  const requestBody = atob(request?.request_body ?? "");
-  const responseBody = atob(request?.response_body ?? "");
+  const requestBody = request?.request_body ?? "";
+  const responseBody = request?.response_body ?? "";
 
   const handleResendRequest = (requestEvent: RequestEvent) => {
     const handlerRequest = requestEventToHandlerRequest(requestEvent);
