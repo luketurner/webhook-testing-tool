@@ -17,6 +17,10 @@ function showUsage() {
   console.log(
     "                    If no label provided, generates one automatically",
   );
+  console.log("  open <label>      Open an existing worktree in zellij");
+  console.log(
+    "                    Attaches to existing session or creates new one",
+  );
   console.log("  cleanup [label]   Remove worktree and associated branch");
   console.log(
     "                    If no label provided, cleans up all worktrees",
@@ -31,6 +35,11 @@ function showUsage() {
   console.log(`  ${SCRIPT_NAME} new feature-auth`);
   console.log(
     "  # Creates /workspaces/worktree-feature-auth and opens Claude Code",
+  );
+  console.log("");
+  console.log(`  ${SCRIPT_NAME} open feature-auth`);
+  console.log(
+    "  # Opens existing worktree in zellij (attaches or creates session)",
   );
   console.log("");
   console.log(`  ${SCRIPT_NAME} cleanup feature-auth`);
@@ -230,6 +239,54 @@ async function cleanupWorktree(label: string) {
   }
 }
 
+/**
+ * Open an existing worktree in zellij
+ */
+async function openWorktree(label: string) {
+  const worktreePath = `/workspaces/worktree-${label}`;
+
+  // Check if worktree exists
+  if (!existsSync(worktreePath)) {
+    showError(`Worktree ${worktreePath} does not exist.`);
+  }
+
+  const sessionName = `wtt-${label}`;
+
+  // Check if session already exists
+  try {
+    const result = await $`zellij list-sessions`.quiet();
+    const sessions = result.stdout.toString().trim().split("\n");
+    const sessionExists = sessions.some((s) => s.includes(sessionName));
+
+    if (sessionExists) {
+      console.log(`Attaching to existing zellij session: ${sessionName}`);
+      // Attach to existing session
+      const zellijProc = spawn(["zellij", "attach", sessionName], {
+        stdio: ["inherit", "inherit", "inherit"],
+        cwd: worktreePath,
+      });
+
+      await zellijProc.exited;
+    } else {
+      console.log(`Creating new zellij session: ${sessionName}`);
+      // Create new session
+      const zellijProc = spawn(
+        ["zellij", "-n", ".zellij/worktree.kdl", "-s", sessionName],
+        {
+          stdio: ["inherit", "inherit", "inherit"],
+          cwd: worktreePath,
+        },
+      );
+
+      await zellijProc.exited;
+    }
+
+    console.log("✓ Closed worktree session");
+  } catch (error) {
+    showError(`Failed to open worktree session: ${error}`);
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
 
@@ -246,8 +303,8 @@ async function main() {
   const command = args[0];
   let label = args[1];
 
-  if (!["new", "cleanup"].includes(command)) {
-    showError("Command must be 'new' or 'cleanup'");
+  if (!["new", "open", "cleanup"].includes(command)) {
+    showError("Command must be 'new', 'open', or 'cleanup'");
   }
 
   // Handle cleanup command
@@ -266,6 +323,20 @@ async function main() {
       await cleanupWorktree(label);
       return;
     }
+  }
+
+  // Handle open command
+  if (command === "open") {
+    if (!label) {
+      showError("Label is required for 'open' command");
+    }
+    if (!/^[a-zA-Z0-9_-]+$/.test(label)) {
+      showError(
+        "Label must contain only letters, numbers, underscores, and hyphens",
+      );
+    }
+    await openWorktree(label);
+    return;
   }
 
   // For 'new' command, generate label if not provided
