@@ -74,6 +74,33 @@ resp.body = {
 
 // Or set text response
 resp.body = "Hello, World!";
+
+// Set binary response body (base64 encoded)
+resp.body_raw = "SGVsbG8gV29ybGQ="; // "Hello World" in base64
+```
+
+#### Response Body Options
+
+The response object supports two body properties:
+
+- **`resp.body`** - For text/JSON responses. Content is automatically encoded to base64.
+- **`resp.body_raw`** - For binary responses. Content must be base64-encoded string.
+
+When both are set, `resp.body_raw` takes precedence:
+
+```javascript
+// Text response (automatically encoded)
+resp.body = "Hello, World!";
+
+// JSON response (automatically encoded)
+resp.body = { message: "Success", data: [1, 2, 3] };
+
+// Binary response (must be base64 encoded)
+resp.body_raw = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="; // 1x1 pixel PNG
+
+// body_raw takes precedence when both are set
+resp.body = "This will be ignored";
+resp.body_raw = "SGVsbG8gV29ybGQ="; // This will be returned
 ```
 
 ### Context Object (`ctx`)
@@ -367,4 +394,18 @@ shared.requestLog.push({
 if (shared.requestLog.length > 100) {
   shared.requestLog = shared.requestLog.slice(-100);
 }
+
+### Binary Response Handler
+
+```javascript
+// Return a small PNG image
+resp.status = 200;
+resp.headers.push(["Content-Type", "image/png"]);
+resp.body_raw = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+
+// Return PDF content
+resp.status = 200;
+resp.headers.push(["Content-Type", "application/pdf"]);
+resp.headers.push(["Content-Disposition", "attachment; filename=\"document.pdf\""]);
+resp.body_raw = "JVBERi0xLjQKJcOkw7zDssO..."; // Base64 encoded PDF content
 ```
