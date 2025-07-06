@@ -214,7 +214,11 @@ export const RequestPage = () => {
               />
               <div>
                 <h4 className="font-medium mb-2">Body</h4>
-                <PayloadDisplay content={requestBody} title="request body" />
+                <PayloadDisplay
+                  content={requestBody}
+                  title="request body"
+                  requestId={request.id}
+                />
               </div>
             </div>
           ),
@@ -229,7 +233,11 @@ export const RequestPage = () => {
               />
               <div>
                 <h4 className="font-medium mb-2">Body</h4>
-                <PayloadDisplay content={responseBody} title="response body" />
+                <PayloadDisplay
+                  content={responseBody}
+                  title="response body"
+                  requestId={request.id}
+                />
               </div>
             </div>
           ),

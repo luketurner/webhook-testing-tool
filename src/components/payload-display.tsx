@@ -23,9 +23,11 @@ const ENCODINGS = [
 export const PayloadDisplay = ({
   content,
   title,
+  requestId,
 }: {
   content: string;
   title: string;
+  requestId: string;
 }) => {
   const [encoding, setEncoding] = useState("utf8");
 
@@ -92,7 +94,7 @@ export const PayloadDisplay = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${title.toLowerCase().replace(/\s+/g, "-")}.txt`;
+    link.download = `${requestId}-${title.toLowerCase().replace(/\s+/g, "-")}.txt`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

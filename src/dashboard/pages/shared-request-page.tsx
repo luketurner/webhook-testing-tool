@@ -32,8 +32,8 @@ export const SharedRequestPage = () => {
     enabled: !!sharedId,
   });
 
-  const requestBody = atob(request?.request_body ?? "");
-  const responseBody = atob(request?.response_body ?? "");
+  const requestBody = request?.request_body ?? "";
+  const responseBody = request?.response_body ?? "";
 
   if (isLoading) {
     return <Skeleton className="h-screen w-full" />;
@@ -111,7 +111,11 @@ export const SharedRequestPage = () => {
               />
               <div>
                 <h4 className="font-medium mb-2">Body</h4>
-                <PayloadDisplay content={requestBody} title="request body" />
+                <PayloadDisplay
+                  content={requestBody}
+                  title="request body"
+                  requestId={request.id}
+                />
               </div>
             </div>
           ),
@@ -126,7 +130,11 @@ export const SharedRequestPage = () => {
               />
               <div>
                 <h4 className="font-medium mb-2">Body</h4>
-                <PayloadDisplay content={responseBody} title="response body" />
+                <PayloadDisplay
+                  content={responseBody}
+                  title="response body"
+                  requestId={request.id}
+                />
               </div>
             </div>
           ),
