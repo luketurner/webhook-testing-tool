@@ -108,9 +108,32 @@ export function useSendRequest() {
 
   return useMutation({
     mutationFn: async (request: HandlerRequest) => {
+      // Ensure body is base64-encoded
+      let processedRequest = { ...request };
+      if (request.body !== null && request.body !== undefined) {
+        if (typeof request.body === "string") {
+          // If it's already a valid base64 string, keep it; otherwise encode it
+          try {
+            // Test if it's valid base64 by trying to decode and re-encode
+            const decoded = atob(request.body);
+            const reencoded = btoa(decoded);
+            if (reencoded !== request.body) {
+              // Not valid base64, encode it
+              processedRequest.body = btoa(request.body);
+            }
+          } catch {
+            // Not valid base64, encode it
+            processedRequest.body = btoa(request.body);
+          }
+        } else {
+          // Convert non-string bodies to JSON and then base64
+          processedRequest.body = btoa(JSON.stringify(request.body));
+        }
+      }
+
       const requestPromise = fetch("/api/requests/send", {
         method: "POST",
-        body: JSON.stringify(request),
+        body: JSON.stringify(processedRequest),
       });
       toast.promise(requestPromise, {
         loading: "Sending request...",

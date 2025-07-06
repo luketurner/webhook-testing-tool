@@ -17,9 +17,21 @@ export async function sendWebhookRequest(opts: HandlerRequest) {
     }
   }
 
+  // Convert base64 body to binary data if present
+  let requestBody: BodyInit | null = null;
+  if (body !== null && body !== undefined) {
+    if (typeof body === "string") {
+      // Assume base64-encoded body, decode to binary
+      requestBody = Uint8Array.fromBase64(body);
+    } else {
+      // Fallback for other types (shouldn't happen with new design)
+      requestBody = body;
+    }
+  }
+
   return await fetch(absoluteUrl, {
     method,
-    body,
+    body: requestBody,
     headers,
   });
 }
