@@ -6,7 +6,7 @@ export interface SeedRequest extends HandlerRequest {
   name: string;
 }
 
-function createSeedRequests(): SeedRequest[] {
+async function createSeedRequests(): Promise<SeedRequest[]> {
   const requests: SeedRequest[] = [];
 
   // Simple GET request
@@ -93,8 +93,12 @@ function createSeedRequests(): SeedRequest[] {
     pusher: { name: "testuser", email: "test@example.com" },
     secret: githubSecret, // Include secret for testing verification
   });
-  const githubSha1 = generateHMACSignature(githubPayload, githubSecret, "sha1");
-  const githubSha256 = generateHMACSignature(
+  const githubSha1 = await generateHMACSignature(
+    githubPayload,
+    githubSecret,
+    "sha1",
+  );
+  const githubSha256 = await generateHMACSignature(
     githubPayload,
     githubSecret,
     "sha256",
@@ -112,7 +116,7 @@ function createSeedRequests(): SeedRequest[] {
       ["X-Hub-Signature-256", `sha256=${githubSha256}`],
     ],
     query: [],
-    body: Buffer.from(githubPayload).toString("base64"),
+    body: btoa(githubPayload),
   });
 
   // Gitea webhook with valid HMAC signature
@@ -123,7 +127,7 @@ function createSeedRequests(): SeedRequest[] {
     commits: [{ message: "Test commit", author: { name: "developer" } }],
     secret: giteaSecret, // Include secret for testing verification
   });
-  const giteaSha256 = generateHMACSignature(
+  const giteaSha256 = await generateHMACSignature(
     giteaPayload,
     giteaSecret,
     "sha256",
@@ -140,7 +144,7 @@ function createSeedRequests(): SeedRequest[] {
       ["X-Gitea-Signature", `sha256=${giteaSha256}`],
     ],
     query: [],
-    body: Buffer.from(giteaPayload).toString("base64"),
+    body: btoa(giteaPayload),
   });
 
   // HMAC Authorization header with valid signature
@@ -150,7 +154,7 @@ function createSeedRequests(): SeedRequest[] {
     timestamp: 1640995200,
     secret: hmacSecret, // Include secret for testing verification
   });
-  const hmacSignature = generateHMACSignature(
+  const hmacSignature = await generateHMACSignature(
     hmacPayload,
     hmacSecret,
     "sha256",
@@ -166,7 +170,7 @@ function createSeedRequests(): SeedRequest[] {
       ["content-type", "application/json"],
     ],
     query: [],
-    body: Buffer.from(hmacPayload).toString("base64"),
+    body: btoa(hmacPayload),
   });
 
   // Custom signature headers with valid signatures
@@ -175,12 +179,16 @@ function createSeedRequests(): SeedRequest[] {
     message: "Hello from custom service",
     secret: customSecret, // Include secret for testing verification
   });
-  const customSha512 = generateHMACSignature(
+  const customSha512 = await generateHMACSignature(
     customPayload,
     customSecret,
     "sha512",
   );
-  const customSha1 = generateHMACSignature(customPayload, customSecret, "sha1");
+  const customSha1 = await generateHMACSignature(
+    customPayload,
+    customSecret,
+    "sha1",
+  );
 
   requests.push({
     id: "custom_signature",
@@ -193,7 +201,7 @@ function createSeedRequests(): SeedRequest[] {
       ["X-Custom-Signature", `HMAC-SHA1 ${customSha1}`],
     ],
     query: [],
-    body: Buffer.from(customPayload).toString("base64"),
+    body: btoa(customPayload),
   });
 
   requests.push({
@@ -219,4 +227,4 @@ function createSeedRequests(): SeedRequest[] {
   return requests;
 }
 
-export const seedRequests = createSeedRequests();
+export const seedRequests = await createSeedRequests();

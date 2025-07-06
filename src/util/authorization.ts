@@ -1,5 +1,3 @@
-import { createHmac } from "crypto";
-
 export interface IParsedAuth {
   authType: "basic" | "digest" | "bearer" | "jwt" | "hmac" | "unknown";
   isValid: boolean;
@@ -375,11 +373,11 @@ export interface HMACAuthVerificationResult {
  * @param secret The secret key used for HMAC
  * @returns Verification result with details
  */
-export function verifyHMACAuthorization(
+export async function verifyHMACAuthorization(
   parsedAuth: IParsedAuth,
   payload: string | Uint8Array,
   secret: string,
-): HMACAuthVerificationResult {
+): Promise<HMACAuthVerificationResult> {
   if (!isHMACAuth(parsedAuth)) {
     return {
       isValid: false,
@@ -390,7 +388,7 @@ export function verifyHMACAuthorization(
     };
   }
 
-  const algorithm = normalizeAlgorithm(parsedAuth.algorithm || "SHA256");
+  const algorithm = normalizeAlgorithmBrowser(parsedAuth.algorithm || "SHA256");
   if (!algorithm) {
     return {
       isValid: false,
@@ -402,9 +400,11 @@ export function verifyHMACAuthorization(
   }
 
   try {
-    const hmac = createHmac(algorithm, secret);
-    hmac.update(payload);
-    const expectedSignature = hmac.digest("hex");
+    const expectedSignature = await generateHMACSignatureBrowser(
+      payload,
+      secret,
+      algorithm,
+    );
 
     // Use timing-safe comparison
     const actualSig = (parsedAuth.signature || "").toLowerCase();
@@ -412,7 +412,7 @@ export function verifyHMACAuthorization(
 
     const isValid =
       actualSig.length === expectedSig.length &&
-      timingSafeEqual(Buffer.from(actualSig), Buffer.from(expectedSig));
+      timingSafeEqualBrowser(actualSig, expectedSig);
 
     return {
       isValid,
@@ -438,11 +438,11 @@ export function verifyHMACAuthorization(
  * @param secret The secret key used for HMAC
  * @returns Verification result with details
  */
-export function verifyHMACSignature(
+export async function verifyHMACSignature(
   parsedSignature: IParsedSignature,
   payload: string | Uint8Array,
   secret: string,
-): HMACAuthVerificationResult {
+): Promise<HMACAuthVerificationResult> {
   if (!isHMACSignature(parsedSignature)) {
     return {
       isValid: false,
@@ -458,7 +458,7 @@ export function verifyHMACSignature(
     parsedSignature.algorithm === "UNKNOWN"
       ? "SHA256"
       : parsedSignature.algorithm;
-  const algorithm = normalizeAlgorithm(algorithmToUse);
+  const algorithm = normalizeAlgorithmBrowser(algorithmToUse);
   if (!algorithm) {
     return {
       isValid: false,
@@ -470,9 +470,11 @@ export function verifyHMACSignature(
   }
 
   try {
-    const hmac = createHmac(algorithm, secret);
-    hmac.update(payload);
-    const expectedSignature = hmac.digest("hex");
+    const expectedSignature = await generateHMACSignatureBrowser(
+      payload,
+      secret,
+      algorithm,
+    );
 
     // Use timing-safe comparison
     const actualSig = parsedSignature.signature.toLowerCase();
@@ -480,7 +482,7 @@ export function verifyHMACSignature(
 
     const isValid =
       actualSig.length === expectedSig.length &&
-      timingSafeEqual(Buffer.from(actualSig), Buffer.from(expectedSig));
+      timingSafeEqualBrowser(actualSig, expectedSig);
 
     return {
       isValid,
@@ -506,14 +508,18 @@ export function verifyHMACSignature(
  * @param algorithm The HMAC algorithm (sha1, sha256, sha512)
  * @returns The hex-encoded signature
  */
-export function generateHMACSignature(
+export async function generateHMACSignature(
   payload: string | Uint8Array,
   secret: string,
   algorithm: "sha1" | "sha256" | "sha512" = "sha256",
-): string {
-  const hmac = createHmac(algorithm, secret);
-  hmac.update(payload);
-  return hmac.digest("hex");
+): Promise<string> {
+  const normalizedAlgorithm = normalizeAlgorithmBrowser(
+    algorithm.toUpperCase(),
+  );
+  if (!normalizedAlgorithm) {
+    throw new Error(`Unsupported algorithm: ${algorithm}`);
+  }
+  return generateHMACSignatureBrowser(payload, secret, normalizedAlgorithm);
 }
 
 // Browser-compatible HMAC verification functions using SubtleCrypto API
@@ -714,39 +720,6 @@ function timingSafeEqualBrowser(a: string, b: string): boolean {
   let result = 0;
   for (let i = 0; i < a.length; i++) {
     result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return result === 0;
-}
-
-/**
- * Normalizes algorithm names to Node.js crypto format
- */
-function normalizeAlgorithm(algorithm: string): string | null {
-  const normalized = algorithm.toUpperCase();
-  switch (normalized) {
-    case "SHA1":
-    case "SHA-1":
-      return "sha1";
-    case "SHA256":
-    case "SHA-256":
-      return "sha256";
-    case "SHA512":
-    case "SHA-512":
-      return "sha512";
-    default:
-      return null;
-  }
-}
-
-/**
- * Timing-safe buffer comparison
- */
-function timingSafeEqual(a: Buffer, b: Buffer): boolean {
-  if (a.length !== b.length) return false;
-
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a[i] ^ b[i];
   }
   return result === 0;
 }

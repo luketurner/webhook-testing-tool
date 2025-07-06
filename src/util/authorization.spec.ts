@@ -569,22 +569,26 @@ describe("Authorization Header Parsing", () => {
     const payload = '{"user": "test", "action": "login"}';
     const secret = "test-secret-key";
 
-    function generateHMACSignature(
+    async function generateHMACSignature(
       data: string,
       key: string,
       algorithm: string,
-    ): string {
+    ): Promise<string> {
       const hmac = createHmac(algorithm, key);
       hmac.update(data);
       return hmac.digest("hex");
     }
 
     describe("verifyHMACAuthorization", () => {
-      test("should verify valid HMAC-SHA256 authorization", () => {
-        const signature = generateHMACSignature(payload, secret, "sha256");
+      test("should verify valid HMAC-SHA256 authorization", async () => {
+        const signature = await generateHMACSignature(
+          payload,
+          secret,
+          "sha256",
+        );
         const header = `HMAC-SHA256 ${signature}`;
         const parsed = parseAuthorizationHeader(header);
-        const result = verifyHMACAuthorization(parsed, payload, secret);
+        const result = await verifyHMACAuthorization(parsed, payload, secret);
 
         expect(result.isValid).toBe(true);
         expect(result.algorithm).toBe("SHA256");
@@ -593,38 +597,46 @@ describe("Authorization Header Parsing", () => {
         expect(result.error).toBeUndefined();
       });
 
-      test("should verify valid HMAC-SHA1 authorization", () => {
-        const signature = generateHMACSignature(payload, secret, "sha1");
+      test("should verify valid HMAC-SHA1 authorization", async () => {
+        const signature = await generateHMACSignature(payload, secret, "sha1");
         const header = `HMAC-SHA1 ${signature}`;
         const parsed = parseAuthorizationHeader(header);
-        const result = verifyHMACAuthorization(parsed, payload, secret);
+        const result = await verifyHMACAuthorization(parsed, payload, secret);
 
         expect(result.isValid).toBe(true);
         expect(result.algorithm).toBe("SHA1");
       });
 
-      test("should verify valid HMAC-SHA512 authorization", () => {
-        const signature = generateHMACSignature(payload, secret, "sha512");
+      test("should verify valid HMAC-SHA512 authorization", async () => {
+        const signature = await generateHMACSignature(
+          payload,
+          secret,
+          "sha512",
+        );
         const header = `HMAC-SHA512 ${signature}`;
         const parsed = parseAuthorizationHeader(header);
-        const result = verifyHMACAuthorization(parsed, payload, secret);
+        const result = await verifyHMACAuthorization(parsed, payload, secret);
 
         expect(result.isValid).toBe(true);
         expect(result.algorithm).toBe("SHA512");
       });
 
-      test("should verify HMAC without algorithm (defaults to SHA256)", () => {
-        const signature = generateHMACSignature(payload, secret, "sha256");
+      test("should verify HMAC without algorithm (defaults to SHA256)", async () => {
+        const signature = await generateHMACSignature(
+          payload,
+          secret,
+          "sha256",
+        );
         const header = `HMAC ${signature}`;
         const parsed = parseAuthorizationHeader(header);
-        const result = verifyHMACAuthorization(parsed, payload, secret);
+        const result = await verifyHMACAuthorization(parsed, payload, secret);
 
         expect(result.isValid).toBe(true);
         expect(result.algorithm).toBe("SHA256");
       });
 
-      test("should fail with incorrect signature", () => {
-        const correctSignature = generateHMACSignature(
+      test("should fail with incorrect signature", async () => {
+        const correctSignature = await generateHMACSignature(
           payload,
           secret,
           "sha256",
@@ -633,27 +645,39 @@ describe("Authorization Header Parsing", () => {
           "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890";
         const header = `HMAC-SHA256 ${incorrectSignature}`;
         const parsed = parseAuthorizationHeader(header);
-        const result = verifyHMACAuthorization(parsed, payload, secret);
+        const result = await verifyHMACAuthorization(parsed, payload, secret);
 
         expect(result.isValid).toBe(false);
         expect(result.actualSignature).toBe(incorrectSignature);
         expect(result.expectedSignature).toBe(correctSignature);
       });
 
-      test("should fail with incorrect secret", () => {
-        const signature = generateHMACSignature(payload, secret, "sha256");
+      test("should fail with incorrect secret", async () => {
+        const signature = await generateHMACSignature(
+          payload,
+          secret,
+          "sha256",
+        );
         const header = `HMAC-SHA256 ${signature}`;
         const parsed = parseAuthorizationHeader(header);
-        const result = verifyHMACAuthorization(parsed, payload, "wrong-secret");
+        const result = await verifyHMACAuthorization(
+          parsed,
+          payload,
+          "wrong-secret",
+        );
 
         expect(result.isValid).toBe(false);
       });
 
-      test("should fail with incorrect payload", () => {
-        const signature = generateHMACSignature(payload, secret, "sha256");
+      test("should fail with incorrect payload", async () => {
+        const signature = await generateHMACSignature(
+          payload,
+          secret,
+          "sha256",
+        );
         const header = `HMAC-SHA256 ${signature}`;
         const parsed = parseAuthorizationHeader(header);
-        const result = verifyHMACAuthorization(
+        const result = await verifyHMACAuthorization(
           parsed,
           '{"different": "payload"}',
           secret,
@@ -662,16 +686,16 @@ describe("Authorization Header Parsing", () => {
         expect(result.isValid).toBe(false);
       });
 
-      test("should handle non-HMAC authorization types", () => {
+      test("should handle non-HMAC authorization types", async () => {
         const header = `Basic ${btoa("user:pass")}`;
         const parsed = parseAuthorizationHeader(header);
-        const result = verifyHMACAuthorization(parsed, payload, secret);
+        const result = await verifyHMACAuthorization(parsed, payload, secret);
 
         expect(result.isValid).toBe(false);
         expect(result.error).toBe("Not an HMAC authorization");
       });
 
-      test("should handle unsupported algorithms", () => {
+      test("should handle unsupported algorithms", async () => {
         const parsed = {
           authType: "hmac" as const,
           isValid: true,
@@ -679,17 +703,21 @@ describe("Authorization Header Parsing", () => {
           algorithm: "MD5",
           signature: "test",
         };
-        const result = verifyHMACAuthorization(parsed, payload, secret);
+        const result = await verifyHMACAuthorization(parsed, payload, secret);
 
         expect(result.isValid).toBe(false);
         expect(result.error).toBe("Unsupported algorithm: MD5");
       });
 
-      test("should handle Buffer payloads", () => {
-        const signature = generateHMACSignature(payload, secret, "sha256");
+      test("should handle Buffer payloads", async () => {
+        const signature = await generateHMACSignature(
+          payload,
+          secret,
+          "sha256",
+        );
         const header = `HMAC-SHA256 ${signature}`;
         const parsed = parseAuthorizationHeader(header);
-        const result = verifyHMACAuthorization(
+        const result = await verifyHMACAuthorization(
           parsed,
           new TextEncoder().encode(payload),
           secret,
@@ -698,27 +726,35 @@ describe("Authorization Header Parsing", () => {
         expect(result.isValid).toBe(true);
       });
 
-      test("should be case-insensitive for hex signatures", () => {
-        const signature = generateHMACSignature(payload, secret, "sha256");
+      test("should be case-insensitive for hex signatures", async () => {
+        const signature = await generateHMACSignature(
+          payload,
+          secret,
+          "sha256",
+        );
         const header = `HMAC-SHA256 ${signature.toUpperCase()}`;
         const parsed = parseAuthorizationHeader(header);
-        const result = verifyHMACAuthorization(parsed, payload, secret);
+        const result = await verifyHMACAuthorization(parsed, payload, secret);
 
         expect(result.isValid).toBe(true);
       });
 
-      test("should handle case variations in algorithm names", () => {
-        const signature = generateHMACSignature(payload, secret, "sha256");
+      test("should handle case variations in algorithm names", async () => {
+        const signature = await generateHMACSignature(
+          payload,
+          secret,
+          "sha256",
+        );
         const header = `hmac-sha256 ${signature}`;
         const parsed = parseAuthorizationHeader(header);
-        const result = verifyHMACAuthorization(parsed, payload, secret);
+        const result = await verifyHMACAuthorization(parsed, payload, secret);
 
         expect(result.isValid).toBe(true);
       });
     });
 
     describe("Real-world HMAC Authorization examples", () => {
-      test("should verify API key authentication", () => {
+      test("should verify API key authentication", async () => {
         const apiPayload = JSON.stringify({
           method: "POST",
           path: "/api/v1/users",
@@ -726,7 +762,7 @@ describe("Authorization Header Parsing", () => {
           body: { email: "user@example.com" },
         });
         const apiSecret = "api-secret-key-123456789";
-        const signature = generateHMACSignature(
+        const signature = await generateHMACSignature(
           apiPayload,
           apiSecret,
           "sha256",
@@ -734,15 +770,19 @@ describe("Authorization Header Parsing", () => {
         const header = `HMAC-SHA256 ${signature}`;
 
         const parsed = parseAuthorizationHeader(header);
-        const result = verifyHMACAuthorization(parsed, apiPayload, apiSecret);
+        const result = await verifyHMACAuthorization(
+          parsed,
+          apiPayload,
+          apiSecret,
+        );
 
         expect(result.isValid).toBe(true);
       });
 
-      test("should verify service-to-service authentication", () => {
+      test("should verify service-to-service authentication", async () => {
         const servicePayload = "service-a:1234567890:request-data";
         const sharedSecret = "shared-service-secret";
-        const signature = generateHMACSignature(
+        const signature = await generateHMACSignature(
           servicePayload,
           sharedSecret,
           "sha512",
@@ -750,7 +790,7 @@ describe("Authorization Header Parsing", () => {
         const header = `HMAC-SHA512 ${signature}`;
 
         const parsed = parseAuthorizationHeader(header);
-        const result = verifyHMACAuthorization(
+        const result = await verifyHMACAuthorization(
           parsed,
           servicePayload,
           sharedSecret,
