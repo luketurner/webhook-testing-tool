@@ -2,7 +2,7 @@ import { useSendRequest } from "@/dashboard/hooks";
 import { requestSchema, type HandlerRequest } from "@/webhook-server/schema";
 import { useWebhookUrl } from "@/util/hooks/use-webhook-url";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { CodeEditor } from "@/components/code-editor";
 import { KeyValuePairEditor } from "@/components/key-value-pair-editor";
@@ -33,6 +33,16 @@ export const CreateRequestPage = () => {
     },
   });
   const { mutate: sendRequest } = useSendRequest();
+
+  const selectedMethod = form.watch("method");
+  const methodsWithoutBody = ["GET", "HEAD", "OPTIONS"];
+  const bodyDisabled = methodsWithoutBody.includes(selectedMethod);
+
+  useEffect(() => {
+    if (bodyDisabled) {
+      form.setValue("body", null);
+    }
+  }, [bodyDisabled, form]);
 
   const handleSubmit = useCallback(
     (values: HandlerRequest) => {
@@ -107,7 +117,14 @@ export const CreateRequestPage = () => {
                 <FormItem>
                   <FormLabel>Request body</FormLabel>
                   <FormControl>
-                    <CodeEditor {...field} defaultLanguage="json" />
+                    {bodyDisabled ? (
+                      <div className="text-sm text-muted-foreground p-3">
+                        The {selectedMethod} method does not support including a
+                        request body.
+                      </div>
+                    ) : (
+                      <CodeEditor {...field} defaultLanguage="json" />
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>
