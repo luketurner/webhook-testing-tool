@@ -206,6 +206,7 @@ export const RequestPage = () => {
               <HeadersTable
                 headers={request.request_headers ?? []}
                 title="Headers"
+                requestBody={requestBody}
               />
               <QueryParamsTable
                 queryParams={request.request_query_params ?? []}
