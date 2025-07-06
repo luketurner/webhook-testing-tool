@@ -1,3 +1,4 @@
+import "@/server-only";
 import {
   TEST_CERT_PATH,
   TEST_KEY_PATH,
