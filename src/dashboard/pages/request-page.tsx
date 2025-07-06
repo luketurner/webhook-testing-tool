@@ -38,6 +38,7 @@ import { useState } from "react";
 import { useParams } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { findContentTypeHeader } from "@/util/mime";
 
 export const RequestPage = () => {
   const { id } = useParams();
@@ -218,6 +219,7 @@ export const RequestPage = () => {
                   content={requestBody}
                   title="request body"
                   requestId={request.id}
+                  contentType={findContentTypeHeader(request.request_headers)}
                 />
               </div>
             </div>
@@ -237,6 +239,9 @@ export const RequestPage = () => {
                   content={responseBody}
                   title="response body"
                   requestId={request.id}
+                  contentType={findContentTypeHeader(
+                    request.response_headers ?? [],
+                  )}
                 />
               </div>
             </div>

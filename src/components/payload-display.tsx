@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Download } from "lucide-react";
 import { useState } from "react";
+import { getExtensionFromMimeType } from "@/util/mime";
 
 const ENCODINGS = [
   { value: "utf8", label: "UTF-8" },
@@ -24,10 +25,12 @@ export const PayloadDisplay = ({
   content,
   title,
   requestId,
+  contentType,
 }: {
   content: string;
   title: string;
   requestId: string;
+  contentType?: string;
 }) => {
   const [encoding, setEncoding] = useState("utf8");
 
@@ -94,7 +97,8 @@ export const PayloadDisplay = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${requestId}-${title.toLowerCase().replace(/\s+/g, "-")}.txt`;
+    const extension = getExtensionFromMimeType(contentType || "");
+    link.download = `${requestId}-${title.toLowerCase().replace(/\s+/g, "-")}${extension}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

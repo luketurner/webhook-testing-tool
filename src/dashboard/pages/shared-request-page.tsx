@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import type { RequestEvent } from "@/request-events/schema";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
+import { findContentTypeHeader } from "@/util/mime";
 
 const fetchSharedRequest = async (sharedId: string): Promise<RequestEvent> => {
   const response = await fetch(`/api/shared/${sharedId}`);
@@ -115,6 +116,7 @@ export const SharedRequestPage = () => {
                   content={requestBody}
                   title="request body"
                   requestId={request.id}
+                  contentType={findContentTypeHeader(request.request_headers)}
                 />
               </div>
             </div>
@@ -134,6 +136,9 @@ export const SharedRequestPage = () => {
                   content={responseBody}
                   title="response body"
                   requestId={request.id}
+                  contentType={findContentTypeHeader(
+                    request.response_headers ?? [],
+                  )}
                 />
               </div>
             </div>
