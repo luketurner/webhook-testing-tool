@@ -17,6 +17,7 @@ export const responseSchema = z.object({
   statusMessage: z.string().nullish(),
   headers: kvListSchema(z.string()),
   body: z.any(), // TODO
+  body_raw: z.string().optional(),
 });
 
 export interface HandlerRequest extends z.infer<typeof requestSchema> {
@@ -49,14 +50,16 @@ export function handlerResponseToRequestEvent(
     response_status_message: parsed.statusMessage,
     response_headers: parsed.headers as KVList<string>,
     response_body:
-      parsed.body === null || parsed.body === undefined
-        ? null
-        : parseBase64(
-            Buffer.from(
-              typeof parsed.body === "string"
-                ? parsed.body
-                : JSON.stringify(parsed.body),
-            ).toString("base64"),
-          ),
+      parsed.body_raw !== undefined
+        ? parseBase64(parsed.body_raw)
+        : parsed.body === null || parsed.body === undefined
+          ? null
+          : parseBase64(
+              Buffer.from(
+                typeof parsed.body === "string"
+                  ? parsed.body
+                  : JSON.stringify(parsed.body),
+              ).toString("base64"),
+            ),
   };
 }
