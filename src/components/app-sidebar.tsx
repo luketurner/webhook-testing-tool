@@ -50,10 +50,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     window.location.href = "/api/db/export";
   }, []);
 
-  const handleOpenManual = React.useCallback(() => {
-    searchParams.set("manual", "home");
-    setSearchParams(searchParams);
-  }, [searchParams, setSearchParams]);
+  const handleOpenManual = React.useCallback(
+    (page: string = "home") => {
+      searchParams.set("manual", page);
+      setSearchParams(searchParams);
+    },
+    [searchParams, setSearchParams],
+  );
 
   return (
     <Sidebar
@@ -114,12 +117,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-          <SidebarGroup className="mt-auto">
-            <SidebarGroupContent className="px-1.5 md:px-0">
-              <SidebarMenu>
                 <SidebarMenuItem>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -167,9 +164,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       >
                         JWT Inspector
                       </DropdownMenuItem>
-                      <DropdownMenuItem onSelect={handleOpenManual}>
-                        <BookOpen className="h-4 w-4 mr-2" />
-                        Documentation
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <SidebarMenuButton
+                        tooltip={{
+                          children: "Documentation",
+                          hidden: false,
+                        }}
+                        className="px-2.5 md:px-2"
+                      >
+                        <BookOpen />
+                        <span>Documentation</span>
+                      </SidebarMenuButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent side="right" align="start">
+                      <DropdownMenuItem
+                        onSelect={() => handleOpenManual("home")}
+                      >
+                        About
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={() => handleOpenManual("handlers")}
+                      >
+                        Handlers
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
