@@ -260,6 +260,28 @@ async function createSeedRequests(): Promise<SeedRequest[]> {
     body: null,
   });
 
+  // Form-encoded data
+  const formData = new URLSearchParams({
+    username: "john_doe",
+    email: "john@example.com",
+    password: "secret123",
+    remember_me: "true",
+    subscription_tier: "premium",
+    interests: "coding,music,travel",
+    age: "28",
+    country: "United States",
+  });
+
+  requests.push({
+    id: "form_data",
+    name: "Form Data Submission",
+    method: "POST",
+    url: "/contact_form",
+    headers: [["content-type", "application/x-www-form-urlencoded"]],
+    query: [],
+    body: btoa(formData.toString()),
+  });
+
   return requests;
 }
 

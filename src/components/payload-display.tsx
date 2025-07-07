@@ -11,6 +11,8 @@ import {
 import { Download } from "lucide-react";
 import { useState } from "react";
 import { getExtensionFromMimeType } from "@/util/mime";
+import { QueryParamsTable } from "@/components/display/query-params-table";
+import type { KVList } from "@/util/kv-list";
 
 const ENCODINGS = [
   { value: "utf8", label: "UTF-8" },
@@ -84,6 +86,17 @@ export const PayloadDisplay = ({
     prettyContent = JSON.stringify(JSON.parse(decodedContent), null, 2);
   } catch (e) {}
 
+  // Parse form-encoded data if content type matches
+  let formData: KVList<string> | null = null;
+  if (contentType?.includes("application/x-www-form-urlencoded")) {
+    try {
+      const params = new URLSearchParams(atob(content));
+      formData = Array.from(params.entries());
+    } catch (e) {
+      // If parsing fails, formData remains null
+    }
+  }
+
   const handleDownload = () => {
     // Download the raw content (decoded from base64)
     let rawContent: string;
@@ -110,52 +123,61 @@ export const PayloadDisplay = ({
   }
 
   return (
-    <Tabs defaultValue="raw" className="w-full">
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex items-center gap-4">
-          <TabsList>
-            <TabsTrigger value="raw">Raw</TabsTrigger>
-            {prettyContent && <TabsTrigger value="pretty">Pretty</TabsTrigger>}
-          </TabsList>
-          <div className="flex items-center gap-2">
-            <Select value={encoding} onValueChange={setEncoding}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ENCODINGS.map((enc) => (
-                  <SelectItem key={enc.value} value={enc.value}>
-                    {enc.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+    <>
+      <Tabs defaultValue="raw" className="w-full">
+        <div className="flex justify-between items-center mb-2">
+          <div className="flex items-center gap-4">
+            <TabsList>
+              <TabsTrigger value="raw">Raw</TabsTrigger>
+              {prettyContent && (
+                <TabsTrigger value="pretty">Pretty</TabsTrigger>
+              )}
+            </TabsList>
+            <div className="flex items-center gap-2">
+              <Select value={encoding} onValueChange={setEncoding}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ENCODINGS.map((enc) => (
+                    <SelectItem key={enc.value} value={enc.value}>
+                      {enc.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownload}
+            className="flex items-center gap-1"
+          >
+            <Download className="w-4 h-4" />
+            Download
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleDownload}
-          className="flex items-center gap-1"
-        >
-          <Download className="w-4 h-4" />
-          Download
-        </Button>
-      </div>
-      <TabsContent value="raw">
-        <pre className="overflow-x-auto p-2 bg-muted rounded text-sm">
-          <code>{decodedContent}</code>
-        </pre>
-      </TabsContent>
-      {prettyContent && (
-        <TabsContent value="pretty">
-          <div className="overflow-x-auto">
-            <SyntaxHighlighter language="json" className="text-sm">
-              {prettyContent}
-            </SyntaxHighlighter>
-          </div>
+        <TabsContent value="raw">
+          <pre className="overflow-x-auto p-2 bg-muted rounded text-sm">
+            <code>{decodedContent}</code>
+          </pre>
         </TabsContent>
+        {prettyContent && (
+          <TabsContent value="pretty">
+            <div className="overflow-x-auto">
+              <SyntaxHighlighter language="json" className="text-sm">
+                {prettyContent}
+              </SyntaxHighlighter>
+            </div>
+          </TabsContent>
+        )}
+      </Tabs>
+      {formData && (
+        <div className="mt-4">
+          <QueryParamsTable queryParams={formData} title="Form Data" />
+        </div>
       )}
-    </Tabs>
+    </>
   );
 };
