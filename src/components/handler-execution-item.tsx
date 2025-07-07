@@ -47,10 +47,7 @@ export const HandlerExecutionItem = ({
           {execution.status}
         </span>
         <span className="text-xs text-muted-foreground ml-auto">
-          <DateDisplay
-            timestamp={execution.timestamp * 1000}
-            interactive={false}
-          />
+          <DateDisplay timestamp={execution.timestamp} interactive={false} />
         </span>
       </CollapsibleTrigger>
       <CollapsibleContent className="pl-6 pt-2">
