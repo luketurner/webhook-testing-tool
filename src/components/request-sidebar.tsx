@@ -42,7 +42,10 @@ export function RequestSidebar() {
   }, [requests, searchQuery]);
 
   return (
-    <Sidebar collapsible="none" className="hidden flex-1 md:flex">
+    <Sidebar
+      collapsible="none"
+      className="hidden flex-1 md:flex w-[calc(var(--sidebar-width)-var(--sidebar-width-icon))]"
+    >
       <SidebarHeader className="gap-3.5 border-b p-4">
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-2">
