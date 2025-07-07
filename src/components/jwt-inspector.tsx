@@ -19,10 +19,15 @@ import { Check, X, AlertCircle } from "lucide-react";
 interface JWTInspectorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialJWT?: string;
 }
 
-export function JWTInspector({ open, onOpenChange }: JWTInspectorProps) {
-  const [jwtInput, setJwtInput] = React.useState("");
+export function JWTInspector({
+  open,
+  onOpenChange,
+  initialJWT,
+}: JWTInspectorProps) {
+  const [jwtInput, setJwtInput] = React.useState(initialJWT || "");
   const [parsedJWT, setParsedJWT] = React.useState<ParsedAuthJWT | null>(null);
   const [verificationResult, setVerificationResult] =
     React.useState<JWTVerificationResult | null>(null);
@@ -31,6 +36,13 @@ export function JWTInspector({ open, onOpenChange }: JWTInspectorProps) {
     jwks: "",
   });
   const [isVerifying, setIsVerifying] = React.useState(false);
+
+  // Handle initial JWT when dialog opens
+  React.useEffect(() => {
+    if (open && initialJWT) {
+      handleJWTChange(initialJWT);
+    }
+  }, [open, initialJWT]);
 
   const handleJWTChange = (value: string) => {
     setJwtInput(value);

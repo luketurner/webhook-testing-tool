@@ -24,6 +24,7 @@ import {
   verifyHMACAuthorization,
 } from "@/util/authorization";
 import { useState } from "react";
+import { JWTInspector } from "@/components/jwt-inspector";
 import {
   getSignatureHeaderInfo,
   isHMACSignature,
@@ -56,6 +57,7 @@ export const AuthorizationInspector = ({
     ReturnType<typeof verifyHMACSignature>
   > | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [jwtInspectorOpen, setJwtInspectorOpen] = useState(false);
 
   const handleVerify = async () => {
     if (!secret || !requestBody) return;
@@ -93,41 +95,145 @@ export const AuthorizationInspector = ({
     }
   };
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="icon" className="size-8">
-          <ExpandIcon />
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {isSignatureHeader
-              ? `${headerInfo?.service || "Unknown"} Signature Inspector`
-              : `${
-                  parsedAuth && isBasicAuth(parsedAuth)
-                    ? "Basic"
-                    : parsedAuth && isDigestAuth(parsedAuth)
-                      ? "Digest"
-                      : parsedAuth && isGenericBearerAuth(parsedAuth)
-                        ? "Bearer"
-                        : parsedAuth && isJWTAuth(parsedAuth)
-                          ? "JWT"
-                          : parsedAuth && isHMACAuth(parsedAuth)
-                            ? "HMAC"
-                            : "Unrecognized"
-                } Authorization`}
-          </DialogTitle>
-          <DialogDescription>
-            {isSignatureHeader
-              ? headerInfo?.description || "Details about the signature header"
-              : "Details about the Authorization header"}
-          </DialogDescription>
-        </DialogHeader>
-        {isSignatureHeader ? (
-          // Handle signature headers
-          isHMACSignature(parsedSignature!) ? (
-            <>
+    <>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="icon" className="size-8">
+            <ExpandIcon />
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {isSignatureHeader
+                ? `${headerInfo?.service || "Unknown"} Signature Inspector`
+                : `${
+                    parsedAuth && isBasicAuth(parsedAuth)
+                      ? "Basic"
+                      : parsedAuth && isDigestAuth(parsedAuth)
+                        ? "Digest"
+                        : parsedAuth && isGenericBearerAuth(parsedAuth)
+                          ? "Bearer"
+                          : parsedAuth && isJWTAuth(parsedAuth)
+                            ? "JWT"
+                            : parsedAuth && isHMACAuth(parsedAuth)
+                              ? "HMAC"
+                              : "Unrecognized"
+                  } Authorization`}
+            </DialogTitle>
+            <DialogDescription>
+              {isSignatureHeader
+                ? headerInfo?.description ||
+                  "Details about the signature header"
+                : "Details about the Authorization header"}
+            </DialogDescription>
+          </DialogHeader>
+          {isSignatureHeader ? (
+            // Handle signature headers
+            isHMACSignature(parsedSignature!) ? (
+              <>
+                <Table>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>Header Name</TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {headerName}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Raw Value</TableCell>
+                      <TableCell className="font-mono text-xs break-all">
+                        {parsedSignature!.rawHeader}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Algorithm</TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {parsedSignature!.algorithm}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Signature</TableCell>
+                      <TableCell className="font-mono text-xs break-all">
+                        {parsedSignature!.signature}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Signature Length</TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {parsedSignature!.signature.length / 2} bytes (
+                        {parsedSignature!.signature.length} hex chars)
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+
+                {requestBody && (
+                  <div className="mt-4 space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="secret">Secret Key</Label>
+                      <Input
+                        id="secret"
+                        type="password"
+                        placeholder="Enter secret key for verification"
+                        value={secret}
+                        onChange={(e) => setSecret(e.target.value)}
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && !isVerifying && handleVerify()
+                        }
+                      />
+                    </div>
+
+                    <Button
+                      onClick={handleVerify}
+                      disabled={!secret || isVerifying}
+                      className="w-full"
+                    >
+                      {isVerifying ? "Verifying..." : "Verify Signature"}
+                    </Button>
+
+                    {verificationResult && (
+                      <Alert
+                        variant={
+                          verificationResult.isValid ? "default" : "destructive"
+                        }
+                      >
+                        <div className="flex items-center gap-2">
+                          {verificationResult.isValid ? (
+                            <ShieldCheck className="h-4 w-4" />
+                          ) : (
+                            <ShieldX className="h-4 w-4" />
+                          )}
+                          <AlertDescription>
+                            {verificationResult.isValid ? (
+                              "Signature is valid!"
+                            ) : (
+                              <div className="space-y-2">
+                                <div>Signature verification failed</div>
+                                {verificationResult.error && (
+                                  <div className="text-xs">
+                                    {verificationResult.error}
+                                  </div>
+                                )}
+                                <div className="font-mono text-xs space-y-1">
+                                  <div>
+                                    Expected:{" "}
+                                    {verificationResult.expectedSignature}
+                                  </div>
+                                  <div>
+                                    Actual: {verificationResult.actualSignature}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </AlertDescription>
+                        </div>
+                      </Alert>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
               <Table>
                 <TableBody>
                   <TableRow>
@@ -143,40 +249,135 @@ export const AuthorizationInspector = ({
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Algorithm</TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {parsedSignature!.algorithm}
+                    <TableCell>Status</TableCell>
+                    <TableCell>
+                      Unable to parse as a known signature format
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            )
+          ) : // Handle authorization headers
+          parsedAuth && isBasicAuth(parsedAuth) ? (
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell>Raw Header</TableCell>
+                  <TableCell>{parsedAuth.rawHeader}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Username</TableCell>
+                  <TableCell>{parsedAuth.username}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Password</TableCell>
+                  <TableCell>{parsedAuth.password}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          ) : parsedAuth && isDigestAuth(parsedAuth) ? (
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell>Raw Header</TableCell>
+                  <TableCell>{parsedAuth.rawHeader}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          ) : parsedAuth && isGenericBearerAuth(parsedAuth) ? (
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell>Raw Header</TableCell>
+                  <TableCell>{parsedAuth.rawHeader}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Token</TableCell>
+                  <TableCell>{parsedAuth.token}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          ) : parsedAuth && isJWTAuth(parsedAuth) ? (
+            <>
+              <Table>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>Raw Header</TableCell>
+                    <TableCell>{parsedAuth.rawHeader}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Headers</TableCell>
+                    <TableCell>
+                      {parsedAuth.headers
+                        ? JSON.stringify(parsedAuth.headers)
+                        : parsedAuth.decodedHeaders || parsedAuth.rawHeaders}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Payload</TableCell>
+                    <TableCell>
+                      {parsedAuth.payload
+                        ? JSON.stringify(parsedAuth.payload)
+                        : parsedAuth.decodedPayload || parsedAuth.rawPayload}
                     </TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell>Signature</TableCell>
-                    <TableCell className="font-mono text-xs break-all">
-                      {parsedSignature!.signature}
-                    </TableCell>
+                    <TableCell>{parsedAuth.rawSignature}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+              <div className="mt-4">
+                <Button
+                  onClick={() => setJwtInspectorOpen(true)}
+                  className="w-full"
+                  variant="outline"
+                >
+                  Open in JWT Inspector
+                </Button>
+              </div>
+            </>
+          ) : parsedAuth && isHMACAuth(parsedAuth) ? (
+            <>
+              <Table>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>Raw Header</TableCell>
+                    <TableCell>{parsedAuth.rawHeader}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Signature Length</TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {parsedSignature!.signature.length / 2} bytes (
-                      {parsedSignature!.signature.length} hex chars)
+                    <TableCell>Algorithm</TableCell>
+                    <TableCell>{parsedAuth.algorithm || "Unknown"}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Signature</TableCell>
+                    <TableCell className="font-mono text-xs break-all">
+                      {parsedAuth.signature || "N/A"}
                     </TableCell>
                   </TableRow>
+                  {parsedAuth.signature && (
+                    <TableRow>
+                      <TableCell>Signature Length</TableCell>
+                      <TableCell>
+                        {parsedAuth.signature.length / 2} bytes (
+                        {parsedAuth.signature.length} hex chars)
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
 
               {requestBody && (
                 <div className="mt-4 space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="secret">Secret Key</Label>
+                    <Label htmlFor="hmac-secret">Secret Key</Label>
                     <Input
-                      id="secret"
+                      id="hmac-secret"
                       type="password"
                       placeholder="Enter secret key for verification"
                       value={secret}
                       onChange={(e) => setSecret(e.target.value)}
-                      onKeyDown={(e) =>
-                        e.key === "Enter" && !isVerifying && handleVerify()
-                      }
+                      onKeyDown={(e) => e.key === "Enter" && handleVerify()}
                     />
                   </div>
 
@@ -185,7 +386,7 @@ export const AuthorizationInspector = ({
                     disabled={!secret || isVerifying}
                     className="w-full"
                   >
-                    {isVerifying ? "Verifying..." : "Verify Signature"}
+                    {isVerifying ? "Verifying..." : "Verify HMAC Signature"}
                   </Button>
 
                   {verificationResult && (
@@ -202,10 +403,10 @@ export const AuthorizationInspector = ({
                         )}
                         <AlertDescription>
                           {verificationResult.isValid ? (
-                            "Signature is valid!"
+                            "HMAC signature is valid!"
                           ) : (
                             <div className="space-y-2">
-                              <div>Signature verification failed</div>
+                              <div>HMAC verification failed</div>
                               {verificationResult.error && (
                                 <div className="text-xs">
                                   {verificationResult.error}
@@ -233,203 +434,26 @@ export const AuthorizationInspector = ({
             <Table>
               <TableBody>
                 <TableRow>
-                  <TableCell>Header Name</TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {headerName}
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Raw Value</TableCell>
-                  <TableCell className="font-mono text-xs break-all">
-                    {parsedSignature!.rawHeader}
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Status</TableCell>
-                  <TableCell>
-                    Unable to parse as a known signature format
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          )
-        ) : // Handle authorization headers
-        parsedAuth && isBasicAuth(parsedAuth) ? (
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableCell>Raw Header</TableCell>
-                <TableCell>{parsedAuth.rawHeader}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Username</TableCell>
-                <TableCell>{parsedAuth.username}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Password</TableCell>
-                <TableCell>{parsedAuth.password}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        ) : parsedAuth && isDigestAuth(parsedAuth) ? (
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableCell>Raw Header</TableCell>
-                <TableCell>{parsedAuth.rawHeader}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        ) : parsedAuth && isGenericBearerAuth(parsedAuth) ? (
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableCell>Raw Header</TableCell>
-                <TableCell>{parsedAuth.rawHeader}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Token</TableCell>
-                <TableCell>{parsedAuth.token}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        ) : parsedAuth && isJWTAuth(parsedAuth) ? (
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableCell>Raw Header</TableCell>
-                <TableCell>{parsedAuth.rawHeader}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Headers</TableCell>
-                <TableCell>
-                  {parsedAuth.headers
-                    ? JSON.stringify(parsedAuth.headers)
-                    : parsedAuth.decodedHeaders || parsedAuth.rawHeaders}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Payload</TableCell>
-                <TableCell>
-                  {parsedAuth.payload
-                    ? JSON.stringify(parsedAuth.payload)
-                    : parsedAuth.decodedPayload || parsedAuth.rawPayload}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Signature</TableCell>
-                <TableCell>{parsedAuth.rawSignature}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        ) : parsedAuth && isHMACAuth(parsedAuth) ? (
-          <>
-            <Table>
-              <TableBody>
-                <TableRow>
                   <TableCell>Raw Header</TableCell>
-                  <TableCell>{parsedAuth.rawHeader}</TableCell>
+                  <TableCell>{parsedAuth?.rawHeader || value}</TableCell>
                 </TableRow>
-                <TableRow>
-                  <TableCell>Algorithm</TableCell>
-                  <TableCell>{parsedAuth.algorithm}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Signature</TableCell>
-                  <TableCell className="font-mono text-xs break-all">
-                    {parsedAuth.signature}
-                  </TableCell>
-                </TableRow>
-                {parsedAuth.signature && (
-                  <TableRow>
-                    <TableCell>Signature Length</TableCell>
-                    <TableCell>
-                      {parsedAuth.signature.length / 2} bytes (
-                      {parsedAuth.signature.length} hex chars)
-                    </TableCell>
-                  </TableRow>
-                )}
               </TableBody>
             </Table>
-
-            {requestBody && (
-              <div className="mt-4 space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="hmac-secret">Secret Key</Label>
-                  <Input
-                    id="hmac-secret"
-                    type="password"
-                    placeholder="Enter secret key for verification"
-                    value={secret}
-                    onChange={(e) => setSecret(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleVerify()}
-                  />
-                </div>
-
-                <Button
-                  onClick={handleVerify}
-                  disabled={!secret || isVerifying}
-                  className="w-full"
-                >
-                  {isVerifying ? "Verifying..." : "Verify HMAC Signature"}
-                </Button>
-
-                {verificationResult && (
-                  <Alert
-                    variant={
-                      verificationResult.isValid ? "default" : "destructive"
-                    }
-                  >
-                    <div className="flex items-center gap-2">
-                      {verificationResult.isValid ? (
-                        <ShieldCheck className="h-4 w-4" />
-                      ) : (
-                        <ShieldX className="h-4 w-4" />
-                      )}
-                      <AlertDescription>
-                        {verificationResult.isValid ? (
-                          "HMAC signature is valid!"
-                        ) : (
-                          <div className="space-y-2">
-                            <div>HMAC verification failed</div>
-                            {verificationResult.error && (
-                              <div className="text-xs">
-                                {verificationResult.error}
-                              </div>
-                            )}
-                            <div className="font-mono text-xs space-y-1">
-                              <div>
-                                Expected: {verificationResult.expectedSignature}
-                              </div>
-                              <div>
-                                Actual: {verificationResult.actualSignature}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </AlertDescription>
-                    </div>
-                  </Alert>
-                )}
-              </div>
-            )}
-          </>
-        ) : (
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableCell>Raw Header</TableCell>
-                <TableCell>{parsedAuth?.rawHeader || value}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        )}
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button>Close</Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          )}
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button>Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {parsedAuth && isJWTAuth(parsedAuth) && (
+        <JWTInspector
+          open={jwtInspectorOpen}
+          onOpenChange={setJwtInspectorOpen}
+          initialJWT={parsedAuth.rawHeader.replace(/^Bearer\s+/i, "")}
+        />
+      )}
+    </>
   );
 };
