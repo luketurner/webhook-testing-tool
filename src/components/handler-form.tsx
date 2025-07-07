@@ -8,8 +8,14 @@ import { TextFormField, TextareaFormField } from "./form/form-fields";
 import { HttpMethodSelect } from "./form/http-method-select";
 import { Button } from "./ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "./ui/form";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 import { useSearchParams } from "react-router";
-import { BookOpen } from "lucide-react";
+import { BookOpen, ChevronDown } from "lucide-react";
+import { useState } from "react";
 
 export interface HandlerFormProps {
   initialValues?: Partial<Handler>;
@@ -27,6 +33,7 @@ export const HandlerForm = ({
     defaultValues: initialValues,
   });
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
   function onSubmit(values: z.infer<typeof handlerSchema>) {
     onChange(values as Handler);
@@ -61,20 +68,6 @@ export const HandlerForm = ({
           label="Path"
           placeholder="/example/:id"
         />
-        <TextFormField
-          control={form.control}
-          name="jku"
-          label="JKU (JSON Web Key Set URL)"
-          placeholder="https://example.com/.well-known/jwks.json"
-          type="url"
-        />
-        <TextareaFormField
-          control={form.control}
-          name="jwks"
-          label="JWKS (JSON Web Key Set)"
-          placeholder="Enter JWKS JSON content here..."
-          description="Provide the JWKS JSON content for JWT verification"
-        />
         <FormField
           control={form.control}
           name="code"
@@ -83,35 +76,58 @@ export const HandlerForm = ({
               <FormControl>
                 <FormCard
                   title="Handler script"
-                  description={
-                    <>
-                      Run when the handler is called. Provided <code>req</code>{" "}
-                      and <code>resp</code> variables.
-                    </>
-                  }
+                  description={<>Run when the handler is called.</>}
                   className="p-0 h-[fit-content]"
                 >
-                  <div className="-ml-6 mt-0">
+                  <div className="-ml-6 mt-0 mb-2">
                     <CodeEditor {...field} />
                   </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleOpenHandlerDocs}
+                    className="text-xs float-right"
+                  >
+                    <BookOpen className="h-3 w-3 mr-1" />
+                    Handler Documentation
+                  </Button>
                 </FormCard>
               </FormControl>
-              <div className="mt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleOpenHandlerDocs}
-                  className="text-xs"
-                >
-                  <BookOpen className="h-3 w-3 mr-1" />
-                  Handler Documentation
-                </Button>
-              </div>
               <FormMessage />
             </FormItem>
           )}
         />
+        <Collapsible open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
+          <CollapsibleTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full justify-between"
+            >
+              Advanced fields
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${isAdvancedOpen ? "rotate-180" : ""}`}
+              />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-4 mt-4">
+            <TextFormField
+              control={form.control}
+              name="jku"
+              label="JKU (JSON Web Key Set URL)"
+              placeholder="https://example.com/.well-known/jwks.json"
+              type="url"
+            />
+            <TextareaFormField
+              control={form.control}
+              name="jwks"
+              label="JWKS (JSON Web Key Set)"
+              placeholder="Enter JWKS JSON content here..."
+              description="Provide the JWKS JSON content for JWT verification"
+            />
+          </CollapsibleContent>
+        </Collapsible>
         <div className="flex gap-2">
           <Button type="submit">Save changes</Button>
           {additionalButtons}
