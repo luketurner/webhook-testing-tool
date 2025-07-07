@@ -76,6 +76,17 @@ bun run test
 
 View the UI at http://localhost:3001/ (login with user `admin@example.com` / password `admin123` for local development)
 
+## Development with Claude Code
+
+This project is designed to be developed in tandem with Claude Code using the following steps:
+
+1. Open the project in a Devcontainer.
+2. When starting on a new feature, run `wt new` to create a new worktree and launch a zellij session for that worktree with:
+   - Claude Code
+   - Dedicated app server for testing changes in that worktree
+   - Lazygit for seeing what changes were made.
+3. Once finished working in that worktree, exit Zellij with `C-b q` and you will be prompted to cherry-pick the commits from the worktree into the `main` branch.
+
 ## Deployment
 
 `wtt` is designed for deployment on [Fly](https://fly.io):
