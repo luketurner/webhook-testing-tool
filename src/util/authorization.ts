@@ -20,7 +20,17 @@ export interface ParsedAuthBasic extends IParsedAuth {
 
 export interface ParsedAuthDigest extends IParsedAuth {
   authType: "digest";
-  // TODO
+  username?: string;
+  realm?: string;
+  nonce?: string;
+  uri?: string;
+  response?: string;
+  algorithm?: string;
+  opaque?: string;
+  qop?: string;
+  nc?: string;
+  cnonce?: string;
+  parameters?: Record<string, string>;
 }
 
 export interface ParsedAuthGenericBearer extends IParsedAuth {
@@ -109,11 +119,34 @@ export function tryParseDigestHeader(
 ): ParsedAuthDigest | null {
   if (!rawHeader.startsWith("Digest ")) return null;
   try {
-    // TODO
+    const digestContent = rawHeader.substring(7); // Remove "Digest " prefix
+    const parameters: Record<string, string> = {};
+
+    // Parse comma-separated parameters
+    // Handle both quoted and unquoted values
+    const paramRegex = /([\w-]+)=(?:"([^"]*)"|([^,\s]+))/g;
+    let match: RegExpExecArray | null;
+
+    while ((match = paramRegex.exec(digestContent)) !== null) {
+      const [, key, quotedValue, unquotedValue] = match;
+      parameters[key.toLowerCase()] = quotedValue || unquotedValue;
+    }
+
     return {
       authType: "digest",
       isValid: true,
       rawHeader,
+      username: parameters.username,
+      realm: parameters.realm,
+      nonce: parameters.nonce,
+      uri: parameters.uri,
+      response: parameters.response,
+      algorithm: parameters.algorithm,
+      opaque: parameters.opaque,
+      qop: parameters.qop,
+      nc: parameters.nc,
+      cnonce: parameters.cnonce,
+      parameters,
     };
   } catch (e) {
     return {
