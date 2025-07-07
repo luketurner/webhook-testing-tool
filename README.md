@@ -21,8 +21,7 @@ How it works:
 
 - Easy to deploy; runs in a single container.
 - Automatically responds to any HTTP request.
-- Response behavior can be customized with Typescript code by defining **handlers**.
-   - Each handler execution is stored in the DB, including `console` output logged by the handler code.
+- Response behavior can be customized with Typescript code by defining **handlers**. See the Handlers section below.
 - TLS termination with self-signed certificate (work in progress, TLS socket info not currently available in Bun. See [related issue](https://github.com/oven-sh/bun/issues/16834))
 - JWT parsing and signature verification against a JWKS or JWK URL.
 - Formatting and syntax highlighting for JSON request/response bodies.
@@ -32,6 +31,8 @@ How it works:
 - Parse and verify `X-Signature-*` headers as sent by e.g. Github/Gitlab/etc.
 - Composing and sending test requests directly from the UI.
 - Datetime inspector that displays timestamps in multiple formats and timezones.
+- Copy requests as cURL or Fetch.
+- Share requests (generates a public URL that anyone can use to see a read-only view of the request and response).
 
 ## Limitations
 
@@ -44,8 +45,14 @@ One special feature is the ability to configure how `wtt` responds to requests u
 
 ![Screenshot of the app](./docs/wtt_handler.png)
 
+Handlers are written in Javascript and can be edited in the `wtt` admin UI. You can define multiple scripts based on the request's HTTP method and URL. Handlers can be nested with an Express-style middleware pattern as well. Some notable features:
 
-Handlers are written in Javascript and can be edited in the `wtt` admin UI. You can define multiple scripts based on the request's HTTP method and URL. Handlers can be nested with an Express-style middleware pattern as well.
+- Multiple handlers can be executed for a single request in a kind of middleware pattern. Nested handlers can share state using a `locals` value.
+- Handlers can match on paths with parameters in an Express style e.g. `/person/:id`
+- Handlers can share state with all other handlers **globally** using the `shared` object. This is stored in the DB and persists across server restarts.
+- Use `resp.body_raw` to return a base64 encoded payload that can include arbitrary content.
+
+Documentation about handlers is available in the in-app manual, or you can open [the manual page](./src/docs/handlers.md) in Github.
 
 ## Local testing
 
