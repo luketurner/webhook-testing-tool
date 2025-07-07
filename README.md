@@ -45,7 +45,7 @@ One special feature is the ability to configure how `wtt` responds to requests u
 
 ![Screenshot of the app](./docs/wtt_handler.png)
 
-Handlers are written in Javascript and can be edited in the `wtt` admin UI. You can define multiple scripts based on the request's HTTP method and URL. Handlers can be nested with an Express-style middleware pattern as well. Some notable features:
+Handlers are written in Typescript and can be edited in the `wtt` admin UI. You can define multiple scripts based on the request's HTTP method and URL. Handlers can be nested with an Express-style middleware pattern as well. Some notable features:
 
 - Multiple handlers can be executed for a single request in a kind of middleware pattern. Nested handlers can share state using a `locals` value.
 - Handlers can match on paths with parameters in an Express style e.g. `/person/:id`
