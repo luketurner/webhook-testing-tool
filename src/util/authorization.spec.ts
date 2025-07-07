@@ -114,6 +114,56 @@ describe("Authorization Header Parsing", () => {
       expect(result).not.toBeNull();
       expect(result!.authType).toBe("digest");
       expect(result!.isValid).toBe(true);
+      expect(result!.username).toBe("user");
+      expect(result!.realm).toBe("Test Realm");
+      expect(result!.nonce).toBe("abc123");
+      expect(result!.uri).toBe("/resource");
+      expect(result!.response).toBe("def456");
+    });
+
+    test("should parse Digest with all RFC 7616 parameters", () => {
+      const header =
+        'Digest username="admin", realm="My App", nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093", uri="/dir/index.html", qop=auth, nc=00000001, cnonce="0a4f113b", response="6629fae49393a05397450978507c4ef1", opaque="5ccc069c403ebaf9f0171e9517f40e41", algorithm=MD5';
+
+      const result = tryParseDigestHeader(header);
+
+      expect(result).not.toBeNull();
+      expect(result!.authType).toBe("digest");
+      expect(result!.isValid).toBe(true);
+      expect(result!.username).toBe("admin");
+      expect(result!.realm).toBe("My App");
+      expect(result!.nonce).toBe("dcd98b7102dd2f0e8b11d0f600bfb0c093");
+      expect(result!.uri).toBe("/dir/index.html");
+      expect(result!.qop).toBe("auth");
+      expect(result!.nc).toBe("00000001");
+      expect(result!.cnonce).toBe("0a4f113b");
+      expect(result!.response).toBe("6629fae49393a05397450978507c4ef1");
+      expect(result!.opaque).toBe("5ccc069c403ebaf9f0171e9517f40e41");
+      expect(result!.algorithm).toBe("MD5");
+    });
+
+    test("should handle mixed quoted and unquoted parameters", () => {
+      const header =
+        'Digest username="user", realm=TestRealm, nonce="abc123", algorithm=SHA-256';
+
+      const result = tryParseDigestHeader(header);
+
+      expect(result).not.toBeNull();
+      expect(result!.username).toBe("user");
+      expect(result!.realm).toBe("TestRealm");
+      expect(result!.nonce).toBe("abc123");
+      expect(result!.algorithm).toBe("SHA-256");
+    });
+
+    test("should handle parameters with spaces in quoted values", () => {
+      const header =
+        'Digest username="user with spaces", realm="Test Realm With Spaces"';
+
+      const result = tryParseDigestHeader(header);
+
+      expect(result).not.toBeNull();
+      expect(result!.username).toBe("user with spaces");
+      expect(result!.realm).toBe("Test Realm With Spaces");
     });
   });
 
