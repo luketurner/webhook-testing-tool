@@ -22,7 +22,7 @@ import { HandlerErrors, isHandlerError } from "./errors";
 import { parseAuthorizationHeader, isJWTAuth } from "@/util/authorization";
 import { verifyJWT, type JWTVerificationResult } from "@/util/jwt-verification";
 import { getSharedState, updateSharedState } from "@/shared-state/model";
-import type { SharedStateData } from "@/shared-state/schema";
+import { Transpiler } from "bun";
 
 type NextFunction = (error?: Error) => void;
 
@@ -163,7 +163,10 @@ export async function handleRequest(
             },
           };
 
-          await runInNewContext(handler.code, {
+          const transpiler = new Transpiler({ loader: "ts" });
+          const code = transpiler.transformSync(handler.code);
+
+          await runInNewContext(code, {
             req: deepFreeze(req),
             resp,
             locals,
