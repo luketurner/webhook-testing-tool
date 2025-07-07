@@ -133,7 +133,10 @@ export function RequestSidebar() {
                         />
                       </span>
                     </div>
-                    <span className="font-medium truncate w-full">
+                    <span
+                      className="font-medium truncate w-full"
+                      title={request.request_url}
+                    >
                       {request.request_url}
                     </span>
                     <div className="flex items-center gap-2 text-xs">
