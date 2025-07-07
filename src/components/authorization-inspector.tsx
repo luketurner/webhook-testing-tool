@@ -284,8 +284,78 @@ export const AuthorizationInspector = ({
               <TableBody>
                 <TableRow>
                   <TableCell>Raw Header</TableCell>
-                  <TableCell>{parsedAuth.rawHeader}</TableCell>
+                  <TableCell className="font-mono text-xs break-all">
+                    {parsedAuth.rawHeader}
+                  </TableCell>
                 </TableRow>
+                {parsedAuth.username && (
+                  <TableRow>
+                    <TableCell>Username</TableCell>
+                    <TableCell>{parsedAuth.username}</TableCell>
+                  </TableRow>
+                )}
+                {parsedAuth.realm && (
+                  <TableRow>
+                    <TableCell>Realm</TableCell>
+                    <TableCell>{parsedAuth.realm}</TableCell>
+                  </TableRow>
+                )}
+                {parsedAuth.nonce && (
+                  <TableRow>
+                    <TableCell>Nonce</TableCell>
+                    <TableCell className="font-mono text-xs break-all">
+                      {parsedAuth.nonce}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {parsedAuth.uri && (
+                  <TableRow>
+                    <TableCell>URI</TableCell>
+                    <TableCell>{parsedAuth.uri}</TableCell>
+                  </TableRow>
+                )}
+                {parsedAuth.response && (
+                  <TableRow>
+                    <TableCell>Response</TableCell>
+                    <TableCell className="font-mono text-xs break-all">
+                      {parsedAuth.response}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {parsedAuth.algorithm && (
+                  <TableRow>
+                    <TableCell>Algorithm</TableCell>
+                    <TableCell>{parsedAuth.algorithm}</TableCell>
+                  </TableRow>
+                )}
+                {parsedAuth.qop && (
+                  <TableRow>
+                    <TableCell>QOP</TableCell>
+                    <TableCell>{parsedAuth.qop}</TableCell>
+                  </TableRow>
+                )}
+                {parsedAuth.nc && (
+                  <TableRow>
+                    <TableCell>NC</TableCell>
+                    <TableCell>{parsedAuth.nc}</TableCell>
+                  </TableRow>
+                )}
+                {parsedAuth.cnonce && (
+                  <TableRow>
+                    <TableCell>CNonce</TableCell>
+                    <TableCell className="font-mono text-xs break-all">
+                      {parsedAuth.cnonce}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {parsedAuth.opaque && (
+                  <TableRow>
+                    <TableCell>Opaque</TableCell>
+                    <TableCell className="font-mono text-xs break-all">
+                      {parsedAuth.opaque}
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           ) : parsedAuth && isGenericBearerAuth(parsedAuth) ? (
