@@ -63,6 +63,22 @@ async function createSeedRequests(): Promise<SeedRequest[]> {
     body: null,
   });
 
+  // Digest auth
+  requests.push({
+    id: "auth_digest",
+    name: "Digest Auth",
+    method: "GET",
+    url: "/auth_digest",
+    headers: [
+      [
+        "Authorization",
+        'Digest username="admin", realm="Protected Area", nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093", uri="/auth_digest", qop=auth, nc=00000001, cnonce="0a4f113b", response="6629fae49393a05397450978507c4ef1", opaque="5ccc069c403ebaf9f0171e9517f40e41", algorithm=MD5',
+      ],
+    ],
+    query: [],
+    body: null,
+  });
+
   // Unknown auth scheme
   requests.push({
     id: "auth_unknown",
