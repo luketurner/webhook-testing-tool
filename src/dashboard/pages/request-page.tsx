@@ -33,15 +33,17 @@ import {
   Share,
   Link,
   Link2Off,
+  Plus,
 } from "lucide-react";
 import { useState } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { findContentTypeHeader } from "@/util/mime";
 
 export const RequestPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: request, isLoading: requestLoading } =
     useResource<RequestEvent>("requests", id);
@@ -91,6 +93,13 @@ export const RequestPage = () => {
     sendRequest.mutate(handlerRequest);
   };
 
+  const handleCreateHandler = () => {
+    const searchParams = new URLSearchParams();
+    searchParams.set("method", request.request_method);
+    searchParams.set("path", request.request_url);
+    navigate(`/handlers/new?${searchParams.toString()}`);
+  };
+
   if (requestLoading) {
     return <Skeleton className="h-screen w-full" />;
   }
@@ -122,6 +131,10 @@ export const RequestPage = () => {
                   >
                     <RotateCcw className="mr-2 h-4 w-4" />
                     Resend request
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleCreateHandler}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create handler for request
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => shareRequest.mutate(!request.shared_id)}
