@@ -37,11 +37,13 @@ export const AuthorizationInspector = ({
   requestBody,
   headerName,
   isSignatureHeader = false,
+  trigger,
 }: {
   value: string;
   requestBody?: string;
   headerName?: string;
   isSignatureHeader?: boolean;
+  trigger?: React.ReactNode;
 }) => {
   const parsedAuth = !isSignatureHeader
     ? parseAuthorizationHeader(value)
@@ -98,9 +100,11 @@ export const AuthorizationInspector = ({
     <>
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" size="icon" className="size-8">
-            <ExpandIcon />
-          </Button>
+          {trigger || (
+            <Button variant="outline" size="icon" className="size-8">
+              <ExpandIcon />
+            </Button>
+          )}
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
