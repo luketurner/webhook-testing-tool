@@ -83,15 +83,21 @@ export const SharedRequestPage = () => {
                 <DateDisplay timestamp={request.response_timestamp} />
               </span>
             </div>
-          </div>
-          {request.response_status && (
             <div className="mt-2 text-sm">
-              <span className="font-medium">Response Status:</span>
+              <span className="font-medium">Duration:</span>
               <span className="ml-2">
-                {request.response_status} {request.response_status_message}
+                {request.response_timestamp - request.request_timestamp}ms
               </span>
             </div>
-          )}
+            {request.response_status && (
+              <div className="mt-2 text-sm">
+                <span className="font-medium">Response Status:</span>
+                <span className="ml-2">
+                  {request.response_status} {request.response_status_message}
+                </span>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
