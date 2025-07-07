@@ -282,6 +282,39 @@ async function createSeedRequests(): Promise<SeedRequest[]> {
     body: btoa(formData.toString()),
   });
 
+  // Multipart form data
+  const boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW";
+  const multipartBody = [
+    `------WebKitFormBoundary7MA4YWxkTrZu0gW`,
+    `Content-Disposition: form-data; name="username"`,
+    ``,
+    `john_doe`,
+    `------WebKitFormBoundary7MA4YWxkTrZu0gW`,
+    `Content-Disposition: form-data; name="email"`,
+    ``,
+    `john@example.com`,
+    `------WebKitFormBoundary7MA4YWxkTrZu0gW`,
+    `Content-Disposition: form-data; name="profile_picture"; filename="avatar.jpg"`,
+    `Content-Type: image/jpeg`,
+    ``,
+    `/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=`,
+    `------WebKitFormBoundary7MA4YWxkTrZu0gW`,
+    `Content-Disposition: form-data; name="description"`,
+    ``,
+    `This is a multipart form submission with text fields and a file upload.`,
+    `------WebKitFormBoundary7MA4YWxkTrZu0gW--`,
+  ].join("\r\n");
+
+  requests.push({
+    id: "multipart_form",
+    name: "Multipart Form Upload",
+    method: "POST",
+    url: "/upload",
+    headers: [["content-type", `multipart/form-data; boundary=${boundary}`]],
+    query: [],
+    body: btoa(multipartBody),
+  });
+
   return requests;
 }
 
