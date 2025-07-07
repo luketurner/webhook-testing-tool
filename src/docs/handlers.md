@@ -1,6 +1,6 @@
 # Handler Documentation
 
-Handlers are JavaScript functions that process incoming HTTP requests in the Webhook Testing Tool. They execute in a secure, sandboxed environment and can modify responses, validate data, and maintain state.
+Handlers are Typescript functions that process incoming HTTP requests in the Webhook Testing Tool. They execute in a secure, sandboxed environment and can modify responses, validate data, and maintain state.
 
 ## How Handlers Work
 
@@ -49,6 +49,10 @@ req.query.forEach(([key, value]) => {
 
 // Access request body
 console.log(req.body);
+
+// Access route parameters (when using parameterized paths)
+console.log(req.params.id);     // For path "/users/:id"
+console.log(req.params.userId); // For path "/users/:userId/posts/:postId"
 ```
 
 ### Response Object (`resp`)
@@ -255,20 +259,49 @@ if (serverError) {
 
 ### Path Matching
 
-Handlers support Express.js-style path patterns:
+Handlers support Express.js-style path patterns with parameter extraction:
 
 ```javascript
 // Exact match
 "/api/webhook"
 
-// Parameter capture
+// Single parameter
 "/api/users/:id"
-
-// Wildcard
-"/api/*"
 
 // Multiple parameters
 "/api/users/:userId/posts/:postId"
+
+// Parameters with separators
+"/flights/:from-:to"           // matches /flights/LAX-SFO
+"/files/:name.:ext"            // matches /files/document.pdf
+
+// Nested parameters
+"/api/v:version/users/:userId/posts/:postId/comments/:commentId"
+
+// Parameters with underscores
+"/users/:user_id/posts/:post_id"
+```
+
+#### Parameter Features
+
+- **Automatic URL decoding**: Parameters are automatically decoded (e.g., `hello%20world` becomes `hello world`)
+- **String type**: All parameters are strings, regardless of numeric content
+- **Special characters**: Supports underscores, hyphens, and dots in parameter values
+- **Access via `req.params`**: Parameters are available as properties on the `req.params` object
+
+```javascript
+// Handler for /users/:id/profile
+console.log(req.params.id); // Extracted parameter value
+
+// Handler for /api/v:version/users/:userId
+console.log(req.params.version); // API version
+console.log(req.params.userId);  // User ID
+
+// Parameter validation example
+const orderId = req.params.orderId;
+if (!/^\d+$/.test(orderId)) {
+  throw new BadRequestError("Order ID must be numeric");
+}
 ```
 
 ### Method Matching
@@ -394,6 +427,45 @@ shared.requestLog.push({
 if (shared.requestLog.length > 100) {
   shared.requestLog = shared.requestLog.slice(-100);
 }
+```
+
+### Parameter Handling Handler
+
+```javascript
+// Handler for /api/v:version/users/:userId/posts/:postId
+// Demonstrates parameter extraction and validation
+
+// Extract all parameters
+const { version, userId, postId } = req.params;
+
+// Validate API version
+if (!["1", "2"].includes(version)) {
+  throw new BadRequestError("Unsupported API version");
+}
+
+// Validate user ID format
+if (!/^user_\d+$/.test(userId)) {
+  throw new BadRequestError("Invalid user ID format");
+}
+
+// Validate post ID is numeric
+if (!/^\d+$/.test(postId)) {
+  throw new BadRequestError("Post ID must be numeric");
+}
+
+// Store extracted data in locals for other handlers
+locals.apiVersion = version;
+locals.userId = userId;
+locals.postId = parseInt(postId);
+
+// Build response
+resp.body = {
+  api_version: version,
+  user_id: userId,
+  post_id: parseInt(postId),
+  resource_path: `/api/v${version}/users/${userId}/posts/${postId}`
+};
+```
 
 ### Binary Response Handler
 
