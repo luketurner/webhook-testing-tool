@@ -14,9 +14,14 @@ import { BookOpen } from "lucide-react";
 export interface HandlerFormProps {
   initialValues?: Partial<Handler>;
   onChange: (v: Handler) => void;
+  additionalButtons?: React.ReactNode;
 }
 
-export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
+export const HandlerForm = ({
+  initialValues,
+  onChange,
+  additionalButtons,
+}: HandlerFormProps) => {
   const form = useForm<Handler>({
     resolver: zodResolver(handlerSchema.omit({ order: true }) as any), // TODO
     defaultValues: initialValues,
@@ -107,7 +112,10 @@ export const HandlerForm = ({ initialValues, onChange }: HandlerFormProps) => {
             </FormItem>
           )}
         />
-        <Button type="submit">Save changes</Button>
+        <div className="flex gap-2">
+          <Button type="submit">Save changes</Button>
+          {additionalButtons}
+        </div>
       </form>
     </Form>
   );

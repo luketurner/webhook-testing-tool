@@ -4,6 +4,7 @@ import { useWebhookUrl } from "@/util/hooks/use-webhook-url";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useSearchParams } from "react-router";
 import { CodeEditor } from "@/components/code-editor";
 import { KeyValuePairEditor } from "@/components/key-value-pair-editor";
 import { Button } from "@/components/ui/button";
@@ -22,11 +23,13 @@ import { CardFooter } from "@/components/ui/card";
 
 export const CreateRequestPage = () => {
   const { baseUrl } = useWebhookUrl();
+  const [searchParams] = useSearchParams();
+
   const form = useForm<HandlerRequest>({
     resolver: zodResolver(requestSchema as any), // TODO
     defaultValues: {
-      method: "GET",
-      url: "/",
+      method: (searchParams.get("method") as any) || "GET",
+      url: searchParams.get("path") || "/",
       body: null,
       headers: [],
       query: [],

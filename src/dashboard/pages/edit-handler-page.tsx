@@ -1,8 +1,10 @@
 import { useCallback } from "react";
 import { useParams } from "react-router";
+import { Link } from "react-router";
 import { useResource, useResourceUpdater } from "../hooks";
 import { HandlerForm } from "@/components/handler-form";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import type { Handler } from "@/handlers/schema";
 
 export const EditHandlerPage = () => {
@@ -32,6 +34,15 @@ export const EditHandlerPage = () => {
             jwks: handler.jwks === null ? "" : handler.jwks,
           }}
           onChange={handleSaveChanges}
+          additionalButtons={
+            <Button asChild variant="outline">
+              <Link
+                to={`/requests/new?method=${handler.method === "*" ? "GET" : handler.method}&path=${encodeURIComponent(handler.path)}`}
+              >
+                Test handler
+              </Link>
+            </Button>
+          }
         />
       )}
     </>
