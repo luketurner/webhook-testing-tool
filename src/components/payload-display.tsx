@@ -230,9 +230,9 @@ export const PayloadDisplay = ({
             size="sm"
             onClick={handleDownload}
             className="flex items-center gap-1"
+            title="Download"
           >
             <Download className="w-4 h-4" />
-            Download
           </Button>
         </div>
         <div className="space-y-6">
