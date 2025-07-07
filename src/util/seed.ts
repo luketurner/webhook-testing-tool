@@ -224,6 +224,26 @@ async function createSeedRequests(): Promise<SeedRequest[]> {
     body: "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAjSURBVAiZY2RgYPjPAAQMDAwMjEwMDIzMDAwM/1kYGBiZAAAARgAF/I7j+QAAAABJRU5ErkJggg==",
   });
 
+  requests.push({
+    id: "long_strings",
+    name: "Request with long strings",
+    method: "POST",
+    url: "/rosesareredvioletsareblueihatelayouterrorsfromlonglinesbutiloveyou",
+    headers: [
+      [
+        "thisisasuperlongheadernameI'mwritingstreamofconsciousnessrightnow",
+        "andthisisavaluefortheheaderinwhichI'llembedaproofaboutP!=NPohwaitIranoutofspaceinthemargin",
+      ],
+    ],
+    query: [
+      [
+        "absurdlylongquerystringnameIguesswhatelsecanIputinherewhoknows",
+        "thisisalsoaparticularlylongvalueforaquerystringhopefullyitlooksfine",
+      ],
+    ],
+    body: null,
+  });
+
   return requests;
 }
 
