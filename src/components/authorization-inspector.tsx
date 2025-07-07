@@ -62,17 +62,20 @@ export const AuthorizationInspector = ({
 
     setIsVerifying(true);
     try {
+      // Decode base64 body for HMAC verification
+      const decodedBody = atob(requestBody);
+
       if (isSignatureHeader && parsedSignature) {
         const result = await verifyHMACSignature(
           parsedSignature,
-          requestBody,
+          decodedBody,
           secret,
         );
         setVerificationResult(result);
       } else if (isHMACAuth(parsedAuth)) {
         const result = await verifyHMACAuthorization(
           parsedAuth,
-          requestBody,
+          decodedBody,
           secret,
         );
         setVerificationResult(result);
