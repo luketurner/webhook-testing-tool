@@ -130,6 +130,9 @@ RUN npm install -g @anthropic-ai/claude-code
 # Install Bun
 RUN npm install -g bun
 
+# install Backlog.md (https://github.com/MrLesk/Backlog.md)
+RUN npm install -g backlog.md
+
 # Copy and set up firewall script
 COPY init-firewall.sh /usr/local/bin/
 USER root
