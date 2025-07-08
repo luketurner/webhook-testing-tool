@@ -105,6 +105,7 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
   -a "source /usr/share/doc/fzf/examples/completion.zsh" \
   -a "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
   -a "alias wt=\"bun run worktree\"" \
+  -a "alias bc=\"backlog task create\"" \
   -x
 
 # tmux settings
