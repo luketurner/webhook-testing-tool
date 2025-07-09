@@ -8,7 +8,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Download, FileText, Package } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Download, FileText, Package, Maximize2, Copy } from "lucide-react";
 import { useState } from "react";
 import { getExtensionFromMimeType } from "@/util/mime";
 import { QueryParamsTable } from "@/components/display/query-params-table";
@@ -97,14 +103,17 @@ export const PayloadDisplay = ({
   title,
   requestId,
   contentType,
+  isModal = false,
 }: {
   content: string;
   title: string;
   requestId: string;
   contentType?: string;
+  isModal?: boolean;
 }) => {
   const [encoding, setEncoding] = useState("utf8");
   const [multipartView, setMultipartView] = useState<"parts" | "raw">("parts");
+  const [modalOpen, setModalOpen] = useState(false);
 
   const getDecodedContent = () => {
     try {
@@ -202,13 +211,54 @@ export const PayloadDisplay = ({
     URL.revokeObjectURL(url);
   };
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(decodedContent);
+  };
+
   if (!content) {
     return <em>No {title.toLowerCase()}.</em>;
   }
 
+  // Common action buttons component
+  const ActionButtons = () => (
+    <div className="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleCopy}
+        className="flex items-center gap-1"
+      >
+        <Copy className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleDownload}
+        className="flex items-center gap-1"
+        title="Download"
+      >
+        <Download className="w-4 h-4" />
+      </Button>
+      {!isModal && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setModalOpen(true)}
+          className="flex items-center gap-1"
+          title="Open in modal"
+        >
+          <Maximize2 className="w-4 h-4" />
+        </Button>
+      )}
+    </div>
+  );
+
+  // Main content to display
+  let mainContent: React.ReactNode;
+
   // If multipart data exists and we're in parts view, show multipart display
   if (multipartData && multipartView === "parts") {
-    return (
+    mainContent = (
       <>
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-4">
@@ -225,15 +275,7 @@ export const PayloadDisplay = ({
               View Raw
             </Button>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDownload}
-            className="flex items-center gap-1"
-            title="Download"
-          >
-            <Download className="w-4 h-4" />
-          </Button>
+          <ActionButtons />
         </div>
         <div className="space-y-6">
           {multipartData.map((part, index) => (
@@ -267,74 +309,92 @@ export const PayloadDisplay = ({
         </div>
       </>
     );
+  } else {
+    // Regular (non-multipart) content
+    mainContent = (
+      <>
+        <Tabs defaultValue="raw" className="w-full">
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center gap-4">
+              <TabsList>
+                <TabsTrigger value="raw">Raw</TabsTrigger>
+                {prettyContent && (
+                  <TabsTrigger value="pretty">Pretty</TabsTrigger>
+                )}
+              </TabsList>
+              <div className="flex items-center gap-2">
+                {multipartData && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMultipartView("parts")}
+                    className="flex items-center gap-1"
+                  >
+                    <Package className="w-4 h-4" />
+                    View Parts
+                  </Button>
+                )}
+                <Select value={encoding} onValueChange={setEncoding}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ENCODINGS.map((enc) => (
+                      <SelectItem key={enc.value} value={enc.value}>
+                        {enc.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <ActionButtons />
+          </div>
+          <TabsContent value="raw">
+            <pre className="overflow-x-auto p-2 bg-muted rounded text-sm">
+              <code>{decodedContent}</code>
+            </pre>
+          </TabsContent>
+          {prettyContent && (
+            <TabsContent value="pretty">
+              <div className="overflow-x-auto">
+                <SyntaxHighlighter language="json" className="text-sm">
+                  {prettyContent}
+                </SyntaxHighlighter>
+              </div>
+            </TabsContent>
+          )}
+        </Tabs>
+        {formData && (
+          <div className="mt-4">
+            <QueryParamsTable queryParams={formData} title="Form Data" />
+          </div>
+        )}
+      </>
+    );
   }
 
   return (
     <>
-      <Tabs defaultValue="raw" className="w-full">
-        <div className="flex justify-between items-center mb-2">
-          <div className="flex items-center gap-4">
-            <TabsList>
-              <TabsTrigger value="raw">Raw</TabsTrigger>
-              {prettyContent && (
-                <TabsTrigger value="pretty">Pretty</TabsTrigger>
-              )}
-            </TabsList>
-            <div className="flex items-center gap-2">
-              {multipartData && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setMultipartView("parts")}
-                  className="flex items-center gap-1"
-                >
-                  <Package className="w-4 h-4" />
-                  View Parts
-                </Button>
-              )}
-              <Select value={encoding} onValueChange={setEncoding}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ENCODINGS.map((enc) => (
-                    <SelectItem key={enc.value} value={enc.value}>
-                      {enc.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDownload}
-            className="flex items-center gap-1"
-          >
-            <Download className="w-4 h-4" />
-            Download
-          </Button>
-        </div>
-        <TabsContent value="raw">
-          <pre className="overflow-x-auto p-2 bg-muted rounded text-sm">
-            <code>{decodedContent}</code>
-          </pre>
-        </TabsContent>
-        {prettyContent && (
-          <TabsContent value="pretty">
-            <div className="overflow-x-auto">
-              <SyntaxHighlighter language="json" className="text-sm">
-                {prettyContent}
-              </SyntaxHighlighter>
-            </div>
-          </TabsContent>
-        )}
-      </Tabs>
-      {formData && (
-        <div className="mt-4">
-          <QueryParamsTable queryParams={formData} title="Form Data" />
-        </div>
+      {mainContent}
+
+      {!isModal && (
+        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+          <DialogContent className="sm:max-w-6xl overflow-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center justify-between">
+                <span>{title}</span>
+              </DialogTitle>
+            </DialogHeader>
+            <PayloadDisplay
+              content={content}
+              title={title}
+              requestId={requestId}
+              contentType={contentType}
+              isModal={true}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );
