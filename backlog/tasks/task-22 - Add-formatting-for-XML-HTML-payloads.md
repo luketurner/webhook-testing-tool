@@ -9,3 +9,5 @@ dependencies: []
 ---
 
 ## Description
+
+In PayloadDisplay, support displaying the formatted view for XML/HTML payloads as well as JSON ones (use Content-Type header to determine whether the payload is XML-like, e.g. `application/xml`, `text/html`, etc.)

@@ -9,3 +9,5 @@ dependencies: []
 ---
 
 ## Description
+
+Add a dropdown menu to the RequestSidebar with a "Clear requests" option that will delete all requests in the DB using the clearRequestEvents function. (Note that you'll also need to clearHandlerExecutions() first.)
