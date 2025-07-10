@@ -26,7 +26,7 @@ How it works:
 - JWT parsing and signature verification against a JWKS or JWK URL.
 - Formatting and syntax highlighting for JSON request/response bodies.
 - Viewing request/response bodies in multiple encodings including UTF8, Latin-1, base64, hex, and binary.
-- Special "parsed" views for certain common types of bodies, like JSON, `application/x-www-form-urlencoded`, and `multipart/form-data`.
+- Special "parsed" views for certain common types of bodies, like JSON, XML/HTML, `application/x-www-form-urlencoded`, and `multipart/form-data`.
 - Downloading request/response bodies as files, with extensions guessed based on the `Content-Type` header.
 - `Authorization` header inspector that parses Basic, Bearer, JWT, and HMAC authorization schemes.
 - Parse and verify `X-Signature-*` headers as sent by e.g. Github/Gitlab/etc.
