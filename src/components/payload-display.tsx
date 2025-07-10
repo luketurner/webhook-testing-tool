@@ -15,10 +15,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Download, FileText, Package, Maximize2, Copy } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getExtensionFromMimeType } from "@/util/mime";
 import { QueryParamsTable } from "@/components/display/query-params-table";
 import type { KVList } from "@/util/kv-list";
+import { formatXml, getContentFormat } from "@/util/xml";
 
 const ENCODINGS = [
   { value: "utf8", label: "UTF-8" },
@@ -43,7 +44,6 @@ const parseMultipartData = (
 ): MultipartPart[] => {
   const parts: MultipartPart[] = [];
   const boundaryMarker = `--${boundary}`;
-  const endBoundaryMarker = `--${boundary}--`;
 
   // Split by boundary markers
   const sections = content.split(boundaryMarker);
@@ -114,6 +114,9 @@ export const PayloadDisplay = ({
   const [encoding, setEncoding] = useState("utf8");
   const [multipartView, setMultipartView] = useState<"parts" | "raw">("parts");
   const [modalOpen, setModalOpen] = useState(false);
+  const [prettyContent, setPrettyContent] = useState<string | null>(null);
+  const [isFormatting, setIsFormatting] = useState(false);
+  const [syntaxLanguage, setSyntaxLanguage] = useState("json");
 
   const getDecodedContent = () => {
     try {
@@ -160,10 +163,44 @@ export const PayloadDisplay = ({
 
   const decodedContent = getDecodedContent();
 
-  let prettyContent: string | null = null;
-  try {
-    prettyContent = JSON.stringify(JSON.parse(decodedContent), null, 2);
-  } catch (e) {}
+  // Determine content format
+  const contentFormat = getContentFormat(contentType, decodedContent);
+
+  // Handle async formatting
+  useEffect(() => {
+    const formatContent = async () => {
+      setIsFormatting(true);
+      try {
+        switch (contentFormat) {
+          case "json":
+            setPrettyContent(
+              JSON.stringify(JSON.parse(decodedContent), null, 2),
+            );
+            setSyntaxLanguage("json");
+            break;
+          case "xml":
+            const formattedXml = await formatXml(decodedContent);
+            setPrettyContent(formattedXml);
+            setSyntaxLanguage("xml");
+            break;
+          case "html":
+            const formattedHtml = await formatXml(decodedContent);
+            setPrettyContent(formattedHtml);
+            setSyntaxLanguage("html");
+            break;
+          default:
+            setPrettyContent(null);
+            break;
+        }
+      } catch (e) {
+        setPrettyContent(null);
+      } finally {
+        setIsFormatting(false);
+      }
+    };
+
+    formatContent();
+  }, [decodedContent, contentFormat]);
 
   // Parse form-encoded data if content type matches
   let formData: KVList<string> | null = null;
@@ -318,7 +355,7 @@ export const PayloadDisplay = ({
             <div className="flex items-center gap-4">
               <TabsList>
                 <TabsTrigger value="raw">Raw</TabsTrigger>
-                {prettyContent && (
+                {(prettyContent || isFormatting) && (
                   <TabsTrigger value="pretty">Pretty</TabsTrigger>
                 )}
               </TabsList>
@@ -355,12 +392,25 @@ export const PayloadDisplay = ({
               <code>{decodedContent}</code>
             </pre>
           </TabsContent>
-          {prettyContent && (
+          {(prettyContent || isFormatting) && (
             <TabsContent value="pretty">
               <div className="overflow-x-auto">
-                <SyntaxHighlighter language="json" className="text-sm">
-                  {prettyContent}
-                </SyntaxHighlighter>
+                {isFormatting ? (
+                  <div className="p-4 text-center text-muted-foreground">
+                    Formatting...
+                  </div>
+                ) : prettyContent ? (
+                  <SyntaxHighlighter
+                    language={syntaxLanguage}
+                    className="text-sm"
+                  >
+                    {prettyContent}
+                  </SyntaxHighlighter>
+                ) : (
+                  <div className="p-4 text-center text-muted-foreground">
+                    Unable to format content
+                  </div>
+                )}
               </div>
             </TabsContent>
           )}
