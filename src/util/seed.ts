@@ -315,6 +315,82 @@ async function createSeedRequests(): Promise<SeedRequest[]> {
     body: btoa(multipartBody),
   });
 
+  // XML payload
+  const xmlPayload = `<?xml version="1.0" encoding="UTF-8"?>
+<order>
+  <orderId>12345</orderId>
+  <customer>
+    <name>John Doe</name>
+    <email>john.doe@example.com</email>
+    <address>
+      <street>123 Main St</street>
+      <city>Anytown</city>
+      <state>CA</state>
+      <zip>12345</zip>
+    </address>
+  </customer><items>
+    <item>
+      <productId>SKU-001</productId>
+      <name>Widget Pro</name>
+      <quantity>2</quantity>
+      <price>29.99</price>
+    </item>
+    <item>
+      <productId>SKU-002</productId>
+      <name>Gadget Plus</name>
+      <quantity>1</quantity>
+      <price>49.99</price>
+    </item>
+  </items>
+  <total>109.97</total>
+  <status>pending</status>
+</order>`;
+
+  requests.push({
+    id: "xml_order",
+    name: "XML Order Request",
+    method: "POST",
+    url: "/api/orders",
+    headers: [["content-type", "application/xml"]],
+    query: [],
+    body: btoa(xmlPayload),
+  });
+
+  // HTML payload
+  const htmlPayload = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test HTML Page</title>
+</head>
+<body>
+    <h1>Welcome to the Test Page</h1>
+    <p>This is a test HTML payload to verify HTML formatting.</p>
+    <div class="container">
+        <h2>Features</h2>
+        <ul>
+            <li>Feature 1</li>
+            <li>Feature 2</li>
+            <li>Feature 3</li>
+        </ul>
+    </div>
+    <footer>
+        <p>&copy; 2024 Test Company</p>
+    </footer>
+</body>
+</html>`;
+
+  requests.push({
+    id: "html_page",
+    name: "HTML Page Request",
+    method: "POST",
+    url: "/page",
+    headers: [["accept", "text/html"]],
+    query: [],
+    body: btoa(htmlPayload),
+  });
+
   return requests;
 }
 
