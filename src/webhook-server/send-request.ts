@@ -1,5 +1,5 @@
 import "@/server-only";
-import { WEBHOOK_PORT } from "@/config-shared";
+import { WEBHOOK_PORT } from "@/config";
 import { requestSchema, type HandlerRequest } from "./schema";
 
 export const LOCAL_WEBHOOK_URL = `http://localhost:${WEBHOOK_PORT}`;

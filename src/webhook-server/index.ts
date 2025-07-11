@@ -11,7 +11,7 @@ import https from "https";
 import http from "http";
 import fs from "fs";
 import type { TLSSocket } from "tls";
-import { EXCLUDE_HEADER_MAP } from "../config-shared";
+import { EXCLUDE_HEADER_MAP } from "@/config";
 import type { RequestEvent, TLSInfo } from "@/request-events/schema";
 import { randomUUID } from "@/util/uuid";
 import { now } from "@/util/datetime";

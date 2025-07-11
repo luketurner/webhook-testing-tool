@@ -2,7 +2,7 @@ import "@/server-only";
 import { Glob } from "bun";
 import { Database } from "bun:sqlite";
 import path, { join } from "path";
-import { DB_FILE } from "../config-server";
+import { DB_FILE } from "../config";
 import { clearHandlerExecutions } from "@/handler-executions/model";
 import { clearRequestEvents } from "@/request-events/model";
 import { clearHandlers } from "@/handlers/model";

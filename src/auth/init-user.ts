@@ -1,6 +1,6 @@
 import "@/server-only";
 import { auth } from "./index";
-import { ADMIN_USERNAME, ADMIN_PASSWORD } from "@/config-server";
+import { ADMIN_USERNAME, ADMIN_PASSWORD } from "@/config";
 import { db } from "@/db";
 
 export async function initializeAdminUser() {

@@ -1,17 +1,17 @@
 import "@/server-only";
 import { startDashboardServer } from "./dashboard/server";
-import { DB_FILE } from "./config-server";
 import { migrateDb } from "./db";
 import { startWebhookServer } from "./webhook-server";
 import { initializeAdminUser } from "./auth/init-user";
 import {
+  DB_FILE,
   ADMIN_PORT,
   WEBHOOK_PORT,
   WEBHOOK_SSL_CERT_PATH,
   WEBHOOK_SSL_ENABLED,
   WEBHOOK_SSL_KEY_PATH,
   WEBHOOK_SSL_PORT,
-} from "./config-shared";
+} from "@/config";
 
 console.log(`Using database: ${DB_FILE}`);
 await migrateDb();
