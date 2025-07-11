@@ -6,26 +6,20 @@ primary_region = 'sea'
 [env]
   WTT_DB_FILE = '/data/data.sqlite'
   WTT_EXCLUDE_HEADERS = 'x-request-start,fly-client-ip,x-forwarded-for,fly-forwarded-proto,x-forwarded-proto,fly-forwarded-ssl,x-forwarded-ssl,fly-forwarded-port,x-forwarded-port,fly-region,fly-request-id,fly-tracestate,fly-traceparent,via'
+  WTT_ADMIN_PORT = '3000'
+  WTT_WEBHOOK_PORT = '3080'
+  WTT_WEBHOOK_SSL_PORT = '3443'
 
 [[mounts]]
   source = 'data'
   destination = '/data'
-
-# Webhook responder
-[http_service]
-  internal_port = 3000
-  force_https = false
-  auto_stop_machines = 'stop'
-  auto_start_machines = true
-  min_machines_running = 0
-  processes = ['app']
 
 [[vm]]
   size = 'shared-cpu-1x'
 
 # Admin server
 [[services]]
-  internal_port = 3001
+  internal_port = 3000
   protocol = "tcp"
   auto_stop_machines = "stop"
   auto_start_machines = true
@@ -34,3 +28,28 @@ primary_region = 'sea'
   [[services.ports]]
     handlers = ["tls", "http"]
     port = 8000
+
+# Webhook server (HTTP)
+[[services]]
+  internal_port = 3080
+  protocol = "tcp"
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+
+# Webhook server (HTTPS)
+[[services]]
+  internal_port = 3443
+  protocol = "tcp"
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  
+  [[services.ports]]
+    # TODO -- TLS termination in the app
+    handlers = ["tls", "http"]
+    port = 443
