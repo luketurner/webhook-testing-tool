@@ -1,4 +1,4 @@
-import { useResourceList } from "@/dashboard/hooks";
+import { useResourceList, useServerConfig } from "@/dashboard/hooks";
 import { useWebhookUrl } from "@/util/hooks/use-webhook-url";
 import { DataSection } from "@/components/data-section";
 import { EmptyState } from "@/components/empty-state";
@@ -7,11 +7,13 @@ import { Link } from "react-router";
 import { Plus } from "lucide-react";
 import type { RequestEventMeta } from "@/request-events/schema";
 import type { Handler } from "@/handlers/schema";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 
 export const HomePage = () => {
   const { data: requests } = useResourceList<RequestEventMeta>("requests");
   const { data: handlers } = useResourceList<Handler>("handlers");
   const { baseUrl } = useWebhookUrl();
+  const { data: serverConfig } = useServerConfig();
 
   const recentRequests = requests?.slice(0, 5) || [];
   const activeHandlers =
@@ -114,10 +116,25 @@ export const HomePage = () => {
 
       <div className="mt-8 p-6 bg-muted rounded-lg">
         <h2 className="text-lg font-semibold mb-2">Quick Start</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          Send test requests to:{" "}
-          <code className="px-2 py-1 bg-background rounded">{baseUrl}/</code>
-        </p>
+        <div className="text-sm text-muted-foreground mb-4 max-w-lg">
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>Webhook (HTTP)</TableCell>
+                <TableCell>
+                  {baseUrl.replace(/^https:/, "http:")}:
+                  {serverConfig?.webhookPort}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Webhook (HTTPS)</TableCell>
+                <TableCell>
+                  {baseUrl}:{serverConfig?.webhookSslPort}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
         <div className="flex gap-2">
           <Link to="/requests/new">
             <Button variant="outline" size="sm">

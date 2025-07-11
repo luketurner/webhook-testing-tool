@@ -9,7 +9,13 @@ import { withAuth } from "@/auth/middleware";
 import { getRequestEventBySharedId } from "@/request-events/model";
 import { appEvents } from "@/db/events";
 import type { BunRequest } from "bun";
-import { DEV, ADMIN_PORT } from "@/config";
+import {
+  DEV,
+  ADMIN_PORT,
+  WEBHOOK_PORT,
+  WEBHOOK_SSL_PORT,
+  WEBHOOK_SSL_ENABLED,
+} from "@/config";
 import indexPage from "./index.html";
 import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
@@ -51,6 +57,17 @@ export const startDashboardServer = () =>
       ...buildController(handlerController),
       ...buildController(handlerExecutionController),
       ...buildController(dbController),
+      ...buildController({
+        "/api/config": {
+          GET: () => {
+            return Response.json({
+              webhookPort: WEBHOOK_PORT,
+              webhookSslPort: WEBHOOK_SSL_PORT,
+              webhookSslEnabled: WEBHOOK_SSL_ENABLED,
+            });
+          },
+        },
+      }),
 
       // SSE endpoint
       "/api/events/stream": withAuth(sseEndpoint),

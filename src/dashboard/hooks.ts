@@ -189,3 +189,22 @@ export function useManualPage(pageName: string | null) {
     enabled: !!pageName,
   });
 }
+
+export interface ServerConfig {
+  webhookPort: string;
+  webhookSslPort: string;
+  webhookSslEnabled: boolean;
+}
+
+export function useServerConfig() {
+  return useQuery({
+    queryKey: ["server-config"],
+    queryFn: async (): Promise<ServerConfig> => {
+      const response = await fetch("/api/config");
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    },
+  });
+}
