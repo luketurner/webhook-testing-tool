@@ -1,5 +1,6 @@
 app = 'FIXME'
 primary_region = 'sea'
+swap_size_mb = 512
 
 [build]
 
