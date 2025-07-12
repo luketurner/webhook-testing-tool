@@ -44,13 +44,13 @@ swap_size_mb = 512
 
 # Webhook server (HTTPS)
 [[services]]
-  internal_port = 3443
+  # TODO -- TLS termination in the app -- then switch this to 3443
+  internal_port = 3080
   protocol = "tcp"
   auto_stop_machines = "stop"
   auto_start_machines = true
   min_machines_running = 0
   
   [[services.ports]]
-    # TODO -- TLS termination in the app
     handlers = ["tls", "http"]
     port = 443
