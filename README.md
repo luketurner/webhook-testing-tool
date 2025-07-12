@@ -1,6 +1,7 @@
 # Webhook Testing Tool (wtt)
 
-> **Note:** This README is for `v2` of webhook-testing-tool, which is a full rewrite and under active development.
+> [!WARNING]
+> This README is for `v2` of webhook-testing-tool, which is a full rewrite and under active development.
 >
 > The README and code for `v1` are available at: https://github.com/luketurner/webhook-testing-tool/releases/tag/v1.
 
@@ -94,7 +95,7 @@ This project is designed to be developed in tandem with Claude Code using the fo
 
 ```bash
 flyctl launch --no-deploy
-flyctl secrets set WTT_ADMIN_USERNAME=you@example.com WTT_ADMIN_PASSWORD=yoursecretpassword
+flyctl secrets set WTT_ADMIN_USERNAME=you@example.com WTT_ADMIN_PASSWORD=yoursecretpassword BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
 flyctl volumes create -s 1 -r sea data
 flyctl deploy
 ```
