@@ -1,4 +1,4 @@
-import { Activity, Webhook, Settings, Cog, BookOpen } from "lucide-react";
+import { Activity, Webhook, Settings, Cog, BookOpen, User } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -10,6 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
@@ -22,11 +23,12 @@ import {
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSendRequest } from "@/dashboard/hooks";
-import { Link, useSearchParams } from "react-router";
+import { Link, useSearchParams, useNavigate } from "react-router";
 import { RequestSidebar } from "@/components/request-sidebar";
 import { HandlerSidebar } from "@/components/handler-sidebar";
 import { JWTInspector } from "@/components/jwt-inspector";
 import { seedRequests } from "@/util/seed";
+import { useQueryClient } from "@tanstack/react-query";
 
 const navMain = [
   {
@@ -45,6 +47,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { mutate: handleSendRequest } = useSendRequest();
   const [showJWTInspector, setShowJWTInspector] = React.useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const handleDownloadDatabase = React.useCallback(() => {
     window.location.href = "/api/db/export";
@@ -57,6 +61,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     [searchParams, setSearchParams],
   );
+
+  const handleSignOut = React.useCallback(async () => {
+    try {
+      const response = await fetch("/api/auth/sign-out", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        // Invalidate session query to trigger re-fetch
+        await queryClient.invalidateQueries({ queryKey: ["session"] });
+        // The SessionProvider will handle showing the login form
+      }
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  }, [queryClient]);
 
   return (
     <Sidebar
@@ -199,6 +222,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    tooltip={{
+                      children: "User Menu",
+                      hidden: false,
+                    }}
+                    className="px-2.5 md:px-2"
+                  >
+                    <User />
+                    <span>User</span>
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="right" align="end">
+                  <DropdownMenuItem onSelect={handleSignOut}>
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
       </Sidebar>
 
       {/* This is the second sidebar */}
