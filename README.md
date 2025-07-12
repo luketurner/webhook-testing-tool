@@ -99,3 +99,5 @@ flyctl secrets set WTT_ADMIN_USERNAME=you@example.com WTT_ADMIN_PASSWORD=yoursec
 flyctl volumes create -s 1 -r sea data
 flyctl deploy
 ```
+
+Then you can open the admin dashboard at `https://$APP_NAME.fly.dev:8000/`, and send webhook requests to `http://$APP_NAME.fly.dev` or `https://$APP_NAME.fly.dev`
