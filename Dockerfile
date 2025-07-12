@@ -12,6 +12,8 @@ RUN bun install --production --frozen-lockfile
 # Copy application code
 COPY --link . .
 
+RUN bun run build
+
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
 CMD [ "bun", "run", "start" ]

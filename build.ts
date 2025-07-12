@@ -128,7 +128,8 @@ console.log("\n🚀 Starting build process...\n");
 
 // Parse CLI arguments with our magical parser
 const cliConfig = parseArgs();
-const outdir = cliConfig.outdir || path.join(process.cwd(), "dist");
+const outdir =
+  cliConfig.outdir || path.join(process.cwd(), "dist", "dashboard");
 
 if (existsSync(outdir)) {
   console.log(`🗑️ Cleaning previous build at ${outdir}`);
@@ -147,7 +148,7 @@ console.log(
 
 // Build all the HTML files
 const result = await build({
-  entrypoints,
+  entrypoints: ["src/dashboard/index.html"],
   outdir,
   plugins: [plugin],
   minify: true,

@@ -6,3 +6,4 @@ NOTES.md
 .env.local
 *.log
 .claude/settings.local.json
+dist
