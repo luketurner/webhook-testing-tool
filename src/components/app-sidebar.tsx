@@ -23,7 +23,7 @@ import {
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSendRequest } from "@/dashboard/hooks";
-import { Link, useSearchParams, useNavigate } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { RequestSidebar } from "@/components/request-sidebar";
 import { HandlerSidebar } from "@/components/handler-sidebar";
 import { JWTInspector } from "@/components/jwt-inspector";
@@ -47,7 +47,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { mutate: handleSendRequest } = useSendRequest();
   const [showJWTInspector, setShowJWTInspector] = React.useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const handleDownloadDatabase = React.useCallback(() => {
