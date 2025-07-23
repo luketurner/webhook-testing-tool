@@ -1,7 +1,7 @@
 # Webhook Testing Tool (wtt)
 
-> [!WARNING]
-> This README is for `v2` of webhook-testing-tool, which is a full rewrite and under active development.
+> [!NOTE]
+> This README is for `v2` of webhook-testing-tool.
 >
 > The README and code for `v1` are available at: https://github.com/luketurner/webhook-testing-tool/releases/tag/v1.
 
