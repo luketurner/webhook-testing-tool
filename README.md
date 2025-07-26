@@ -121,6 +121,10 @@ export WTT_WEBHOOK_SSL_PORT=3443  # Default HTTPS port
 
 ### Let's Encrypt Certificates (ACME)
 
+> [!WARNING]
+> ACME support is still a work in progress!
+
+
 For production deployments, `wtt` can automatically obtain and renew certificates from Let's Encrypt:
 
 ```bash
