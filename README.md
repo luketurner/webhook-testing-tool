@@ -23,7 +23,7 @@ How it works:
 - Easy to deploy; runs in a single container.
 - Automatically responds to any HTTP request.
 - Response behavior can be customized with Typescript code by defining **handlers**. See the Handlers section below.
-- TLS termination with self-signed certificate (work in progress, TLS socket info not currently available in Bun. See [related issue](https://github.com/oven-sh/bun/issues/16834))
+- TLS termination with self-signed certificate or automatic Let's Encrypt certificates via ACME (work in progress, TLS socket info not currently available in Bun. See [related issue](https://github.com/oven-sh/bun/issues/16834))
 - JWT parsing and signature verification against a JWKS or JWK URL.
 - Formatting and syntax highlighting for JSON request/response bodies.
 - Viewing request/response bodies in multiple encodings including UTF8, Latin-1, base64, hex, and binary.
@@ -101,3 +101,51 @@ flyctl deploy
 ```
 
 Then you can open the admin dashboard at `https://$APP_NAME.fly.dev:8000/`, and send webhook requests to `http://$APP_NAME.fly.dev` or `https://$APP_NAME.fly.dev`
+
+## SSL/TLS Configuration
+
+`wtt` supports HTTPS connections with two certificate options:
+
+### Self-Signed Certificates (Default)
+
+By default, `wtt` uses self-signed certificates located in the `certs/` directory. To enable HTTPS:
+
+```bash
+# Generate certificates (if not already present)
+./certs/generate-cert.sh
+
+# Set environment variables
+export WTT_WEBHOOK_SSL_ENABLED=true
+export WTT_WEBHOOK_SSL_PORT=3443  # Default HTTPS port
+```
+
+### Let's Encrypt Certificates (ACME)
+
+For production deployments, `wtt` can automatically obtain and renew certificates from Let's Encrypt:
+
+```bash
+# Enable ACME
+export WTT_ACME_ENABLED=true
+export WTT_WEBHOOK_SSL_ENABLED=true
+
+# Configure your domain(s)
+export WTT_ACME_DOMAINS=example.com,www.example.com
+export WTT_ACME_EMAIL=admin@example.com
+
+# Optional: Use Let's Encrypt staging for testing
+export WTT_ACME_STAGING=true
+```
+
+**ACME Requirements:**
+- Your domain must point to your `wtt` instance
+- Port 80 must be accessible for HTTP-01 challenges
+- Certificates are stored in `local/acme-certs/` and persist across restarts
+- Certificates are automatically renewed 30 days before expiration
+
+**ACME Environment Variables:**
+- `WTT_ACME_ENABLED`: Enable ACME certificate provisioning
+- `WTT_ACME_DOMAINS`: Comma-separated list of domains
+- `WTT_ACME_EMAIL`: Contact email for Let's Encrypt
+- `WTT_ACME_STAGING`: Use Let's Encrypt staging environment (for testing)
+- `WTT_ACME_DIRECTORY`: Custom ACME directory URL (defaults to Let's Encrypt production)
+- `WTT_ACME_CERT_PATH`: Certificate storage path (defaults to `local/acme-certs`)
