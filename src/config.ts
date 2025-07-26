@@ -41,3 +41,16 @@ export const WEBHOOK_SSL_CERT_PATH =
   process.env.WTT_WEBHOOK_SSL_CERT_PATH || "certs/cert.pem";
 export const WEBHOOK_SSL_KEY_PATH =
   process.env.WTT_WEBHOOK_SSL_KEY_PATH || "certs/key.pem";
+
+// ACME/Let's Encrypt Configuration
+export const ACME_ENABLED = process.env.WTT_ACME_ENABLED === "true";
+export const ACME_DOMAINS = process.env.WTT_ACME_DOMAINS
+  ? process.env.WTT_ACME_DOMAINS.split(",").map((d) => d.trim())
+  : [];
+export const ACME_EMAIL = process.env.WTT_ACME_EMAIL || "";
+export const ACME_DIRECTORY_URL =
+  process.env.WTT_ACME_DIRECTORY ||
+  "https://acme-v02.api.letsencrypt.org/directory";
+export const ACME_CERT_PATH =
+  process.env.WTT_ACME_CERT_PATH || "local/acme-certs";
+export const ACME_STAGING = process.env.WTT_ACME_STAGING === "true";
