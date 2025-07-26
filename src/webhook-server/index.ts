@@ -21,6 +21,8 @@ import { fromBufferLike } from "@/util/base64";
 import { createRequestEvent, updateRequestEvent } from "@/request-events/model";
 import { appEvents } from "@/db/events";
 import { handleRequest } from "./handle-request";
+import { acmeManager } from "@/acme-manager";
+import { ACME_ENABLED } from "@/config";
 
 // NOTE: Express is used for the webhook server instead of Bun.serve() because we want to
 // be able to inspect the final HTTP response sent to the client (including content-length, etc.)
@@ -29,6 +31,23 @@ const app = express();
 
 app.use(morgan("combined"));
 app.use(bodyParser.raw({ type: (_req) => true }));
+
+// Handle ACME HTTP-01 challenges
+if (ACME_ENABLED) {
+  app.get("/.well-known/acme-challenge/:token", (req, res) => {
+    const token = req.params.token;
+    const keyAuthorization = acmeManager.getChallengeResponse(token);
+
+    if (keyAuthorization) {
+      console.log(`Serving ACME challenge for token: ${token}`);
+      res.set("Content-Type", "text/plain");
+      res.send(keyAuthorization);
+    } else {
+      console.warn(`No ACME challenge found for token: ${token}`);
+      res.status(404).send("Not found");
+    }
+  });
+}
 
 // Function to extract TLS info from socket
 // NOTE: This does not work in Bun due to https://github.com/oven-sh/bun/issues/16834
@@ -181,35 +200,82 @@ export interface WebhookServerResp {
   httpsServer?: https.Server;
 }
 
-export function startWebhookServer({
+export async function startWebhookServer({
   port,
   ssl,
 }: WebhookServerOptions): Promise<WebhookServerResp> {
-  return new Promise<WebhookServerResp>((resolve) => {
+  return new Promise<WebhookServerResp>(async (resolve) => {
     // Start HTTP server
     const server: http.Server = app.listen(port, () => {
       console.log(`HTTP webhook server listening on port ${port}`);
-      // Start HTTPS server if enabled
-      if (ssl.enabled) {
-        try {
-          const httpsOptions = {
+    });
+
+    // Start HTTPS server if enabled
+    if (ssl.enabled) {
+      try {
+        let httpsOptions: https.ServerOptions;
+
+        if (ACME_ENABLED) {
+          // Initialize ACME manager
+          await acmeManager.initialize();
+
+          // Obtain or load certificate
+          const certInfo = await acmeManager.obtainCertificate();
+
+          httpsOptions = {
+            key: certInfo.privateKey,
+            cert: certInfo.certificate,
+          };
+
+          console.log(
+            `Using ACME certificate (expires: ${certInfo.expiresAt})`,
+          );
+        } else {
+          // Use self-signed certificates
+          httpsOptions = {
             key: fs.readFileSync(ssl.keyPath),
             cert: fs.readFileSync(ssl.certPath),
           };
 
-          const httpsServer = https.createServer(httpsOptions, app);
-          httpsServer.listen(ssl.port, () => {
-            console.log(`HTTPS webhook server listening on port ${ssl.port}`);
-            resolve({ server, httpsServer });
-          });
-        } catch (err) {
-          console.error("Failed to start HTTPS server:", err);
+          console.log("Using self-signed certificate");
+        }
+
+        const httpsServer = https.createServer(httpsOptions, app);
+        httpsServer.listen(ssl.port, () => {
+          console.log(`HTTPS webhook server listening on port ${ssl.port}`);
+          resolve({ server, httpsServer });
+        });
+      } catch (err) {
+        console.error("Failed to start HTTPS server:", err);
+
+        // Fall back to self-signed certificate if ACME fails
+        if (ACME_ENABLED) {
+          console.log("Falling back to self-signed certificate");
+          try {
+            const httpsOptions = {
+              key: fs.readFileSync(ssl.keyPath),
+              cert: fs.readFileSync(ssl.certPath),
+            };
+
+            const httpsServer = https.createServer(httpsOptions, app);
+            httpsServer.listen(ssl.port, () => {
+              console.log(
+                `HTTPS webhook server listening on port ${ssl.port} (using fallback certificate)`,
+              );
+              resolve({ server, httpsServer });
+            });
+          } catch (fallbackErr) {
+            console.error("Failed to use fallback certificate:", fallbackErr);
+            console.log("Continuing with HTTP only");
+            resolve({ server });
+          }
+        } else {
           console.log("Continuing with HTTP only");
           resolve({ server });
         }
-      } else {
-        resolve({ server });
       }
-    });
+    } else {
+      resolve({ server });
+    }
   });
 }
