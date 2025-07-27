@@ -7,3 +7,4 @@ NOTES.md
 *.log
 .claude/settings.local.json
 dist
+*.compiled.css

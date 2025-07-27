@@ -14,7 +14,9 @@
     "build": "bun build --target=bun --production --outdir=dist src/server.ts && bun run build.ts && cp -R src/db/migrations dist/migrations",
     "format": "prettier --write .",
     "compile": "tsc",
-    "worktree": "bun scripts/worktree.ts"
+    "worktree": "bun scripts/worktree.ts",
+    "tw:release": "tailwindcss -m -i ./src/dashboard/index.css -o ./src/dashboard/index.compiled.css",
+    "release": "bun run tw:release && bun build --define RELEASE=true --compile --minify --sourcemap src/server.ts --outfile dist/wtt"
   },
   "author": "Luke Turner",
   "license": "MIT",
@@ -34,6 +36,7 @@
     "@radix-ui/react-switch": "^1.2.5",
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-tooltip": "^1.2.7",
+    "@tailwindcss/cli": "^4.1.11",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query": "^5.80.7",
     "@types/basic-auth": "^1.1.8",
