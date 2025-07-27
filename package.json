@@ -15,8 +15,8 @@
     "format": "prettier --write .",
     "compile": "tsc",
     "worktree": "bun scripts/worktree.ts",
-    "tw:release": "tailwindcss -m -i ./src/dashboard/index.css -o ./src/dashboard/index.compiled.css",
-    "release": "bun run tw:release && bun build --define RELEASE=true --compile --minify --sourcemap src/server.ts --outfile dist/wtt"
+    "tailwind": "tailwindcss",
+    "release": "bun run scripts/release.ts"
   },
   "author": "Luke Turner",
   "license": "MIT",
