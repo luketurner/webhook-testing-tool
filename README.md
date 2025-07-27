@@ -5,22 +5,23 @@
 >
 > The README and code for `v1` are available at: https://github.com/luketurner/webhook-testing-tool/releases/tag/v1.
 
-`wtt` is an open-source alternative to webhook testing tools like https://webhook.site. It's designed for easy and lightweight self-hosting.
+<div style="max-width:500px; margin:auto;">
 
 ![Screenshot of the app](./docs/wtt_request.png)
 
-How it works:
+</div>
 
-1. You deploy a copy of `wtt` for your personal use.
-   - Designed for easy deployment on [Fly](https://fly.io), where it would cost between $0 to $3 per month depending on usage. But should work with any cloud provider.
-2. You make arbitrary HTTP requests to your `wtt` instance, with any method and URL, and it returns a 200 OK response.
-   - (optional) You write _handlers_ to configure how `wtt` responds to requests.
-3. The full headers, raw payloads, etc. for all requests and responses are stored in a SQLite database.
-4. You visit the admin URL in your browser to open a (password-protected) UI to view the requests and responses.
+`wtt` is an open-source alternative to webhook testing tools like https://webhook.site. It's designed for easy and lightweight self-hosting:
+
+- **Single-file executable**: `wtt` is released as a single-file executable for easy, zero-dependency deployment. Just download and run the binary.
+- **No external database**: `wtt` uses SQLite and the local filesystem for data storage. There is no need for an external database.
+- **One binary, multiple servers**: `wtt` can run an HTTP server, HTTPS server, TCP server, and dashboard server all from a single executable.
+- **Configured with environment variables**: `wtt` is exclusively configured via environment variables. See [Configration](#configuration) section for details.
+- **Single-user login**: The `wtt` dashboard supports email/password authentication. The admin user's email and password are configured via environment variables.
+- **HTTPS support with Let's Encrypt**: `wtt` supports built-in TLS termination using either self-signed certificates or Let's Encrypt certificates via the `http-01` ACME challenge. Admin dashboard does not support TLS termination. (Work in progress)
 
 ## Features
 
-- Easy to deploy; runs in a single container.
 - Automatically responds to any HTTP request.
 - Response behavior can be customized with Typescript code by defining **handlers**. See the Handlers section below.
 - TLS termination with self-signed certificate or automatic Let's Encrypt certificates via ACME (work in progress, TLS socket info not currently available in Bun. See [related issue](https://github.com/oven-sh/bun/issues/16834))
@@ -42,11 +43,40 @@ How it works:
 - Does not support multi-user login. (Users are expected to deploy their own instance of `wtt` instead of sharing.)
 - Reliance on SQLite means horizontal scaling is tricky. I recommend running `wtt` with a single pod/container and SQLite stored in a persistent volume. You could probably make horizontal scaling work with [Litestream](https://litestream.io/) or something, but I haven't tried it.
 
+## Configuration
+
+`wtt` understands the following environment variables:
+
+| Variable | Default value | Notes |
+|-|-|-|
+| `NODE_ENV` | N/A | Set to `development` to enable development mode. |
+| `WTT_DB_FILE` | `"local/data.sqlite"` | Path to the SQLite database to use. Database will be created if it does not already exist. |
+| `WTT_ADMIN_USERNAME` | `"admin@example.com"` | Configures the username for logging in to the admin dashboard. |
+| `WTT_ADMIN_PASSWORD` | `"admin123"` | Configures the password for logging in to the admin dashboard. STRONGLY recommend to override the default value. |
+| `WTT_EXCLUDE_HEADERS` | `""` | Comma-separated list of headers to exclude from logging for incoming HTTP requests. Used to e.g. remove headers added by a cloud reverse proxy. |
+| `WTT_ADMIN_PORT` | `"3001"` | Port used for the admin dashboard Web UI. |
+| `WTT_WEBHOOK_PORT` | `"3000"` | Port used for the HTTP (non-TLS-terminating) webhook server. |
+| `WTT_TCP_PORT` | `"3002"` | Port used for the raw TCP (non-TLS-terminating) server. |
+| `WTT_WEBHOOK_SSL_ENABLED` | `"false"` | Set to `"true"` to enable the HTTPS (TLS-terminating) webhook server. |
+| `WTT_WEBHOOK_SSL_PORT` | `"3443"` | Port used for the HTTPS server. |
+| `WTT_WEBHOOK_SSL_CERT_PATH` | `"certs/cert.pem"` | Path to the SSL/TLS certificate to use for the HTTPS webhook server if not using ACME/Let's Encrypt. |
+| `WTT_WEBHOOK_SSL_KEY_PATH` | `"certs/key.pem"` | Path to the SSL/TLS private key to use for the HTTPS webhook server if not using ACME/Let's Encrypt. |
+| `WTT_ACME_ENABLED` | `"false"` | Set to `"true"` to enable certificate retrieval via ACME/Let's Encrypt. |
+| `WTT_ACME_DOMAINS` | `""` | Comma-separated list of domains to request certificates for ACME/Let's Encrypt. |
+| `WTT_ACME_EMAIL` | `""` | Contact email for ACME/Let's Encrypt. |
+| `WTT_ACME_DIRECTORY` | `"https://acme-v02.api.letsencrypt.org/directory"` | Directory URL for ACME/Let's Encrypt. |
+| `WTT_ACME_CERT_PATH` | `"local/acme-certs"` | Local directory that ACME certificates will be stored in. |
+| `WTT_ACME_STAGING` | `"false"` | Whether the ACME directory is a staging environment. |
+
 ## Handlers
 
 One special feature is the ability to configure how `wtt` responds to requests using handlers.
 
+<div style="max-width:500px; margin:auto;">
+
 ![Screenshot of the app](./docs/wtt_handler.png)
+
+</div>
 
 Handlers are written in Typescript and can be edited in the `wtt` admin UI. You can define multiple scripts based on the request's HTTP method and URL. Handlers can be nested with an Express-style middleware pattern as well. Some notable features:
 
