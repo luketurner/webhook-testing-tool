@@ -37,6 +37,8 @@ export const startDashboardServer = () =>
       "/handlers": indexPage,
       "/handlers/:id": indexPage,
       "/shared/:sharedId": indexPage,
+      "/tcp-connections": indexPage,
+      "/tcp-connections/:id": indexPage,
 
       // auth routes (no auth required)
       ...authController,
