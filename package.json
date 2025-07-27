@@ -11,11 +11,11 @@
     "dev": "NODE_ENV=development bun --hot src/server.ts",
     "test": "NODE_ENV=test bun test",
     "migrate:create": "bun run src/db/create-migration.ts",
-    "build": "bun build --target=bun --production --outdir=dist src/server.ts && bun run build.ts && cp -R src/db/migrations dist/migrations",
     "format": "prettier --write .",
     "compile": "tsc",
     "worktree": "bun scripts/worktree.ts",
     "tailwind": "tailwindcss",
+    "build": "bun run scripts/build.ts",
     "release": "bun run scripts/release.ts"
   },
   "author": "Luke Turner",
