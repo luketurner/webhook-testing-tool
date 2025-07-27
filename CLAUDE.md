@@ -73,6 +73,14 @@ Prefer focusing source files on a single concept. When in doubt, go with the app
 
 If a helper function would be useful across multiple feature areas, put it in an appropriate file in the `./src/util` directory.
 
+### Writing tests
+
+When writing tests:
+
+- Avoid performing expensive tasks in `beforeEach`. Note that DB state is already reset between each test automatically.
+- When generating UUIDs for testing, use the randomUUID function from the @/util/uuid module to brand them with the correct type.
+- When generating base64 strings for testing, use parseBase64 function from @/util/base64 function to brand them with the correct type.
+
 ## Development Best Practices
 
 - NEVER use the `any` type to fix TypeScript errors.
