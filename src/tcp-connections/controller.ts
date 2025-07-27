@@ -5,6 +5,8 @@ import {
   deleteTcpConnection,
   clearTcpConnections,
 } from "./model";
+import { TCP_PORT } from "@/config";
+import { sleep } from "bun";
 
 export const tcpConnectionController = {
   "/api/tcp-connections": {
@@ -29,6 +31,49 @@ export const tcpConnectionController = {
     DELETE: (req) => {
       deleteTcpConnection(req.params.id);
       return Response.json({ status: "ok" });
+    },
+  },
+  "/api/tcp-connections/test": {
+    POST: async (req) => {
+      try {
+        // Connect to the TCP server
+        const socket = await Bun.connect({
+          hostname: "localhost",
+          port: TCP_PORT,
+          socket: {
+            open() {},
+            data() {},
+            close() {},
+            error() {},
+          },
+        });
+
+        // Send test payload
+        const testPayload = "Test TCP connection from WTT admin dashboard";
+        socket.write(testPayload);
+
+        // Wait briefly for response processing
+        await sleep(10);
+
+        // Close the connection
+        socket.end();
+
+        return Response.json({
+          status: "success",
+          message: "TCP test connection completed successfully",
+          payload: testPayload,
+          port: TCP_PORT,
+        });
+      } catch (error) {
+        return Response.json(
+          {
+            status: "error",
+            message: "Failed to connect to TCP server",
+            error: error.message,
+          },
+          { status: 500 },
+        );
+      }
     },
   },
 };
