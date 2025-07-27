@@ -15,6 +15,15 @@ export function SSEProvider({ children }) {
         console.log("event", event.type, event.payload);
         // Invalidate and refetch the requests list to get the latest data
         queryClient.invalidateQueries({ queryKey: ["requests"] });
+      } else if (
+        event.type === "tcp_connection:created" ||
+        event.type === "tcp_connection:updated" ||
+        event.type === "tcp_connection:closed" ||
+        event.type === "tcp_connection:failed"
+      ) {
+        console.log("event", event.type, event.payload);
+        // Invalidate and refetch the TCP connections list to get the latest data
+        queryClient.invalidateQueries({ queryKey: ["tcp-connections"] });
       }
     },
     onError: (error) => {

@@ -1,10 +1,18 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 export interface SSEEvent {
-  type: "connected" | "request:created" | "request:updated" | "ping";
+  type:
+    | "connected"
+    | "request:created"
+    | "request:updated"
+    | "ping"
+    | "tcp_connection:created"
+    | "tcp_connection:updated"
+    | "tcp_connection:closed"
+    | "tcp_connection:failed";
   payload?: {
     id: string;
-    status: string;
+    status?: string;
   };
 }
 

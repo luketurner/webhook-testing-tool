@@ -6,6 +6,7 @@ import type { RequestEvent } from "@/request-events/schema";
 export interface AppEvents {
   "request:created": (event: RequestEvent) => void;
   "request:updated": (event: RequestEvent) => void;
+  tcp_connection: (data: { action: string; id: string }) => void;
 }
 
 class TypedEventEmitter extends EventEmitter {
@@ -26,3 +27,10 @@ class TypedEventEmitter extends EventEmitter {
 }
 
 export const appEvents = new TypedEventEmitter();
+
+export function broadcastEvent<K extends keyof AppEvents>(
+  event: K,
+  ...args: Parameters<AppEvents[K]>
+): void {
+  appEvents.emit(event, ...args);
+}

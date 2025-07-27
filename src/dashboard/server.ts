@@ -5,6 +5,7 @@ import { handlerController } from "@/handlers/controller";
 import { requestEventController } from "@/request-events/controller";
 import { handlerExecutionController } from "@/handler-executions/controller";
 import { authController } from "@/auth/controller";
+import { tcpConnectionController } from "@/tcp-connections/controller";
 import { withAuth } from "@/auth/middleware";
 import { getRequestEventBySharedId } from "@/request-events/model";
 import { appEvents } from "@/db/events";
@@ -57,6 +58,7 @@ export const startDashboardServer = () =>
       ...buildController(handlerController),
       ...buildController(handlerExecutionController),
       ...buildController(dbController),
+      ...buildController(tcpConnectionController),
       ...buildController({
         "/api/config": {
           GET: () => {
@@ -188,8 +190,25 @@ function sseEndpoint(req: BunRequest, server: Bun.Server) {
           }
         };
 
+        const onTcpConnectionEvent = (data: { action: string; id: string }) => {
+          try {
+            controller.enqueue(
+              `data: ${JSON.stringify({
+                type: `tcp_connection:${data.action}`,
+                payload: { id: data.id },
+              })}\n\n`,
+            );
+          } catch (error) {
+            console.error(
+              `Error sending tcp_connection:${data.action} event:`,
+              error,
+            );
+          }
+        };
+
         appEvents.on("request:created", onRequestCreated);
         appEvents.on("request:updated", onRequestUpdated);
+        appEvents.on("tcp_connection", onTcpConnectionEvent);
 
         // Keep-alive ping every 30 seconds
         const keepAlive = setInterval(() => {
@@ -206,6 +225,7 @@ function sseEndpoint(req: BunRequest, server: Bun.Server) {
           clearInterval(keepAlive);
           appEvents.off("request:created", onRequestCreated);
           appEvents.off("request:updated", onRequestUpdated);
+          appEvents.off("tcp_connection", onTcpConnectionEvent);
         };
       } catch (error) {
         console.error("Error setting up SSE stream:", error);
