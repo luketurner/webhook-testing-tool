@@ -1,4 +1,12 @@
-import { Activity, Webhook, Settings, Cog, BookOpen, User } from "lucide-react";
+import {
+  Activity,
+  Webhook,
+  Settings,
+  Cog,
+  BookOpen,
+  User,
+  Network,
+} from "lucide-react";
 import * as React from "react";
 
 import {
@@ -26,6 +34,7 @@ import { useSendRequest } from "@/dashboard/hooks";
 import { Link, useSearchParams } from "react-router";
 import { RequestSidebar } from "@/components/request-sidebar";
 import { HandlerSidebar } from "@/components/handler-sidebar";
+import { TcpConnectionsSidebar } from "@/components/tcp-connections-sidebar";
 import { JWTInspector } from "@/components/jwt-inspector";
 import { seedRequests } from "@/util/seed";
 import { useQueryClient } from "@tanstack/react-query";
@@ -38,6 +47,10 @@ const navMain = [
   {
     title: "Handlers",
     icon: Settings,
+  },
+  {
+    title: "TCP Connections",
+    icon: Network,
   },
 ];
 
@@ -252,8 +265,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {/* We disable collapsible and let it fill remaining space */}
       {activeItem?.title === "Requests" ? (
         <RequestSidebar />
-      ) : (
+      ) : activeItem?.title === "Handlers" ? (
         <HandlerSidebar />
+      ) : (
+        <TcpConnectionsSidebar />
       )}
 
       <JWTInspector

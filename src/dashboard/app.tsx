@@ -8,6 +8,7 @@ import { EditHandlerPage } from "./pages/edit-handler-page";
 import { HomePage } from "./pages/home-page";
 import { RequestPage } from "./pages/request-page";
 import { SharedRequestPage } from "./pages/shared-request-page";
+import { TcpConnectionPage } from "./pages/tcp-connection-page";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Layout } from "@/components/layout";
 import { SSEProvider } from "@/components/sse-provider";
@@ -60,6 +61,10 @@ export function App() {
                         <Route
                           path="/handlers/:id"
                           element={<EditHandlerPage />}
+                        />
+                        <Route
+                          path="/tcp-connections/:id"
+                          element={<TcpConnectionPage />}
                         />
                       </Routes>
                     </Layout>
