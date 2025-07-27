@@ -25,8 +25,8 @@ async function buildTarget(target: string) {
   console.log(`Building ${target}...`);
   await $`bun build --define RELEASE=true --compile --minify --sourcemap src/server.ts --outfile dist/wtt-${target.replace("bun-", "")} --target ${target}`;
   if (target === "bun-windows-x64") {
-    await $`tar -czf dist/wtt-${target.replace("bun-", "")}.tar.gz dist/wtt-${target.replace("bun-", "")}`;
-  } else {
     await $`zip -9 dist/wtt-${target.replace("bun-", "")}.zip dist/wtt-${target.replace("bun-", "")}.exe`;
+  } else {
+    await $`tar -czf dist/wtt-${target.replace("bun-", "")}.tar.gz dist/wtt-${target.replace("bun-", "")}`;
   }
 }
