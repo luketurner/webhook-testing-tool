@@ -1,7 +1,5 @@
 import "@/server-only";
 
-export const name = "add_better_auth_tables";
-
 export const up = `
 create table "user" (
   "id" text not null primary key, 
