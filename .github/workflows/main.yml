@@ -1,0 +1,17 @@
+name: publish-release
+run-name: Publish Release
+on:
+  push:
+    branches: ["main"]
+jobs:
+  release:
+    runs-on: debian-latest
+    steps:
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: "bun ci"
+      - run: "bun run build"
+      - run: "bun run release"
+        env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
