@@ -2,6 +2,7 @@
  * Builds production-ready, single-file executables in ./dist
  */
 import { $ } from "bun";
+import { rm } from "fs/promises";
 
 const targets = [
   "bun-linux-x64",
@@ -14,6 +15,7 @@ const targets = [
 ];
 
 await $`bun run tailwind -- -m -i ./src/dashboard/index.css -o ./src/dashboard/index.compiled.css`;
+await rm("dist", { recursive: true });
 
 for (const target of targets) {
   buildTarget(target);
