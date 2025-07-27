@@ -87,6 +87,7 @@ bun run build
 
 # Publish a new release
 bun pm version [increment]
+git push origin tag [tag]
 ```
 
 ## Development with Claude Code
