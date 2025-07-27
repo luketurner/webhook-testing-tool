@@ -3,6 +3,7 @@ import { startDashboardServer } from "./dashboard/server";
 import { migrateDb } from "./db";
 import { startWebhookServer } from "./webhook-server";
 import { initializeAdminUser } from "./auth/init-user";
+import { startTcpServer } from "./tcp-server";
 import {
   DB_FILE,
   ADMIN_PORT,
@@ -12,6 +13,7 @@ import {
   WEBHOOK_SSL_KEY_PATH,
   WEBHOOK_SSL_PORT,
   ACME_ENABLED,
+  TCP_PORT,
 } from "@/config";
 import { acmeManager } from "@/acme-manager";
 
@@ -79,3 +81,6 @@ if (ACME_ENABLED && WEBHOOK_SSL_ENABLED) {
     }
   }, 60 * 1000); // Check after 1 minute to allow server to fully start
 }
+
+// Start TCP server
+startTcpServer(TCP_PORT);

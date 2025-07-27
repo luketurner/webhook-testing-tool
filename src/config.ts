@@ -54,3 +54,6 @@ export const ACME_DIRECTORY_URL =
 export const ACME_CERT_PATH =
   process.env.WTT_ACME_CERT_PATH || "local/acme-certs";
 export const ACME_STAGING = process.env.WTT_ACME_STAGING === "true";
+
+// TCP Server Configuration
+export const TCP_PORT = parseInt(process.env.WTT_TCP_PORT || "3002", 10);
