@@ -7,15 +7,17 @@ import packageJson from "../package.json";
 
 const tag = `v${packageJson.version}`;
 
+console.log(`Creating release for ${tag}...`);
+
 // check if the release already exists
 const releaseCheck = await $`gh release view ${tag}`.nothrow();
 if (!releaseCheck.text().includes("release not found")) {
   if (releaseCheck.exitCode === 1) {
-    // Unknown error
+    console.error("unknown error:");
     console.error(releaseCheck.text());
     process.exit(1);
   }
-  // Release already exists
+  console.log("Release already exists!");
   process.exit(0);
 }
 
