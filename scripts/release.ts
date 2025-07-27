@@ -19,5 +19,5 @@ if (!releaseCheck.text().includes("release not found")) {
   process.exit(0);
 }
 
-// release doesn't exist
-await $`gh release create ${tag} --verify-tag --notes-file CHANGELOG.md -- dist/wtt-*`;
+// release doesn't exist -- create it!
+await $`gh release create ${tag} --verify-tag --notes-file CHANGELOG.md -- dist/*.tar.gz dist/*.zip`;
