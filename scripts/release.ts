@@ -3,6 +3,7 @@
  */
 
 import { $ } from "bun";
-import packageJson from "../package.json";
 
-await $`gh release create v${packageJson.version} --verify-tag --notes-file CHANGELOG.md -- dist/*`;
+const tag = $`git describe --exact-match --tags HEAD 2>/dev/null`;
+
+await $`gh release create ${tag} --verify-tag --notes-file CHANGELOG.md -- dist/*`;
