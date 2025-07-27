@@ -15,7 +15,7 @@ const targets = [
 ];
 
 await $`bun run tailwind -- -m -i ./src/dashboard/index.css -o ./src/dashboard/index.compiled.css`;
-await rm("dist", { recursive: true });
+await rm("dist", { recursive: true, force: true });
 
 for (const target of targets) {
   await buildTarget(target);
