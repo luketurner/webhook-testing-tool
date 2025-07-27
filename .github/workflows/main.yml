@@ -5,7 +5,7 @@ on:
     branches: ["main"]
 jobs:
   release:
-    runs-on: debian-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: oven-sh/setup-bun@v2
         with:
@@ -14,4 +14,4 @@ jobs:
       - run: "bun run build"
       - run: "bun run release"
         env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
