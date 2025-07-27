@@ -79,6 +79,16 @@ bun run test
 
 View the UI at http://localhost:3001/ (login with user `admin@example.com` / password `admin123` for local development)
 
+Some other useful commands:
+
+```bash
+# production build
+bun run build
+
+# Publish a new release
+bun pm version [increment]
+```
+
 ## Development with Claude Code
 
 This project is designed to be developed in tandem with Claude Code using the following steps:
