@@ -43,14 +43,16 @@ swap_size_mb = 512
     port = 80
 
 # Webhook server (HTTPS)
+# If using TLS termination via Fly instead of WTT:
+#   1. Set internal_port = 3080
+#   2. Set handlers = ["tls", "http"]
 [[services]]
-  # TODO -- TLS termination in the app -- then switch this to 3443
-  internal_port = 3080
+  internal_port = 3443
   protocol = "tcp"
   auto_stop_machines = "stop"
   auto_start_machines = true
   min_machines_running = 0
   
   [[services.ports]]
-    handlers = ["tls", "http"]
+    handlers = ["http"]
     port = 443
