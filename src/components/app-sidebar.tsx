@@ -74,6 +74,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     [searchParams, setSearchParams],
   );
 
+  const handleTestTcpConnection = React.useCallback(async () => {
+    try {
+      const response = await fetch("/api/tcp-connections/test", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+    } catch (error) {
+      console.error("TCP test connection error:", error);
+    }
+  }, []);
+
   const handleSignOut = React.useCallback(async () => {
     try {
       const response = await fetch("/api/auth/sign-out", {
@@ -198,6 +213,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         onSelect={() => setShowJWTInspector(true)}
                       >
                         JWT Inspector
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={handleTestTcpConnection}>
+                        Test TCP connection
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
