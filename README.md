@@ -35,7 +35,7 @@ How it works:
 - Datetime inspector that displays timestamps in multiple formats and timezones.
 - Copy requests as cURL or Fetch.
 - Share requests (generates a public URL that anyone can use to see a read-only view of the request and response).
-- Accepts arbitrary TCP connections, allows viewing the data that was sent both ways over
+- Accepts arbitrary TCP connections, allows viewing the data that was sent both ways over the connection.
 
 ## Limitations
 
