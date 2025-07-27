@@ -20,4 +20,4 @@ if (!releaseCheck.text().includes("release not found")) {
 }
 
 // release doesn't exist -- create it!
-await $`gh release create ${tag} --verify-tag --notes-file CHANGELOG.md -- dist/*.tar.gz dist/*.zip`;
+await $`gh release create ${tag} --verify-tag --notes-file CHANGELOG.md -- dist/*.tar.gz dist/*.exe`;
