@@ -7,7 +7,11 @@ export type ResourceFetcherAction =
 
 export type Resource = Record<string, any>;
 
-export type ResourceType = "requests" | "handlers" | "handler-executions";
+export type ResourceType =
+  | "requests"
+  | "handlers"
+  | "handler-executions"
+  | "tcp-connections";
 
 export interface ResourceFetcherOptions {
   action: ResourceFetcherAction;

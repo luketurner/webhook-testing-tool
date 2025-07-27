@@ -7,6 +7,7 @@ import { clearHandlerExecutions } from "@/handler-executions/model";
 import { clearRequestEvents } from "@/request-events/model";
 import { clearHandlers } from "@/handlers/model";
 import { updateSharedState } from "@/shared-state/model";
+import { clearTcpConnections } from "@/tcp-connections/model";
 
 export const db = new Database(DB_FILE, { create: true, strict: true });
 
@@ -86,4 +87,5 @@ export const resetDb = () => {
   clearHandlerExecutions();
   clearRequestEvents();
   clearHandlers();
+  clearTcpConnections();
 };

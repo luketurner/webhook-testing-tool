@@ -1,6 +1,14 @@
 import { cn } from "@/util/ui";
 
-type Status = "complete" | "success" | "error" | "running" | "pending";
+type Status =
+  | "complete"
+  | "success"
+  | "error"
+  | "running"
+  | "pending"
+  | "active"
+  | "closed"
+  | "failed";
 
 interface StatusBadgeProps {
   status: Status;
@@ -13,6 +21,9 @@ const statusStyles: Record<Status, string> = {
   error: "bg-red-100 text-red-800",
   running: "bg-yellow-100 text-yellow-800",
   pending: "bg-gray-100 text-gray-800",
+  active: "bg-blue-100 text-blue-800",
+  closed: "bg-gray-100 text-gray-800",
+  failed: "bg-red-100 text-red-800",
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
