@@ -70,7 +70,6 @@ const runMigrations = db.transaction((migrations: MigrationDefn[]) => {
   const existingMigrations = new Set(
     getExistingMigrations().map((s) => s.name),
   );
-  console.log(Array.from(existingMigrations));
   for (const migration of migrations) {
     console.write(`Running ${migration.name.substring(0, 30).padEnd(30)} `);
     const stmts = migration.up;
