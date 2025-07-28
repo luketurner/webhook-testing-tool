@@ -5,7 +5,7 @@ swap_size_mb = 512
 [build]
 
 [env]
-  WTT_DB_FILE = '/data/data.sqlite'
+  WTT_DATA_DIR = '/data'
   WTT_EXCLUDE_HEADERS = 'x-request-start,fly-client-ip,x-forwarded-for,fly-forwarded-proto,x-forwarded-proto,fly-forwarded-ssl,x-forwarded-ssl,fly-forwarded-port,x-forwarded-port,fly-region,fly-request-id,fly-tracestate,fly-traceparent,via'
   WTT_ADMIN_PORT = '3000'
   WTT_WEBHOOK_PORT = '3080'
