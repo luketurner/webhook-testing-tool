@@ -18,7 +18,7 @@
 - **One binary, multiple servers**: `wtt` can run an HTTP server, HTTPS server, TCP server, and dashboard server all from a single executable.
 - **Configured with environment variables**: `wtt` is exclusively configured via environment variables. See [Configration](#configuration) section for details.
 - **Single-user login**: The `wtt` dashboard supports email/password authentication. The admin user's email and password are configured via environment variables.
-- **HTTPS support with Let's Encrypt**: `wtt` supports built-in TLS termination using either self-signed certificates or Let's Encrypt certificates via the `http-01` ACME challenge. Admin dashboard does not support TLS termination. (Work in progress)
+- **HTTPS support with Let's Encrypt**: `wtt` supports built-in TLS termination using either self-signed certificates or Let's Encrypt certificates via the `http-01` ACME challenge. (Let's Encrypt support is WIP)
 
 ## Features
 
@@ -149,11 +149,14 @@ Then you can open the admin dashboard at `https://$APP_NAME.fly.dev:8000/`, and 
 
 ### Self-Signed Certificates (Default)
 
-By default, `wtt` uses self-signed certificates for HTTPS. Just set `WTT_WEBHOOK_SSL_ENABLED`, no additional configuration needed:
+By default, `wtt` uses self-signed certificates for HTTPS. Just set `WTT_WEBHOOK_SSL_ENABLED` and/or `WTT_DASHBOARD_SSL_ENABLED`, no additional configuration needed:
 
 ```bash
-# Enable SSL w/self-signed cert
+# Enable HTTPS w/self-signed cert for webhook server
 export WTT_WEBHOOK_SSL_ENABLED=true
+
+# Enable HTTPS w/self-signed cert for admin dashboard server
+export WTT_DASHBOARD_SSL_ENABLED=true
 ```
 
 `wtt` will automatically generate a new self-signed cert on startup (requires `openssl` to be installed), or use an existing cert if already created.
