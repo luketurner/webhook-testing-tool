@@ -1,7 +1,7 @@
 ---
 id: task-26
 title: Improve directory management for single-file executable mode
-status: To Do
+status: Done
 assignee: []
 created_date: '2025-07-27'
 labels: []
