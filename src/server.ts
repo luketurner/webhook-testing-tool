@@ -27,7 +27,7 @@ await initializeAdminUser();
 
 // generate a self-signed cert if necessary
 if ((WEBHOOK_SSL_ENABLED && !ACME_ENABLED) || DASHBOARD_SSL_ENABLED) {
-  await assertGeneratedSelfSignedCert();
+  await assertGeneratedSelfSignedCert(SSL_CERT_PATH, SSL_KEY_PATH);
 }
 
 await startDashboardServer();

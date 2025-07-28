@@ -10,32 +10,17 @@ import {
 import { migrateDb, resetDb } from "./db";
 import { startWebhookServer } from "./webhook-server";
 import { beforeAll, afterAll, afterEach } from "bun:test";
-import { existsSync } from "fs";
 import { $ } from "bun";
 import http from "http";
 import https from "https";
+import { assertGeneratedSelfSignedCert } from "./util/generate-cert";
 
 let server: http.Server;
 let httpsServer: https.Server;
 
 beforeAll(async () => {
   await migrateDb();
-  // Create test certificates directory
-  try {
-    await $`mkdir -p ${TEST_TEMP_DIR}`;
-
-    // Generate test self-signed certificate
-    await $`openssl req -x509 -newkey rsa:2048 -keyout ${TEST_KEY_PATH} -out ${TEST_CERT_PATH} -days 1 -nodes -subj "/C=US/ST=Test/L=Test/O=Test/CN=localhost"`;
-
-    // Verify certificates were created
-    if (!existsSync(TEST_CERT_PATH) || !existsSync(TEST_KEY_PATH)) {
-      throw new Error("Test certificates were not created");
-    }
-  } catch (err) {
-    console.error("Failed to generate test certificates:", err);
-    throw err;
-  }
-
+  await assertGeneratedSelfSignedCert(TEST_CERT_PATH, TEST_KEY_PATH);
   ({ server, httpsServer } = await startWebhookServer({
     port: TEST_PORT,
     ssl: {
