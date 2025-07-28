@@ -31,7 +31,7 @@ async function buildTarget(target: string) {
     // since zip doesn't have a --transform equivalent, just use a subdirectory and rename
     await mkdir(`${outdir}/${filename}`);
     await $`cp ${filename}.exe ${filename}/wtt.exe`.cwd(outdir);
-    await $`zip -9 ../${filename}.zip ${filename}.exe`.cwd(
+    await $`zip -9 ../${filename}.zip wtt.exe`.cwd(
       `${outdir}/${filename}`,
     );
     await rm(`${outdir}/${filename}`, { recursive: true });
