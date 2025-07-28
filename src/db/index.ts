@@ -74,12 +74,11 @@ const runMigrations = db.transaction((migrations: MigrationDefn[]) => {
     getExistingMigrations().map((s) => s.name),
   );
   for (const migration of migrations) {
-    console.write(`Running ${migration.name.substring(0, 30).padEnd(30)} `);
     const stmts = migration.up;
     if (existingMigrations.has(migration.name) || !stmts) {
-      console.log("✔");
       continue;
     }
+    console.write(`Running ${migration.name.substring(0, 30).padEnd(30)} `);
     try {
       db.run(stmts);
       db.run(`INSERT INTO migrations (name) VALUES (?)`, [migration.name]);
