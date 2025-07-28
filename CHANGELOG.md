@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.2.0 (2025-07-28)
+
+- Reworked how certificates are generated. `wtt` now creates them automatically if the appropriate environment variables are set -- no longer requires running a separate bash script.
+- Add `WTT_DASHBOARD_SSL_ENABLED` for enabling HTTPS for the admin dashboard with self-signed cert.
+- Rename `WTT_WEBHOOK_SSL_CERT_PATH` to `WTT_SSL_CERT_PATH` and `WTT_WEBHOOK_SSL_KEY_PATH` to `WTT_SSL_KEY_PATH` to indicate these are not specific to the webhook server anymore.
+- Executable names in compressed release files no longer include target (e.g. just `wtt` instead of `wtt-linux-x64`).
+
+---
+
 ## 2.1.1 (2025-07-27)
 
 - Compressed release files no longer include a spurious `dist/` directory.
