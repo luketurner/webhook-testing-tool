@@ -26,7 +26,8 @@ RUN apt update && apt install -y less \
   vim \
   asciinema \
   locales \
-  visidata
+  visidata \
+  zip
 
 # Fix weird locale error? From https://stackoverflow.com/a/55077451
 RUN echo "LC_ALL=en_US.UTF-8" >> /etc/environment
