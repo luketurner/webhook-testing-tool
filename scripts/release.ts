@@ -4,6 +4,7 @@
 
 import { $ } from "bun";
 import packageJson from "../package.json";
+import { readFile } from "fs/promises";
 
 const tag = `v${packageJson.version}`;
 
@@ -22,5 +23,7 @@ if (!stderr.includes("release not found")) {
   process.exit(0);
 }
 
+const notes = (await readFile("CHANGELOG.md", "utf-8")).split("\n---\n")[0];
+
 // release doesn't exist -- create it!
-await $`gh release create ${tag} --verify-tag --notes-file CHANGELOG.md -- dist/*.tar.gz dist/*.zip`;
+await $`gh release create ${tag} --verify-tag --notes ${notes} -- dist/*.tar.gz dist/*.zip`;
