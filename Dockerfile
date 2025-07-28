@@ -16,4 +16,4 @@ RUN bun run build
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD [ "bun", "run", "start" ]
+CMD [ "dist/wtt-linux-x64" ]
