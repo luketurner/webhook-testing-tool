@@ -1,4 +1,6 @@
 import "@/server-only";
+import { mkdir } from "fs/promises";
+import { join } from "path";
 
 export const NODE_ENV = process.env.NODE_ENV;
 export const DEV = NODE_ENV === "development";
@@ -8,9 +10,11 @@ export const TEST = NODE_ENV === "test";
 export const ADMIN_USERNAME =
   process.env.WTT_ADMIN_USERNAME || "admin@example.com";
 
+export const DATA_DIR = process.env.WTT_DATA_DIR || "data";
+
 export const DB_FILE = TEST
   ? ":memory:"
-  : process.env.WTT_DB_FILE || "local/data.sqlite";
+  : process.env.WTT_DB_FILE || join(DATA_DIR, "data.sqlite");
 
 if (!process.env.WTT_ADMIN_PASSWORD && PROD)
   throw new Error("Must specify WTT_ADMIN_PASSWORD");
@@ -38,9 +42,9 @@ export const WEBHOOK_SSL_PORT = parseInt(
   10,
 );
 export const WEBHOOK_SSL_CERT_PATH =
-  process.env.WTT_WEBHOOK_SSL_CERT_PATH || "certs/cert.pem";
+  process.env.WTT_WEBHOOK_SSL_CERT_PATH || join(DATA_DIR, "certs/cert.pem");
 export const WEBHOOK_SSL_KEY_PATH =
-  process.env.WTT_WEBHOOK_SSL_KEY_PATH || "certs/key.pem";
+  process.env.WTT_WEBHOOK_SSL_KEY_PATH || join(DATA_DIR, "certs/key.pem");
 
 // ACME/Let's Encrypt Configuration
 export const ACME_ENABLED = process.env.WTT_ACME_ENABLED === "true";
@@ -52,7 +56,7 @@ export const ACME_DIRECTORY_URL =
   process.env.WTT_ACME_DIRECTORY ||
   "https://acme-v02.api.letsencrypt.org/directory";
 export const ACME_CERT_PATH =
-  process.env.WTT_ACME_CERT_PATH || "local/acme-certs";
+  process.env.WTT_ACME_CERT_PATH || join(DATA_DIR, "acme-certs");
 export const ACME_STAGING = process.env.WTT_ACME_STAGING === "true";
 
 // TCP Server Configuration

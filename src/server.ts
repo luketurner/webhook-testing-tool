@@ -1,9 +1,5 @@
 import "@/server-only";
-import { startDashboardServer } from "./dashboard/server";
-import { migrateDb } from "./db";
-import { startWebhookServer } from "./webhook-server";
-import { initializeAdminUser } from "./auth/init-user";
-import { startTcpServer } from "./tcp-server";
+import { mkdir } from "fs/promises";
 import {
   DB_FILE,
   ADMIN_PORT,
@@ -14,7 +10,13 @@ import {
   WEBHOOK_SSL_PORT,
   ACME_ENABLED,
   TCP_PORT,
+  DATA_DIR,
 } from "@/config";
+import { startDashboardServer } from "./dashboard/server";
+import { migrateDb } from "./db";
+import { startWebhookServer } from "./webhook-server";
+import { initializeAdminUser } from "./auth/init-user";
+import { startTcpServer } from "./tcp-server";
 import { acmeManager } from "@/acme-manager";
 
 console.log(`Using database: ${DB_FILE}`);

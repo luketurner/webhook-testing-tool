@@ -8,3 +8,4 @@ NOTES.md
 .claude/settings.local.json
 dist
 *.compiled.css
+data/

@@ -50,7 +50,8 @@
 | Variable | Default value | Notes |
 |-|-|-|
 | `NODE_ENV` | N/A | Set to `development` to enable development mode. |
-| `WTT_DB_FILE` | `"local/data.sqlite"` | Path to the SQLite database to use. Database will be created if it does not already exist. |
+| `WTT_DATA_DIR` | `"data"` | Path to the data directory. By default, all files (databases, certs, etc.) will be stored in this directory, although file locations can be overridden more granularly with other variables. |
+| `WTT_DB_FILE` | `"$WTT_DATA_DIR/data.sqlite"` | Path to the SQLite database to use. Database will be created if it does not already exist. |
 | `WTT_ADMIN_USERNAME` | `"admin@example.com"` | Configures the username for logging in to the admin dashboard. |
 | `WTT_ADMIN_PASSWORD` | `"admin123"` | Configures the password for logging in to the admin dashboard. STRONGLY recommend to override the default value. |
 | `WTT_EXCLUDE_HEADERS` | `""` | Comma-separated list of headers to exclude from logging for incoming HTTP requests. Used to e.g. remove headers added by a cloud reverse proxy. |
@@ -59,13 +60,13 @@
 | `WTT_TCP_PORT` | `"3002"` | Port used for the raw TCP (non-TLS-terminating) server. |
 | `WTT_WEBHOOK_SSL_ENABLED` | `"false"` | Set to `"true"` to enable the HTTPS (TLS-terminating) webhook server. |
 | `WTT_WEBHOOK_SSL_PORT` | `"3443"` | Port used for the HTTPS server. |
-| `WTT_WEBHOOK_SSL_CERT_PATH` | `"certs/cert.pem"` | Path to the SSL/TLS certificate to use for the HTTPS webhook server if not using ACME/Let's Encrypt. |
-| `WTT_WEBHOOK_SSL_KEY_PATH` | `"certs/key.pem"` | Path to the SSL/TLS private key to use for the HTTPS webhook server if not using ACME/Let's Encrypt. |
+| `WTT_WEBHOOK_SSL_CERT_PATH` | `"$WTT_DATA_DIR/certs/cert.pem"` | Path to the SSL/TLS certificate to use for the HTTPS webhook server if not using ACME/Let's Encrypt. |
+| `WTT_WEBHOOK_SSL_KEY_PATH` | `"$WTT_DATA_DIR/certs/key.pem"` | Path to the SSL/TLS private key to use for the HTTPS webhook server if not using ACME/Let's Encrypt. |
 | `WTT_ACME_ENABLED` | `"false"` | Set to `"true"` to enable certificate retrieval via ACME/Let's Encrypt. |
 | `WTT_ACME_DOMAINS` | `""` | Comma-separated list of domains to request certificates for ACME/Let's Encrypt. |
 | `WTT_ACME_EMAIL` | `""` | Contact email for ACME/Let's Encrypt. |
 | `WTT_ACME_DIRECTORY` | `"https://acme-v02.api.letsencrypt.org/directory"` | Directory URL for ACME/Let's Encrypt. |
-| `WTT_ACME_CERT_PATH` | `"local/acme-certs"` | Local directory that ACME certificates will be stored in. |
+| `WTT_ACME_CERT_PATH` | `"$WTT_DATA_DIR/acme-certs"` | Local directory that ACME certificates will be stored in. |
 | `WTT_ACME_STAGING` | `"false"` | Whether the ACME directory is a staging environment. |
 
 ## Handlers
