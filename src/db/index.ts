@@ -6,6 +6,8 @@ import { clearRequestEvents } from "@/request-events/model";
 import { clearHandlers } from "@/handlers/model";
 import { updateSharedState } from "@/shared-state/model";
 import { clearTcpConnections } from "@/tcp-connections/model";
+import { mkdir } from "fs/promises";
+import { dirname } from "path";
 
 // Import all migrations statically
 // We need to do this because `bun build` does not yet support resolving dynamic imports that can't be statically analyzed
@@ -36,6 +38,7 @@ const migrations: MigrationDefn[] = [
   { name: "1751905200000_add_tcp_connections_table", ...migration11 },
 ];
 
+await mkdir(dirname(DB_FILE), { recursive: true });
 export const db = new Database(DB_FILE, { create: true, strict: true });
 
 // Enable WAL mode for better performance
