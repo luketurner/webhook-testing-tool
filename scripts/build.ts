@@ -2,6 +2,7 @@
  * Builds production-ready, single-file executables in ./dist
  */
 import { $ } from "bun";
+import { mkdir } from "fs/promises";
 import { rm } from "fs/promises";
 
 const outdir = "dist";
@@ -27,8 +28,16 @@ async function buildTarget(target: string) {
   await $`bun build --define RELEASE=true --compile --minify --sourcemap src/server.ts --outfile ${outdir}/${filename} --target ${target}`;
   if (target === "bun-windows-x64") {
     await $`chmod u+r ${filename}.exe`.cwd(outdir);
-    await $`zip -9 ${filename}.zip ${filename}.exe`.cwd(outdir);
+    // since zip doesn't have a --transform equivalent, just use a subdirectory and rename
+    await mkdir(`${outdir}/${filename}`);
+    await $`cp ${filename}.exe ${filename}/wtt.exe`.cwd(outdir);
+    await $`zip -9 ../${filename}.zip ${filename}.exe`.cwd(
+      `${outdir}/${filename}`,
+    );
+    await rm(`${outdir}/${filename}`, { recursive: true });
   } else {
-    await $`tar -czf ${filename}.tar.gz ${filename}`.cwd(outdir);
+    await $`tar -czf ${filename}.tar.gz --transform='s/${filename}/wtt/' ${filename}`.cwd(
+      outdir,
+    );
   }
 }
