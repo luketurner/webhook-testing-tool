@@ -14,6 +14,7 @@ jobs:
           bun-version: latest
       - uses: actions/checkout@v4
       - run: "bun ci"
+      - run: "bun test"
       - run: "bun run build"
       - run: "bun run release"
         env:
