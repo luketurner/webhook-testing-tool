@@ -19,9 +19,7 @@ const targets = [
 await $`bun run tailwind -- -m -i ./src/dashboard/index.css -o ./src/dashboard/index.compiled.css`;
 await rm(outdir, { recursive: true, force: true });
 
-for (const target of targets) {
-  await buildTarget(target);
-}
+await Promise.all(targets.map(buildTarget));
 
 async function buildTarget(target: string) {
   const filename = `wtt-${target.replace("bun-", "")}`;
