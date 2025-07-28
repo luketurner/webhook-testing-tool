@@ -1,16 +1,15 @@
 import "@/server-only";
-import { mkdir } from "fs/promises";
 import {
   DB_FILE,
   ADMIN_PORT,
   WEBHOOK_PORT,
-  WEBHOOK_SSL_CERT_PATH,
+  SSL_CERT_PATH,
   WEBHOOK_SSL_ENABLED,
-  WEBHOOK_SSL_KEY_PATH,
+  SSL_KEY_PATH,
   WEBHOOK_SSL_PORT,
   ACME_ENABLED,
   TCP_PORT,
-  DATA_DIR,
+  DASHBOARD_SSL_ENABLED,
 } from "@/config";
 import { startDashboardServer } from "./dashboard/server";
 import { migrateDb } from "./db";
@@ -27,7 +26,7 @@ await migrateDb();
 await initializeAdminUser();
 
 // generate a self-signed cert if necessary
-if (WEBHOOK_SSL_ENABLED && !ACME_ENABLED) {
+if ((WEBHOOK_SSL_ENABLED && !ACME_ENABLED) || DASHBOARD_SSL_ENABLED) {
   await assertGeneratedSelfSignedCert();
 }
 
@@ -38,8 +37,8 @@ const webhookServer = await startWebhookServer({
   port: WEBHOOK_PORT,
   ssl: {
     enabled: WEBHOOK_SSL_ENABLED,
-    certPath: WEBHOOK_SSL_CERT_PATH,
-    keyPath: WEBHOOK_SSL_KEY_PATH,
+    certPath: SSL_CERT_PATH,
+    keyPath: SSL_KEY_PATH,
     port: WEBHOOK_SSL_PORT,
   },
 });

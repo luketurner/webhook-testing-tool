@@ -16,6 +16,9 @@ import {
   WEBHOOK_PORT,
   WEBHOOK_SSL_PORT,
   WEBHOOK_SSL_ENABLED,
+  DASHBOARD_SSL_ENABLED,
+  SSL_CERT_PATH,
+  SSL_KEY_PATH,
 } from "@/config";
 import indexPage from "./index.html";
 import { readFileSync, existsSync, readdirSync } from "fs";
@@ -29,6 +32,13 @@ export const startDashboardServer = () =>
       hmr: true,
       console: true,
     },
+
+    tls: DASHBOARD_SSL_ENABLED
+      ? {
+          key: Bun.file(SSL_KEY_PATH),
+          cert: Bun.file(SSL_CERT_PATH),
+        }
+      : undefined,
 
     routes: {
       // page routes

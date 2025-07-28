@@ -41,10 +41,12 @@ export const WEBHOOK_SSL_PORT = parseInt(
   process.env.WTT_WEBHOOK_SSL_PORT || "3443",
   10,
 );
-export const WEBHOOK_SSL_CERT_PATH =
-  process.env.WTT_WEBHOOK_SSL_CERT_PATH || join(DATA_DIR, "certs/cert.pem");
-export const WEBHOOK_SSL_KEY_PATH =
-  process.env.WTT_WEBHOOK_SSL_KEY_PATH || join(DATA_DIR, "certs/key.pem");
+export const SSL_CERT_PATH =
+  process.env.WTT_SSL_CERT_PATH || join(DATA_DIR, "certs/cert.pem");
+export const SSL_KEY_PATH =
+  process.env.WTT_SSL_KEY_PATH || join(DATA_DIR, "certs/key.pem");
+export const DASHBOARD_SSL_ENABLED =
+  process.env.WTT_DASHBOARD_SSL_ENABLED === "true";
 
 // ACME/Let's Encrypt Configuration
 export const ACME_ENABLED = process.env.WTT_ACME_ENABLED === "true";

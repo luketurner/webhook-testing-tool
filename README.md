@@ -58,10 +58,11 @@
 | `WTT_ADMIN_PORT` | `"3001"` | Port used for the admin dashboard Web UI. |
 | `WTT_WEBHOOK_PORT` | `"3000"` | Port used for the HTTP (non-TLS-terminating) webhook server. |
 | `WTT_TCP_PORT` | `"3002"` | Port used for the raw TCP (non-TLS-terminating) server. |
+| `WTT_DASHBOARD_SSL_ENABLED` | `"false"` | Set to `"true"` to enable (and require) HTTPS (TLS termination) for the dashboard server. Note the dashboard server currently only supports using self-signed (or BYO) certificates. |
 | `WTT_WEBHOOK_SSL_ENABLED` | `"false"` | Set to `"true"` to enable the HTTPS (TLS-terminating) webhook server. |
 | `WTT_WEBHOOK_SSL_PORT` | `"3443"` | Port used for the HTTPS server. |
-| `WTT_WEBHOOK_SSL_CERT_PATH` | `"$WTT_DATA_DIR/certs/cert.pem"` | Path to the SSL/TLS certificate to use for the HTTPS webhook server if not using ACME/Let's Encrypt. |
-| `WTT_WEBHOOK_SSL_KEY_PATH` | `"$WTT_DATA_DIR/certs/key.pem"` | Path to the SSL/TLS private key to use for the HTTPS webhook server if not using ACME/Let's Encrypt. |
+| `WTT_SSL_CERT_PATH` | `"$WTT_DATA_DIR/certs/cert.pem"` | Path to the SSL/TLS certificate to use for HTTPS if not using ACME/Let's Encrypt. |
+| `WTT_SSL_KEY_PATH` | `"$WTT_DATA_DIR/certs/key.pem"` | Path to the SSL/TLS private key to use for HTTPS if not using ACME/Let's Encrypt. |
 | `WTT_ACME_ENABLED` | `"false"` | Set to `"true"` to enable certificate retrieval via ACME/Let's Encrypt. |
 | `WTT_ACME_DOMAINS` | `""` | Comma-separated list of domains to request certificates for ACME/Let's Encrypt. |
 | `WTT_ACME_EMAIL` | `""` | Contact email for ACME/Let's Encrypt. |
