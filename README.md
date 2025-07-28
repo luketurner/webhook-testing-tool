@@ -148,16 +148,14 @@ Then you can open the admin dashboard at `https://$APP_NAME.fly.dev:8000/`, and 
 
 ### Self-Signed Certificates (Default)
 
-By default, `wtt` uses self-signed certificates located in the `certs/` directory. To enable HTTPS:
+By default, `wtt` uses self-signed certificates for HTTPS. Just set `WTT_WEBHOOK_SSL_ENABLED`, no additional configuration needed:
 
 ```bash
-# Generate certificates (if not already present)
-./certs/generate-cert.sh
-
-# Set environment variables
+# Enable SSL w/self-signed cert
 export WTT_WEBHOOK_SSL_ENABLED=true
-export WTT_WEBHOOK_SSL_PORT=3443  # Default HTTPS port
 ```
+
+`wtt` will automatically generate a new self-signed cert on startup (requires `openssl` to be installed), or use an existing cert if already created.
 
 ### Let's Encrypt Certificates (ACME)
 

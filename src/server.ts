@@ -18,12 +18,18 @@ import { startWebhookServer } from "./webhook-server";
 import { initializeAdminUser } from "./auth/init-user";
 import { startTcpServer } from "./tcp-server";
 import { acmeManager } from "@/acme-manager";
+import { assertGeneratedSelfSignedCert } from "./util/generate-cert";
 
 console.log(`Using database: ${DB_FILE}`);
 await migrateDb();
 
 // Initialize admin user after database migration
 await initializeAdminUser();
+
+// generate a self-signed cert if necessary
+if (WEBHOOK_SSL_ENABLED && !ACME_ENABLED) {
+  await assertGeneratedSelfSignedCert();
+}
 
 await startDashboardServer();
 console.log(`Admin server listening on port ${ADMIN_PORT}`);
