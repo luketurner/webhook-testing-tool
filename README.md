@@ -98,9 +98,6 @@ Requirements:
 # install dependencies
 bun install
 
-# create local folder for db
-mkdir local
-
 # run the server
 bun run dev
 
@@ -184,15 +181,6 @@ export WTT_ACME_STAGING=true
 ```
 
 **ACME Requirements:**
+
 - Your domain must point to your `wtt` instance
 - Port 80 must be accessible for HTTP-01 challenges
-- Certificates are stored in `local/acme-certs/` and persist across restarts
-- Certificates are automatically renewed 30 days before expiration
-
-**ACME Environment Variables:**
-- `WTT_ACME_ENABLED`: Enable ACME certificate provisioning
-- `WTT_ACME_DOMAINS`: Comma-separated list of domains
-- `WTT_ACME_EMAIL`: Contact email for Let's Encrypt
-- `WTT_ACME_STAGING`: Use Let's Encrypt staging environment (for testing)
-- `WTT_ACME_DIRECTORY`: Custom ACME directory URL (defaults to Let's Encrypt production)
-- `WTT_ACME_CERT_PATH`: Certificate storage path (defaults to `local/acme-certs`)
