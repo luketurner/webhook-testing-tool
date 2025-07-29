@@ -29,7 +29,11 @@ if (targets.includes(process.argv[2])) {
 async function buildTarget(target: string) {
   const filename = `wtt-${target.replace("bun-", "")}`;
   console.log(`Building ${target} into ${outdir}/${filename}...`);
-  await $`bun build --define RELEASE=true --env=disable --compile --minify --sourcemap src/server.ts --outfile ${outdir}/${filename} --target ${target}`;
+  await $`bun build --define RELEASE=true --compile --minify --sourcemap src/server.ts --outfile ${outdir}/${filename} --target ${target}`.env(
+    {
+      NODE_ENV: "production",
+    },
+  );
   if (target === "bun-windows-x64") {
     await $`chmod u+r ${filename}.exe`.cwd(outdir);
     // since zip doesn't have a --transform equivalent, just use a subdirectory and rename

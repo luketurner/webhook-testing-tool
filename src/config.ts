@@ -2,7 +2,7 @@ import "@/server-only";
 import { join } from "path";
 
 export const NODE_ENV = process.env.NODE_ENV;
-export const DEV = NODE_ENV === "development" && !RELEASE;
+export const DEV = NODE_ENV === "development";
 export const PROD = NODE_ENV === "production";
 export const TEST = NODE_ENV === "test";
 
