@@ -1,14 +1,15 @@
 import "@/server-only";
-import { mkdir } from "fs/promises";
 import { join } from "path";
 
 export const NODE_ENV = process.env.NODE_ENV;
-export const DEV = NODE_ENV === "development";
+export const DEV = NODE_ENV === "development" && !RELEASE;
 export const PROD = NODE_ENV === "production";
 export const TEST = NODE_ENV === "test";
 
 if (!process.env.BETTER_AUTH_SECRET && PROD)
-  console.warn("WARNING: Using default BETTER_AUTH_SECRET. You should set this to a secret value.");
+  throw new Error(
+    "Using default BETTER_AUTH_SECRET, which is prohibited in production mode. You should set this to a secret value.",
+  );
 
 export const ADMIN_USERNAME =
   process.env.WTT_ADMIN_USERNAME || "admin@example.com";
@@ -20,7 +21,9 @@ export const DB_FILE = TEST
   : process.env.WTT_DB_FILE || join(DATA_DIR, "data.sqlite");
 
 if (!process.env.WTT_ADMIN_PASSWORD && PROD)
-  console.warn("WARNING: Using default password for admin dashboard. You should set WTT_ADMIN_PASSWORD to a secret value.");
+  throw new Error(
+    "Using default password for admin dashboard, which is prohibited in production mode. You should set WTT_ADMIN_PASSWORD to a secret value.",
+  );
 export const ADMIN_PASSWORD = process.env.WTT_ADMIN_PASSWORD || "admin123";
 
 export const WEBHOOK_PORT = parseInt(

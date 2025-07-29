@@ -1,6 +1,7 @@
 # syntax = docker/dockerfile:1
 FROM alpine:latest
 WORKDIR /app
+ENV NODE_ENV="production"
 
 # Download latest `wtt` release
 RUN VERSION=$(curl -s "https://api.github.com/repos/luketurner/webhook-testing-tool/releases/latest" | \grep -Po '"tag_name": *"v\K[^"]*') && \

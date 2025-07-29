@@ -86,6 +86,12 @@ export WTT_ADMIN_PASSWORD="$(openssl rand -base64 32)"
 export BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
 ```
 
+You can cause `wtt` to throw an error if `WTT_ADMIN_PASSWORD` or `BETTER_AUTH_SECRET` is not set by setting `NODE_ENV` to `production`. This should be set for any public-facing deployment context:
+
+```bash
+export NODE_ENV=production
+```
+
 ### Windows
 
 1. Download the Windows build from the [latest release](https://github.com/luketurner/webhook-testing-tool/releases/latest).
@@ -102,7 +108,7 @@ See the [example Dockerfile](./example.Dockerfile).
 
 | Variable | Default value | Notes |
 |-|-|-|
-| `NODE_ENV` | N/A | Set to `development` to enable development mode. |
+| `NODE_ENV` | N/A | Set to `production` to throw an error for insecure configuration. |
 | `BETTER_AUTH_SECRET` | N/A | Secret used by `better-auth` for securing dashboard authentication. This is NOT a password, it's used internally by the system. Should be set to a sufficiently random value for any production deployment. |
 | `WTT_DATA_DIR` | `"data"` | Path to the data directory. By default, all files (databases, certs, etc.) will be stored in this directory, although file locations can be overridden more granularly with other variables. |
 | `WTT_DB_FILE` | `"$WTT_DATA_DIR/data.sqlite"` | Path to the SQLite database to use. Database will be created if it does not already exist. |
