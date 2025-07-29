@@ -100,7 +100,7 @@ export NODE_ENV=production
 
 ### Docker
 
-See the [example Dockerfile](./example.Dockerfile).
+See the [example Dockerfile](./release.Dockerfile).
 
 ## Configuration
 
