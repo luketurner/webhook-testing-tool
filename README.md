@@ -13,12 +13,11 @@
 
 `wtt` is an open-source alternative to webhook testing tools like https://webhook.site. It's designed for easy and lightweight self-hosting:
 
-- **Single-file executable**: `wtt` is released as a single-file executable for easy, zero-dependency deployment. Just download and run the binary.
-- **No external database**: `wtt` uses SQLite and the local filesystem for data storage. There is no need for an external database.
-- **One binary, multiple servers**: `wtt` can run an HTTP server, HTTPS server, TCP server, and dashboard server all from a single executable.
-- **Configured with environment variables**: `wtt` is exclusively configured via environment variables. See [Configration](#configuration) section for details.
-- **Single-user login**: The `wtt` dashboard supports email/password authentication. The admin user's email and password are configured via environment variables.
-- **HTTPS support with Let's Encrypt**: `wtt` supports built-in TLS termination using either self-signed certificates or Let's Encrypt certificates via the `http-01` ACME challenge. (Let's Encrypt support is WIP)
+- **Single-file executable**: Released as a single-file executable for easy, zero-dependency deployment. Just download and run the binary.
+- **No external database**: Uses SQLite and the local filesystem for data storage. There is no need for an external database.
+- **Configured with environment variables**: Exclusively configured via environment variables. See [Configration](#configuration) section for details.
+- **Single-user login**: The `wtt`admin dashboard supports email/password authentication. The admin user's email and password are configured via environment variables.
+- **HTTPS support with Let's Encrypt**: Supports built-in TLS termination using either self-signed certificates or Let's Encrypt certificates via the `http-01` ACME challenge. (Let's Encrypt support is WIP)
 
 ## Features
 
@@ -43,6 +42,56 @@
 - Does not support multi-user login. (Users are expected to deploy their own instance of `wtt` instead of sharing.)
 - Reliance on SQLite means horizontal scaling is tricky. I recommend running `wtt` with a single pod/container and SQLite stored in a persistent volume. You could probably make horizontal scaling work with [Litestream](https://litestream.io/) or something, but I haven't tried it.
 
+## Quickstart
+
+1. Download the archive for your platform from the [latest release](https://github.com/luketurner/webhook-testing-tool/releases/latest).
+2. Extract the executable from your archive:
+
+```bash
+# example -- replace archive name with the one for your platform
+tar -xf wtt-linux-x86.tar.gz
+```
+
+3. Run the app:
+
+```bash
+./wtt
+```
+
+4. Open the admin dashboard at http://localhost:3001. Login with username `admin@example.com` and password `admin123`.
+5. Send a test request to the webhook server (served on `http:/localhost:3000` by default):
+
+```bash
+curl http://localhost:3000/hello
+```
+
+6. Observe the request you just sent appears in the admin dashboard UI.
+
+### Securing the admin dashboard
+
+By default, `wtt` runs with plain HTTP and a hardcoded username and password for the admin dash. To secure the dashboard for public-facing hosting, I recommend adjusting the following variables at a minimum:
+
+```bash
+# Enable HTTPS for the admin dashboard with a self-signed cert. Requires openssl to be installed
+# Not necessary if hosted behind a reverse proxy that terminates TLS, e.g. on Fly
+export WTT_DASHBOARD_SSL_ENABLED=true
+
+# (Optional) Change the admin user email
+export WTT_ADMIN_USERNAME=me@example.com
+
+# Set a secure password
+export WTT_ADMIN_PASSWORD="$(openssl rand -base64 32)"
+
+# Create secret required by authentication library
+export BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
+```
+
+### Windows
+
+1. Download the Windows build from the [latest release](https://github.com/luketurner/webhook-testing-tool/releases/latest).
+2. Double-click the .zip file and extract `wtt.exe`.
+3. Double-click `wtt.exe` to launch.
+
 ## Configuration
 
 `wtt` understands the following environment variables:
@@ -50,6 +99,7 @@
 | Variable | Default value | Notes |
 |-|-|-|
 | `NODE_ENV` | N/A | Set to `development` to enable development mode. |
+| `BETTER_AUTH_SECRET` | N/A | Secret used by `better-auth` for securing dashboard authentication. This is NOT a password, it's used internally by the system. Should be set to a sufficiently random value for any production deployment. |
 | `WTT_DATA_DIR` | `"data"` | Path to the data directory. By default, all files (databases, certs, etc.) will be stored in this directory, although file locations can be overridden more granularly with other variables. |
 | `WTT_DB_FILE` | `"$WTT_DATA_DIR/data.sqlite"` | Path to the SQLite database to use. Database will be created if it does not already exist. |
 | `WTT_ADMIN_USERNAME` | `"admin@example.com"` | Configures the username for logging in to the admin dashboard. |
