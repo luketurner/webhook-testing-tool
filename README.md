@@ -52,57 +52,41 @@
 tar -xf wtt-linux-x86.tar.gz
 ```
 
-3. Run the app:
-
-```bash
-./wtt
-```
-
-4. Open the admin dashboard at http://localhost:3001. Login with username `admin@example.com` and password `admin123`.
-5. Send a test request to the webhook server (served on `http:/localhost:3000` by default):
-
-```bash
-curl http://localhost:3000/hello
-```
-
-6. Observe the request you just sent appears in the admin dashboard UI.
-
-### Securing the admin dashboard
-
-By default, `wtt` runs with plain HTTP and a hardcoded username and password for the admin dash. To secure the dashboard for public-facing hosting, I recommend adjusting the following variables at a minimum:
+3. Set required environment variables:
 
 ```bash
 # Enable HTTPS for the admin dashboard with a self-signed cert. Requires openssl to be installed
-# Not necessary if hosted behind a reverse proxy that terminates TLS, e.g. on Fly
+# Not necessary if hosted behind a reverse proxy that terminates TLS, e.g. on Fly,
+# or if you're fine with sending credentials over plain HTTP.
 export WTT_DASHBOARD_SSL_ENABLED=true
 
-# (Optional) Change the admin user email
-export WTT_ADMIN_USERNAME=me@example.com
-
 # Set a secure password
-export WTT_ADMIN_PASSWORD="$(openssl rand -base64 32)"
+export WTT_ADMIN_PASSWORD="mysupersecurepassword"
 
 # Create secret required by authentication library
 export BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
 ```
 
-You can cause `wtt` to throw an error if `WTT_ADMIN_PASSWORD` or `BETTER_AUTH_SECRET` is not set by setting `NODE_ENV` to `production`. This should be set for any public-facing deployment context:
+4. Run the app:
 
 ```bash
-export NODE_ENV=production
+./wtt
 ```
 
-### Windows
+5. Open the admin dashboard at http://localhost:3001 (or https://localhost:3001 if `WTT_DASHBOARD_SSL_ENABLED=true`). Login with username `admin@example.com` and your configured password.
+6. Send a test request to the webhook server (served on `http:/localhost:3000` by default):
 
-1. Download the Windows build from the [latest release](https://github.com/luketurner/webhook-testing-tool/releases/latest).
-2. Double-click the .zip file and extract `wtt.exe`.
-3. Double-click `wtt.exe` to launch.
+```bash
+curl http://localhost:3000/hello
+```
+
+7. Observe the request you just sent appears in the admin dashboard UI.
 
 ### Docker
 
 There are two example Dockerfiles for deploying `wtt`:
 
-- The [release.Dockerfile](./release.Dockerfile) uses a base `alpine` image and `curl` to download the latest `wtt` release from Github. You should use this unless you're a `wtt` contributor. You may want to adjust the Dockerfile to pin the download to a specific version instead of pulling the latest one if you want consistent behavior with no breaking changes.
+- The [release.Dockerfile](./release.Dockerfile) uses a base `alpine` image and `curl` to download the latest `wtt` release from Github. You should normally use this. You may want to adjust the Dockerfile to pin the download to a specific version instead of pulling the latest one if you want consistent behavior with no breaking changes.
 - The [development.Dockerfile](./development.Dockerfile) builds `wtt` from source. You should use this if you want to test unreleased code.
 
 ### Fly.io
@@ -134,7 +118,6 @@ Once deployed, you can access your app at the following URLs:
 
 | Variable | Default value | Notes |
 |-|-|-|
-| `NODE_ENV` | N/A | Set to `production` to throw an error for insecure configuration. |
 | `BETTER_AUTH_SECRET` | N/A | Secret used by `better-auth` for securing dashboard authentication. This is NOT a password, it's used internally by the system. Should be set to a sufficiently random value for any production deployment. |
 | `WTT_DATA_DIR` | `"data"` | Path to the data directory. By default, all files (databases, certs, etc.) will be stored in this directory, although file locations can be overridden more granularly with other variables. |
 | `WTT_DB_FILE` | `"$WTT_DATA_DIR/data.sqlite"` | Path to the SQLite database to use. Database will be created if it does not already exist. |
@@ -155,6 +138,7 @@ Once deployed, you can access your app at the following URLs:
 | `WTT_ACME_DIRECTORY` | `"https://acme-v02.api.letsencrypt.org/directory"` | Directory URL for ACME/Let's Encrypt. |
 | `WTT_ACME_CERT_PATH` | `"$WTT_DATA_DIR/acme-certs"` | Local directory that ACME certificates will be stored in. |
 | `WTT_ACME_STAGING` | `"false"` | Whether the ACME directory is a staging environment. |
+| `NODE_ENV` | `"development"` or `"production"` | Controls certain development features (e.g. hot-module reloading) and security checks. Note this is always set to `"production"` for release builds and cannot be changed. |
 
 ## Handlers
 
