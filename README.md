@@ -94,7 +94,7 @@ export BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
 
 ### Docker
 
-See the [example Dockerfile](./Dockerfile.example).
+See the [example Dockerfile](./example.Dockerfile).
 
 ## Configuration
 
