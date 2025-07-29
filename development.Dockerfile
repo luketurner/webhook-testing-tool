@@ -1,8 +1,8 @@
 # syntax = docker/dockerfile:1
-FROM oven/bun:alpine
+FROM oven/bun:debian
 WORKDIR /app
 
-RUN apk add --no-cache python3 make gcc g++ libc-dev
+RUN apt update && apt install -y python3 make g++ libc-dev
 
 # Install node modules
 COPY --link package.json bun.lockb ./
