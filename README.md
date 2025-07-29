@@ -92,6 +92,10 @@ export BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
 2. Double-click the .zip file and extract `wtt.exe`.
 3. Double-click `wtt.exe` to launch.
 
+### Docker
+
+See the [example Dockerfile](./Dockerfile.example).
+
 ## Configuration
 
 `wtt` understands the following environment variables:
