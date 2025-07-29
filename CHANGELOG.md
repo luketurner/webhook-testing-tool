@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.1 (2025-07-29)
+
+- Fixed issue with `process.env.NODE_ENV` being accessed from the browser bundle. `NODE_ENV` is now set to `"production"` and inlined during the build process.
+
+---
+
 ## 2.2.0 (2025-07-28)
 
 - Reworked how certificates are generated. `wtt` now creates them automatically if the appropriate environment variables are set -- no longer requires running a separate bash script.
