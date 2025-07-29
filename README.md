@@ -100,7 +100,33 @@ export NODE_ENV=production
 
 ### Docker
 
-See the [example Dockerfile](./release.Dockerfile).
+There are two example Dockerfiles for deploying `wtt`:
+
+- The [release.Dockerfile](./release.Dockerfile) uses a base `alpine` image and `curl` to download the latest `wtt` release from Github. You should use this unless you're a `wtt` contributor. You may want to adjust the Dockerfile to pin the download to a specific version instead of pulling the latest one if you want consistent behavior with no breaking changes.
+- The [development.Dockerfile](./development.Dockerfile) builds `wtt` from source. You should use this if you want to test unreleased code.
+
+### Fly.io
+
+All you need to deploy on [Fly.io](https://fly.io/) are two files:
+
+- The sample [release.Dockerfile](./release.Dockerfile)
+- The sample [fly.toml](./fly.toml)
+
+Download those two into the same directory and run the following commands (changing secret and region values as needed):
+
+```bash
+flyctl launch --no-deploy
+flyctl secrets set WTT_ADMIN_USERNAME=you@example.com WTT_ADMIN_PASSWORD=yoursecretpassword BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
+flyctl volumes create -s 1 -r sea data
+flyctl deploy
+```
+
+Once deployed, you can access your app at the following URLs:
+
+- Admin dashboard: `https://$APP_NAME.fly.dev:8000/`
+- Webhook server (HTTP): `http://$APP_NAME.fly.dev`
+- Webhook server (HTTPS): `https://$APP_NAME.fly.dev`
+- TCP server: `$APP_NAME.fly.dev:3002`
 
 ## Configuration
 
@@ -190,18 +216,6 @@ This project is designed to be developed in tandem with Claude Code using the fo
    - Lazygit for seeing what changes were made.
 3. Once finished working in that worktree, exit Zellij with `C-b q` and you will be prompted to cherry-pick the commits from the worktree into the `main` branch.
 
-## Deployment
-
-`wtt` is designed for deployment on [Fly](https://fly.io):
-
-```bash
-flyctl launch --no-deploy
-flyctl secrets set WTT_ADMIN_USERNAME=you@example.com WTT_ADMIN_PASSWORD=yoursecretpassword BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
-flyctl volumes create -s 1 -r sea data
-flyctl deploy
-```
-
-Then you can open the admin dashboard at `https://$APP_NAME.fly.dev:8000/`, and send webhook requests to `http://$APP_NAME.fly.dev` or `https://$APP_NAME.fly.dev`
 
 ## SSL/TLS Configuration
 
