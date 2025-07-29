@@ -1,7 +1,6 @@
 # syntax = docker/dockerfile:1
 FROM alpine:latest
 WORKDIR /app
-ENV NODE_ENV="production"
 RUN apk add --no-cache curl libgcc libstdc++
 
 # Download latest `wtt` release

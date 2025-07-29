@@ -1,7 +1,6 @@
 # syntax = docker/dockerfile:1
 FROM oven/bun:alpine
 WORKDIR /app
-ENV NODE_ENV="production"
 
 RUN apk add --no-cache python3 make gcc g++ libc-dev
 
