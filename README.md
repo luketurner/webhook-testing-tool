@@ -96,7 +96,11 @@ All you need to deploy on [Fly.io](https://fly.io/) are two files:
 - The sample [release.Dockerfile](./release.Dockerfile)
 - The sample [fly.toml](./fly.toml)
 
-Download those two into the same directory and run the following commands (changing secret and region values as needed):
+Steps:
+
+1. Download those two files into the same directory.
+2. Edit the `app` value in the `fly.toml` to something unique for your app.
+3. Run the following commands (changing secret and region values as needed):
 
 ```bash
 flyctl launch --no-deploy
