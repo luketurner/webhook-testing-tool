@@ -3,6 +3,9 @@ primary_region = 'sea'
 swap_size_mb = 512
 
 [build]
+  # choose development.Dockerfile to build from local source
+  # dockerfile = "development.Dockerfile"
+  dockerfile = "release.Dockerfile"
 
 [env]
   WTT_DATA_DIR = '/data'
