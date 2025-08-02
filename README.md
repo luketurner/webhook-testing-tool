@@ -34,10 +34,10 @@
 - **:jigsaw: Multipart payloads**: Inspect multipart payload parts individually, or view the entire raw multipart body.
 - **:watch: Timestamp inspector**: View timestamps in multiple formats and different timezones.
 - **:lock_with_ink_pen: Authorization inspector**: Parse and inspect Authorization header schemes -- Basic, Digest, Bearer, etc.
-- **:toolbox: JWTs**: Detect, parse, and verify JWTs from the dashboard. Verification requires private key to be provided. Handlers have access to a suite of JWT utility functionsto inspect and verify automatically.
+- **:toolbox: JWTs**: Detect, parse, and verify JWTs from the dashboard. Verification requires private key to be provided. Handlers have access to a suite of JWT utility functions to inspect and verify automatically.
 - **:balance_scale: HMAC**: Detect, parse, and verify HMAC signatures from the dashboard, e.g. those sent in `X-Signature-*` headers.
 - **:writing_hand: Copy as...**: View and copy requests as cURL, Fetch, or Raw HTTP.
-- **:loudspeaker: Sharing**: Generate unique, unauthenticated URLs to share requests/responess with others.
+- **:loudspeaker: Sharing**: Generate unique, unauthenticated URLs to share requests/responses with others.
 - **:salt: TCP connections**: Accepts arbitrary TCP connections on a separate port. View all data sent/received on the connection in the dashboard.
 
 ## Limitations
