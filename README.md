@@ -25,7 +25,7 @@
 - **:screwdriver: Typescript response handlers**: Write custom response logic using Typescript handlers with Intellisense (uses an embedded Monaco editor and compiles with Bun's transpiler).
     - **Middleware pattern**: Multiple handlers can run per request in a middleware-like pattern.
     - **Persistent state**: Handlers can share state local to a given request, or globally (a persistent pseudo-DB for sharing data across multiple requests).
-- **:framed_picture: Admin dashboard**: Authenticated UI exposed on a separate port from the main webhook server.
+- **:world_map: Admin dashboard**: Authenticated Web UI exposed on a separate port from the main webhook server.
 - **:card_file_box: Stores everything**: All requests and responses, handler execution state, etc. are stored in the SQLite DB and viewable in the dashboard.
 - **:shield: TLS Termination**: Supports TLS termination via self-signed certificate or Let's Encrypt (:construction: WIP; TLS socket info not currently available in Bun. See [related issue](https://github.com/oven-sh/bun/issues/16834)).
 - **:art: Prettify payloads**: Display payloads in "pretty" mode (formatted and syntax highlighted -- XML/JSON/urlencoded only) or "raw" mode (exactly what you got).
