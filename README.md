@@ -27,7 +27,7 @@
     - **Persistent state**: Handlers can share state local to a given request, or globally (a persistent pseudo-DB for sharing data across multiple requests).
 - **:world_map: Admin dashboard**: Authenticated Web UI exposed on a separate port from the main webhook server.
 - **:card_file_box: Stores everything**: All requests and responses, handler execution state, etc. are stored in the SQLite DB and viewable in the dashboard.
-- **:shield: TLS Termination**: Supports TLS termination via self-signed certificate or Let's Encrypt (:construction: WIP; TLS socket info not currently available in Bun. See [related issue](https://github.com/oven-sh/bun/issues/16834)).
+- **:shield: TLS Termination**: Supports TLS termination via self-signed certificate or Let's Encrypt ( :construction: WIP; TLS socket info not currently available in Bun. See [related issue](https://github.com/oven-sh/bun/issues/16834)).
 - **:art: Prettify payloads**: Display payloads in "pretty" mode (formatted and syntax highlighted -- XML/JSON/urlencoded only) or "raw" mode (exactly what you got).
 - **:mag: Multiple encodings**: Display payloads in multiple encodings: UTF8, Latin-1, base64, hex, and binary.
 - **:floppy_disk: Downloading**: Download payloads with automatic filetype detection (based on Content-Type).
