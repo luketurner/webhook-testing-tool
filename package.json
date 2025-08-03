@@ -15,7 +15,8 @@
     "worktree": "bun scripts/worktree.ts",
     "tailwind": "tailwindcss",
     "build": "bun run scripts/build.ts",
-    "release": "bun run scripts/release.ts"
+    "release": "bun run scripts/release.ts",
+    "version": "bun run scripts/version.ts"
   },
   "author": "Luke Turner",
   "license": "MIT",
