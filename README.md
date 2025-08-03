@@ -192,8 +192,7 @@ Some other useful commands:
 bun run build
 
 # Publish a new release
-bun pm version [increment]
-git push origin tag [tag]
+bun run version VERSION # or patch, minor, major
 ```
 
 ## Development with Claude Code
