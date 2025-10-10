@@ -7,7 +7,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "NODE_ENV=development bun --hot src/server.ts",
+    "dev": "bun run build:tailwind && NODE_ENV=development bun --hot src/server.ts",
     "test": "NODE_ENV=test bun test",
     "migrate:create": "bun run src/db/create-migration.ts",
     "format": "prettier --write .",
