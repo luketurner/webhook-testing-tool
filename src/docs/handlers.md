@@ -349,6 +349,13 @@ if (req.method === "POST") {
 }
 ```
 
+### Artificially Delayed Response Handler
+
+```javascript
+await sleep(1000); // wait 1 second
+resp.status = 200;
+```
+
 ### Rate Limiting Handler
 
 ```javascript
