@@ -21,21 +21,24 @@
 
 ## Features
 
-- Automatically responds to any HTTP request.
-- Response behavior can be customized with Typescript code by defining **handlers**. See the Handlers section below.
-- TLS termination with self-signed certificate or automatic Let's Encrypt certificates via ACME (work in progress, TLS socket info not currently available in Bun. See [related issue](https://github.com/oven-sh/bun/issues/16834))
-- JWT parsing and signature verification against a JWKS or JWK URL.
-- Formatting and syntax highlighting for JSON request/response bodies.
-- Viewing request/response bodies in multiple encodings including UTF8, Latin-1, base64, hex, and binary.
-- Special "parsed" views for certain common types of bodies, like JSON, XML/HTML, `application/x-www-form-urlencoded`, and `multipart/form-data`.
-- Downloading request/response bodies as files, with extensions guessed based on the `Content-Type` header.
-- `Authorization` header inspector that parses Basic, Bearer, JWT, and HMAC authorization schemes.
-- Parse and verify `X-Signature-*` headers as sent by e.g. Github/Gitlab/etc.
-- Composing and sending test requests directly from the UI.
-- Datetime inspector that displays timestamps in multiple formats and timezones.
-- Copy requests as cURL or Fetch.
-- Share requests (generates a public URL that anyone can use to see a read-only view of the request and response).
-- Accepts arbitrary TCP connections, allows viewing the data that was sent both ways over the connection.
+- **:ear: Responds to HTTP requests**: Automatically responds with a `200 OK` to any incoming HTTP request.
+- **:screwdriver: Typescript response handlers**: Write custom response logic using Typescript handlers with Intellisense (uses an embedded Monaco editor and compiles with Bun's transpiler).
+    - **Middleware pattern**: Multiple handlers can run per request in a middleware-like pattern.
+    - **Persistent state**: Handlers can share state local to a given request, or globally (a persistent pseudo-DB for sharing data across multiple requests).
+- **:world_map: Admin dashboard**: Authenticated Web UI exposed on a separate port from the main webhook server.
+- **:card_file_box: Stores everything**: All requests and responses, handler execution state, etc. are stored in the SQLite DB and viewable in the dashboard.
+- **:shield: TLS Termination**: Supports TLS termination via self-signed certificate or Let's Encrypt ( :construction: WIP; TLS socket info not currently available in Bun. See [related issue](https://github.com/oven-sh/bun/issues/16834)).
+- **:art: Prettify payloads**: Display payloads in "pretty" mode (formatted and syntax highlighted -- XML/JSON/urlencoded only) or "raw" mode (exactly what you got).
+- **:mag: Multiple encodings**: Display payloads in multiple encodings: UTF8, Latin-1, base64, hex, and binary.
+- **:floppy_disk: Downloading**: Download payloads with automatic filetype detection (based on Content-Type).
+- **:jigsaw: Multipart payloads**: Inspect multipart payload parts individually, or view the entire raw multipart body.
+- **:watch: Timestamp inspector**: View timestamps in multiple formats and different timezones.
+- **:lock_with_ink_pen: Authorization inspector**: Parse and inspect Authorization header schemes -- Basic, Digest, Bearer, etc.
+- **:toolbox: JWTs**: Detect, parse, and verify JWTs from the dashboard. Verification requires private key to be provided. Handlers have access to a suite of JWT utility functions to inspect and verify automatically.
+- **:balance_scale: HMAC**: Detect, parse, and verify HMAC signatures from the dashboard, e.g. those sent in `X-Signature-*` headers.
+- **:writing_hand: Copy as...**: View and copy requests as cURL, Fetch, or Raw HTTP.
+- **:loudspeaker: Sharing**: Generate unique, unauthenticated URLs to share requests/responses with others.
+- **:salt: TCP connections**: Accepts arbitrary TCP connections on a separate port. View all data sent/received on the connection in the dashboard.
 
 ## Limitations
 
@@ -189,8 +192,7 @@ Some other useful commands:
 bun run build
 
 # Publish a new release
-bun pm version [increment]
-git push origin tag [tag]
+bun run version VERSION # or patch, minor, major
 ```
 
 ## Development with Claude Code
