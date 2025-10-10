@@ -89,5 +89,6 @@ if (ACME_ENABLED && WEBHOOK_SSL_ENABLED) {
   }, 60 * 1000); // Check after 1 minute to allow server to fully start
 }
 
-// Start TCP server
-startTcpServer(TCP_PORT);
+// Start TCP server -- use globalThis so we can clean up after hot reloads
+if (globalThis._wtt_tcp_server) { globalThis._wtt_tcp_server.stop(true); }
+globalThis._wtt_tcp_server = startTcpServer(TCP_PORT);
