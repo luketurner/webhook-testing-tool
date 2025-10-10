@@ -15,7 +15,6 @@ import http from "http";
 import https from "https";
 import { assertGeneratedSelfSignedCert } from "./util/generate-cert";
 
-
 let server: http.Server;
 let httpsServer: https.Server;
 

@@ -90,5 +90,7 @@ if (ACME_ENABLED && WEBHOOK_SSL_ENABLED) {
 }
 
 // Start TCP server -- use globalThis so we can clean up after hot reloads
-if (globalThis._wtt_tcp_server) { globalThis._wtt_tcp_server.stop(true); }
+if (globalThis._wtt_tcp_server) {
+  globalThis._wtt_tcp_server.stop(true);
+}
 globalThis._wtt_tcp_server = startTcpServer(TCP_PORT);
