@@ -170,7 +170,10 @@ export async function handleRequest(
           const transpiler = new Transpiler({ loader: "ts" });
           const code = transpiler.transformSync(handler.code);
 
-          await runInNewContext(code, {
+          // Wrap the code in an async function to support await
+          const wrappedCode = `(async () => { ${code} })()`;
+
+          await runInNewContext(wrappedCode, {
             req: deepFreeze(req),
             resp,
             locals,

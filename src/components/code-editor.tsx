@@ -100,6 +100,10 @@ loader.init().then((monaco) => {
     declare var locals: Record<string, any>;
     declare var ctx: Context;
 
+    // Promise-related helpers
+    declare var Promise<T>: any; // placeholder
+    declare var sleep: (ms: number) => Promise<void>;
+
     // Error classes available for throwing in handler code
     declare abstract class HandlerError extends Error {
       abstract readonly statusCode: number;
@@ -159,6 +163,11 @@ loader.init().then((monaco) => {
     }
     `,
   );
+  monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+    ...monaco.languages.typescript.typescriptDefaults.getCompilerOptions(),
+    target: monaco.languages.typescript.ScriptTarget.ES2020,
+    module: monaco.languages.typescript.ModuleKind.ESNext,
+  });
 });
 
 export interface CodeEditorProps {
