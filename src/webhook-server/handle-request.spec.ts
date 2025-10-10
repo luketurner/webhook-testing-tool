@@ -1569,6 +1569,22 @@ describe("handleRequest()", () => {
     });
   });
 
+  describe("async/await functionality", () => {
+    test("it should support top-level await with sleep function", async () => {
+      defineHandler(
+        1,
+        "GET",
+        "/",
+        `
+        await sleep(1);
+        `,
+      );
+
+      const [err, resp] = await handleRequest(request);
+      expect(err).toBeNull();
+    });
+  });
+
   describe("body_raw functionality", () => {
     test("it should use body_raw when set instead of body", async () => {
       const base64Data = "SGVsbG8gV29ybGQ="; // "Hello World" in base64
