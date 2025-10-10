@@ -397,7 +397,7 @@ describe("Webhook Server Integration Tests", () => {
       // Create JWT with wrong signature by modifying a valid one
       const validJWT = await createValidRS384JWT();
       const jwtParts = validJWT.split(".");
-      const invalidJWT = `${jwtParts[0]}.${jwtParts[1]}.invalid-signature`;
+      const invalidJWT = `${jwtParts[0]}.${jwtParts[1]}.aW52YWxpZC1zaWduYXRvcmUK`;
 
       const handlerCode = `
         if (!jwt.isJWTVerified()) {
