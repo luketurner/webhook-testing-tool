@@ -16,6 +16,10 @@ jobs:
       - run: "bun ci"
       - run: "bun test"
       - run: "bun run build"
-      - run: "bun run release"
+      - run: "bun run bakery release"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Don't publish for now
+      # - run: "bun run bakery publish"
+      #   env:
+      #     NPM_CONFIG_TOKEN: ${{ secrets.NPM_CONFIG_TOKEN }}

@@ -12,10 +12,8 @@
     "migrate:create": "bun run src/db/create-migration.ts",
     "format": "prettier --write .",
     "compile": "tsc",
-    "worktree": "bun scripts/worktree.ts",
-    "tailwind": "tailwindcss",
-    "build": "bun run scripts/build.ts",
-    "release": "bun run scripts/release.ts"
+    "build:tailwind": "tailwindcss -m -i ./src/dashboard/index.css -o ./src/dashboard/index.compiled.css",
+    "build": "bun run build:tailwind && bun run bakery build"
   },
   "author": "Luke Turner",
   "license": "MIT",
@@ -83,6 +81,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
     "@flydotio/dockerfile": "^0.5.2",
+    "@luketurner/bakery": "^0.1.3",
     "@types/react-dnd": "^3.0.2"
   },
   "prettier": {}
