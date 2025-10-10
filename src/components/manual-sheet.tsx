@@ -34,9 +34,6 @@ export function ManualSheet() {
       <SheetContent side="right" className="sm:max-w-[720px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Manual</SheetTitle>
-          <SheetDescription>
-            Documentation for Webhook Testing Tool
-          </SheetDescription>
         </SheetHeader>
 
         <div className="mt-6">
