@@ -89,7 +89,7 @@ export const HomePage = () => {
               {activeHandlers.map((handler) => (
                 <Link
                   key={handler.id}
-                  to={`/handlers/${handler.id}/edit`}
+                  to={`/handlers/${handler.id}`}
                   className="block p-3 rounded-lg hover:bg-accent transition-colors"
                 >
                   <div className="flex items-center justify-between">
