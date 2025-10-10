@@ -8,7 +8,7 @@ if (RELEASE) {
   await import("./index.compiled.css"!);
 }
 
-import { BrowserRouter, Routes, Route } from "react-router";
+import { Routes, Route, HashRouter } from "react-router";
 import { Toaster } from "../components/ui/sonner";
 import { CreateHandlerPage } from "./pages/create-handler-page";
 import { CreateRequestPage } from "./pages/create-request-page";
@@ -28,7 +28,7 @@ const queryClient = new QueryClient();
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <HashRouter>
         <Routes>
           {/* Public routes */}
           <Route
@@ -83,7 +83,7 @@ export function App() {
             }
           />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </QueryClientProvider>
   );
 }

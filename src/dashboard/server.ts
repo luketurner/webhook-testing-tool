@@ -21,8 +21,6 @@ import {
   SSL_KEY_PATH,
 } from "@/config";
 import indexPage from "./index.html";
-import { readFileSync, existsSync, readdirSync } from "fs";
-import { join } from "path";
 import { marked } from "marked";
 import { manualPages } from "@/docs";
 
@@ -42,14 +40,7 @@ export const startDashboardServer = () =>
       : undefined,
 
     routes: {
-      // page routes
       "/": indexPage,
-      "/requests/:id": indexPage,
-      "/handlers": indexPage,
-      "/handlers/:id": indexPage,
-      "/shared/:sharedId": indexPage,
-      "/tcp-connections": indexPage,
-      "/tcp-connections/:id": indexPage,
 
       // auth routes (no auth required)
       ...authController,
