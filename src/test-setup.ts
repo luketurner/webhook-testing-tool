@@ -15,6 +15,7 @@ import http from "http";
 import https from "https";
 import { assertGeneratedSelfSignedCert } from "./util/generate-cert";
 
+
 let server: http.Server;
 let httpsServer: https.Server;
 
@@ -35,12 +36,13 @@ beforeAll(async () => {
 afterAll(async () => {
   server.close();
   httpsServer?.close();
-  // Clean up test certificates
-  try {
-    await $`rm -rf ${TEST_TEMP_DIR}`;
-  } catch (err) {
-    // Ignore cleanup errors
-  }
+  // // Clean up test certificates
+  // Disabled because regenerating the certificates before each suite runs is kinda slow.
+  // try {
+  //   await $`rm -rf ${TEST_TEMP_DIR}`;
+  // } catch (err) {
+  //   // Ignore cleanup errors
+  // }
 });
 
 afterEach(() => {
