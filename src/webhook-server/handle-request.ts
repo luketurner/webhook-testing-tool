@@ -163,6 +163,10 @@ export async function handleRequest(
             },
           };
 
+          const sleep = (ms: number): Promise<void> => {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+          };
+
           const transpiler = new Transpiler({ loader: "ts" });
           const code = transpiler.transformSync(handler.code);
 
@@ -174,6 +178,7 @@ export async function handleRequest(
             console: captureConsole,
             jwt: jwtUtils,
             shared: shared.data,
+            sleep,
             ...HandlerErrors,
           });
           // Update to success status with captured data
