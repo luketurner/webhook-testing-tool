@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.3.0 (2025-10-10)
+
+- Switch to hash-based routing to fix issue with nested routes when compiled as a single-file executables (see https://github.com/oven-sh/bun/issues/23431)
+- Switch to using @luketurner/bakery for build/release scripts
+- Fix issue with referencing manual pages when compiled as a single-file executable
+- Fix issue with TCP server not being closed when hot reloading in devleopment mode
+- Remove some unnecessary text.
+- Fix handler links from homepage.
+
+---
+
 ## 2.2.1 (2025-07-29)
 
 - Fixed issue with `process.env.NODE_ENV` being accessed from the browser bundle. `NODE_ENV` is now set to `"production"` and inlined during the build process.
