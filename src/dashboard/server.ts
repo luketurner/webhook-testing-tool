@@ -24,6 +24,7 @@ import indexPage from "./index.html";
 import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { marked } from "marked";
+import { manualPages } from "@/docs";
 
 export const startDashboardServer = () =>
   Bun.serve({
@@ -89,14 +90,8 @@ export const startDashboardServer = () =>
       // Manual pages endpoint
       "/api/manual/:pageName": async (req) => {
         const pageName = req.params.pageName;
-        const filePath = join(import.meta.dir, "..", "docs", `${pageName}.md`);
-
-        if (!existsSync(filePath)) {
-          return new Response(null, { status: 404 });
-        }
-
         try {
-          const markdown = readFileSync(filePath, "utf-8");
+          const markdown = await Bun.file(manualPages[pageName]).text();
           const html = await marked(markdown, {
             breaks: true,
             gfm: true,
@@ -112,18 +107,7 @@ export const startDashboardServer = () =>
 
       // Manual pages list endpoint
       "/api/manual": async () => {
-        const docsPath = join(import.meta.dir, "..", "docs");
-
-        try {
-          const files = readdirSync(docsPath)
-            .filter((file) => file.endsWith(".md"))
-            .map((file) => file.replace(".md", ""));
-
-          return Response.json(files);
-        } catch (error) {
-          console.error("Failed to list manual pages:", error);
-          return new Response(null, { status: 500 });
-        }
+        return Response.json(Object.keys(manualPages));
       },
 
       "/*": new Response(null, { status: 404 }),
