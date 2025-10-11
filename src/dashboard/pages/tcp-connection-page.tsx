@@ -126,12 +126,7 @@ export const TcpConnectionPage = () => {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Duration</span>
                 <span className="text-sm">
-                  {Math.round(
-                    (new Date(connection.closed_timestamp).getTime() -
-                      new Date(connection.open_timestamp).getTime()) /
-                      1000,
-                  )}{" "}
-                  seconds
+                  {(connection.closed_timestamp ?? Date.now()) - connection.open_timestamp}ms
                 </span>
               </div>
             )}

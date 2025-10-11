@@ -53,7 +53,7 @@ export const RequestEventDisplay = ({
             <div className="mt-2 text-sm">
               <span className="font-medium">Duration:</span>
               <span className="ml-2">
-                {request.response_timestamp - request.request_timestamp}ms
+                {(request.response_timestamp ?? Date.now()) - request.request_timestamp}ms
               </span>
             </div>
             {request.response_status && (
