@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.4.0 (2025-10-11)
+
+- Add `sleep(ms)` function to handler code execution context.
+- Enable top-level `await` keywords in handler code.
+- Improve copy in manual pages.
+- Fix: Request status toast displaying incorrect status after sending test requests.
+- Fix: Duration display showing negative numbers for in-progress requests.
+- Fix: Duration display for TCP connections not displaying in milliseconds.
+
+---
+
 ## 2.3.0 (2025-10-10)
 
 - Switch to hash-based routing to fix issue with nested routes when compiled as a single-file executables (see https://github.com/oven-sh/bun/issues/23431)
