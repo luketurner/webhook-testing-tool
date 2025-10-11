@@ -4,20 +4,25 @@ Handlers are Typescript functions that process incoming HTTP requests in the Web
 
 ## How Handlers Work
 
-### Execution Flow
-
-1. **Request Received** - An HTTP request arrives at WTT
-2. **Handler Matching** - Handlers are matched against the request path and method
-3. **Sequential Execution** - Matching handlers execute in order based on their `order` field
-4. **Response Generation** - The final response is sent back to the client
-
 ### Execution Environment
 
-Handlers run in a **sandboxed VM context** for security:
-- No access to Node.js modules or filesystem
-- No network access (cannot make HTTP requests)
-- Isolated from the main application
-- Console output is captured and stored
+Handlers are transpiled from Typescript and executed in a sandboxed context with a limited set of global objects available. They can:
+
+1. Read request data from the `req` global object.
+2. Modify the HTTP response that will be sent to the client with the `resp` global object.
+3. Access request-local state in `locals` or globally shared state in `shared`.
+4. Access additional execution context from `ctx`.
+5. Use a collection of utilities like `sleep`, `jwt`, and `console`.
+
+### Handler Chains
+
+All handlers that match an incoming request are executed in order. You can use this to create "middleware" handlers that encapsulate shared logic like:
+
+- Authentication/authorization
+- Logging
+- Setting custom headers (e.g. CORS)
+
+Aside from mutating the `resp` object, handlers can share internal state with each other via the `locals` object.
 
 ## Available Global Objects
 
@@ -172,6 +177,16 @@ console.debug("Debug information");
 ```
 
 Output is captured and stored with the handler execution, viewable in the admin interface.
+
+### Sleep utility (`sleep`)
+
+Use `sleep(ms)` to pause execution of the handler, e.g. to create artificial delays or trigger client timeouts.
+
+```javascript
+await sleep(100);
+```
+
+Handler code is automatically wrapped in an `async` function, so you can use top-level `await` in the handler body.
 
 ## JWT Authentication
 
