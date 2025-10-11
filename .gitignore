@@ -9,3 +9,4 @@ NOTES.md
 dist
 *.compiled.css
 data/
+.wt/worktrees

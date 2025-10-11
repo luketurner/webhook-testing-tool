@@ -93,7 +93,7 @@ USER node
 
 # Install global packages
 ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
-ENV PATH=$PATH:/usr/local/share/npm-global/bin
+ENV PATH=$PATH:/usr/local/share/npm-global/bin:/home/node/.bun/bin
 
 # Set the default shell to zsh rather than sh
 ENV SHELL=/bin/zsh
@@ -105,8 +105,7 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
   -a "source /usr/share/doc/fzf/examples/key-bindings.zsh" \
   -a "source /usr/share/doc/fzf/examples/completion.zsh" \
   -a "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
-  -a "alias wt=\"bun run worktree\"" \
-  -a "alias bc=\"backlog task create\"" \
+   -a "alias bc=\"backlog task create\"" \
   -a "alias bv=\"backlog board view\"" \
   -x
 
@@ -135,6 +134,9 @@ RUN npm install -g bun
 
 # install Backlog.md (https://github.com/MrLesk/Backlog.md)
 RUN npm install -g backlog.md
+
+# install wt
+RUN bun install -g @luketurner/wt
 
 # Copy and set up firewall script
 COPY init-firewall.sh /usr/local/bin/
