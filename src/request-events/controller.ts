@@ -15,8 +15,11 @@ export const requestEventController = {
   },
   "/api/requests/send": {
     POST: async (req) => {
-      await sendWebhookRequest(await req.json());
-      return Response.json({ status: "ok" });
+      const response = await sendWebhookRequest(await req.json());
+      return Response.json({
+        status: "ok",
+        response: { status: response.status, statusText: response.statusText },
+      });
     },
   },
   "/api/requests/:id": {

@@ -122,10 +122,11 @@ export function useSendRequest() {
       });
       toast.promise(requestPromise, {
         loading: "Sending request...",
-        success: (resp) => {
+        success: async (resp) => {
+          const webhookResponse = (await resp.json())?.response;
           return {
             message: `Request succeeded!`,
-            description: `${resp.status} ${resp.statusText}`,
+            description: `${webhookResponse.status} ${webhookResponse.statusText}`,
           };
         },
         error: (e) => {
