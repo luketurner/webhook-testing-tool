@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.5.0 (2025-10-13)
+
+- Add `resp.socket` property for HTTP handlers to break the HTTP protocol.
+- Add AbortSocketError for HTTP handlers to destroy the socket without sending a response.
+- Add TCP handler support. TCP handlers are run in response to incoming data, and can use a `send()` function to send data back on the socket.
+
+---
+
 ## 2.4.0 (2025-10-11)
 
 - Add `sleep(ms)` function to handler code execution context.
