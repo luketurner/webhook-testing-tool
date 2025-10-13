@@ -15,6 +15,8 @@ export async function resourceFetcher(
   let url = "";
   if (type === "handler-executions" && id) {
     url = `/api/requests/${id}/handler-executions`;
+  } else if (type === "tcp-handler-executions" && id) {
+    url = `/api/tcp-connections/${id}/handler-executions`;
   } else {
     url =
       action === "list" || action === "create"
@@ -154,6 +156,19 @@ export function useHandlerExecutions<T>(requestId: string) {
         id: requestId,
       }),
     enabled: !!requestId,
+  });
+}
+
+export function useTcpHandlerExecutions<T>(connectionId: string) {
+  return useQuery<T[]>({
+    queryKey: ["tcp-handler-executions", connectionId],
+    queryFn: () =>
+      resourceFetcher({
+        action: "list",
+        type: "tcp-handler-executions",
+        id: connectionId,
+      }),
+    enabled: !!connectionId,
   });
 }
 

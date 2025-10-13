@@ -13,6 +13,11 @@ import { runInNewContext } from "vm";
 import { Transpiler } from "bun";
 import { deepFreeze } from "@/util/object";
 import { getSharedState, updateSharedState } from "@/shared-state/model";
+import {
+  createTcpHandlerExecution,
+  updateTcpHandlerExecution,
+} from "@/tcp-handler-executions/model";
+import type { TcpHandlerExecution } from "@/tcp-handler-executions/schema";
 
 // AIDEV-NOTE: TCP server implementation using Bun's TCP API to handle raw socket connections
 // Tracks connection metadata and data in the database, automatically sends "ack" responses
@@ -21,6 +26,7 @@ interface TcpConnectionState {
   connectionId: UUID;
   receivedData: Uint8Array[];
   sentData: Uint8Array[];
+  executionOrder: number;
 }
 
 const connectionStates = new WeakMap<Socket, TcpConnectionState>();
@@ -47,6 +53,7 @@ export function startTcpServer(port: number) {
           connectionId,
           receivedData: [],
           sentData: [],
+          executionOrder: 0,
         };
         connectionStates.set(socket, state);
 
@@ -81,6 +88,19 @@ export function startTcpServer(port: number) {
         // AIDEV-NOTE: Check if there's an active TCP handler and execute it
         const tcpHandler = getActiveTcpHandler();
         if (tcpHandler) {
+          // Create handler execution record
+          const execution: TcpHandlerExecution = {
+            id: randomUUID(),
+            handler_id: tcpHandler.id,
+            tcp_connection_id: state.connectionId,
+            order: state.executionOrder++,
+            timestamp: now(),
+            status: "running",
+            error_message: null,
+            console_output: null,
+          };
+          createTcpHandlerExecution(execution);
+
           try {
             // Convert received data to string
             const dataString = new TextDecoder().decode(data);
@@ -149,6 +169,13 @@ export function startTcpServer(port: number) {
             // Save the shared state after handler execution
             updateSharedState(shared.data);
 
+            // Update handler execution with success status
+            updateTcpHandlerExecution({
+              id: execution.id,
+              status: "success",
+              console_output: consoleOutput.join("\n") || null,
+            });
+
             // Log console output if any
             if (consoleOutput.length > 0) {
               console.log(
@@ -157,6 +184,14 @@ export function startTcpServer(port: number) {
             }
           } catch (e) {
             console.error("Error running TCP handler script", e);
+
+            // Update handler execution with error status
+            updateTcpHandlerExecution({
+              id: execution.id,
+              status: "error",
+              error_message: e instanceof Error ? e.message : String(e),
+            });
+
             // Send error response if handler fails
             const errorMessage = new Uint8Array(Buffer.from("error\n"));
             socket.write(errorMessage);

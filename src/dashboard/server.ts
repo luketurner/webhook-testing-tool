@@ -7,6 +7,7 @@ import { handlerExecutionController } from "@/handler-executions/controller";
 import { authController } from "@/auth/controller";
 import { tcpConnectionController } from "@/tcp-connections/controller";
 import { tcpHandlerController } from "@/tcp-handlers/controller";
+import { tcpHandlerExecutionController } from "@/tcp-handler-executions/controller";
 import { withAuth } from "@/auth/middleware";
 import { getRequestEventBySharedId } from "@/request-events/model";
 import { appEvents } from "@/db/events";
@@ -65,6 +66,7 @@ export const startDashboardServer = () =>
       ...buildController(dbController),
       ...buildController(tcpConnectionController),
       ...buildController(tcpHandlerController),
+      ...buildController(tcpHandlerExecutionController),
       ...buildController({
         "/api/config": {
           GET: () => {

@@ -1,4 +1,4 @@
-import { useResource } from "@/dashboard/hooks";
+import { useResource, useTcpHandlerExecutions } from "@/dashboard/hooks";
 import { useParams, useNavigate } from "react-router";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,10 @@ import { DataSection } from "@/components/data-section";
 import { StatusBadge } from "@/components/status-badge";
 import { DateDisplay } from "@/components/date-display";
 import { PayloadDisplay } from "@/components/payload-display";
+import { TcpHandlerExecutionItem } from "@/components/tcp-handler-execution-item";
 import type { TcpConnection } from "@/tcp-connections/schema";
+import type { TcpHandlerExecution } from "@/tcp-handler-executions/schema";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const TcpConnectionPage = () => {
   const { id } = useParams();
@@ -17,6 +20,8 @@ export const TcpConnectionPage = () => {
     isLoading,
     error,
   } = useResource<TcpConnection>("tcp-connections", id || "");
+  const { data: handlerExecutions, isLoading: executionsLoading } =
+    useTcpHandlerExecutions<TcpHandlerExecution>(id || "");
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -135,6 +140,23 @@ export const TcpConnectionPage = () => {
           </div>
         </DataSection>
       </div>
+
+      {handlerExecutions && handlerExecutions.length > 0 && (
+        <DataSection title="Handler Executions">
+          {executionsLoading ? (
+            <Skeleton className="h-20 w-full" />
+          ) : (
+            <div className="space-y-2">
+              {handlerExecutions.map((execution) => (
+                <TcpHandlerExecutionItem
+                  key={execution.id}
+                  execution={execution}
+                />
+              ))}
+            </div>
+          )}
+        </DataSection>
+      )}
 
       {connection.received_data && (
         <DataSection title="Received Data">
