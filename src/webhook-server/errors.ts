@@ -119,9 +119,29 @@ export class GatewayTimeoutError extends HandlerError {
   readonly statusCode = 504;
 }
 
+// AIDEV-NOTE: Special error that causes the socket to be aborted without sending a response
+// This does NOT extend HandlerError because it requires special handling in the webhook server
+
+/**
+ * Thrown to immediately terminate the socket connection without sending any HTTP response.
+ * This allows testing of scenarios where the server closes the connection prematurely.
+ * Does not extend HandlerError as it requires special handling.
+ */
+export class AbortSocketError extends Error {
+  constructor(message: string = "Socket connection aborted") {
+    super(message);
+    this.name = "AbortSocketError";
+  }
+}
+
 // AIDEV-NOTE: Utility function to check if an error is a HandlerError
 export function isHandlerError(error: unknown): error is HandlerError {
   return error instanceof HandlerError;
+}
+
+// AIDEV-NOTE: Utility function to check if an error is an AbortSocketError
+export function isAbortSocketError(error: unknown): error is AbortSocketError {
+  return error instanceof AbortSocketError;
 }
 
 // AIDEV-NOTE: Export all error classes for use in handler code
@@ -140,4 +160,5 @@ export const HandlerErrors = {
   NotImplementedError,
   ServiceUnavailableError,
   GatewayTimeoutError,
+  AbortSocketError,
 } as const;

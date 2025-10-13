@@ -18,6 +18,7 @@ export const responseSchema = z.object({
   headers: kvListSchema(z.string()),
   body: z.any(), // TODO
   body_raw: z.string().optional(),
+  socket: z.string().optional(), // Raw data to write directly to socket, bypassing HTTP protocol
 });
 
 export interface HandlerRequest extends z.infer<typeof requestSchema> {
@@ -27,6 +28,7 @@ export interface HandlerRequest extends z.infer<typeof requestSchema> {
 
 export interface HandlerResponse extends z.infer<typeof responseSchema> {
   headers: KVList<string>;
+  socket?: string; // Raw data to write directly to socket, bypassing HTTP protocol
 }
 
 export function requestEventToHandlerRequest(

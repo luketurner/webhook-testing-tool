@@ -21,6 +21,7 @@ import { fromBufferLike } from "@/util/base64";
 import { createRequestEvent, updateRequestEvent } from "@/request-events/model";
 import { appEvents } from "@/db/events";
 import { handleRequest } from "./handle-request";
+import { isAbortSocketError } from "./errors";
 import { acmeManager } from "@/acme-manager";
 import { ACME_ENABLED } from "@/config";
 
@@ -169,6 +170,26 @@ app.all("*", async (req, res) => {
 
   // TODO handle errors
   const [error, response] = await handleRequest(event);
+
+  // AIDEV-NOTE: Handle AbortSocketError - destroy socket without sending response
+  if (error && isAbortSocketError(error)) {
+    console.log(`Aborting socket connection: ${error.message}`);
+    // Destroy the socket without sending any response
+    req.socket.destroy();
+    return;
+  }
+
+  // AIDEV-NOTE: Handle raw socket data - write directly to socket and close
+  // When resp.socket is set, it bypasses normal HTTP response handling
+  const socketRawData = (response as any)?._socketRawData;
+  if (socketRawData) {
+    // Write raw data directly to the socket
+    req.socket.write(socketRawData, () => {
+      // Close the socket after writing
+      req.socket.end();
+    });
+    return;
+  }
 
   const responseStatus =
     typeof response?.response_status === "number"

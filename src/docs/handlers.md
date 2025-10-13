@@ -90,12 +90,13 @@ resp.body_raw = "SGVsbG8gV29ybGQ="; // "Hello World" in base64
 
 #### Response Body Options
 
-The response object supports two body properties:
+The response object supports multiple body properties:
 
 - **`resp.body`** - For text/JSON responses. Content is automatically encoded to base64.
 - **`resp.body_raw`** - For binary responses. Content must be base64-encoded string.
+- **`resp.socket`** - For raw socket data. Bypasses HTTP protocol entirely (see below).
 
-When both are set, `resp.body_raw` takes precedence:
+When both `body` and `body_raw` are set, `body_raw` takes precedence:
 
 ```javascript
 // Text response (automatically encoded)
@@ -111,6 +112,23 @@ resp.body_raw = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPh
 resp.body = "This will be ignored";
 resp.body_raw = "SGVsbG8gV29ybGQ="; // This will be returned
 ```
+
+#### Raw Socket Data (`resp.socket`)
+
+For advanced testing scenarios, you can write raw data directly to the TCP socket, bypassing the HTTP protocol entirely. When `resp.socket` is set, all other response properties (`status`, `headers`, `body`, etc.) are ignored:
+
+```javascript
+// Write raw data to socket (no HTTP headers)
+resp.socket = "This is raw socket data\n";
+
+// Simulate a partial HTTP response
+resp.socket = "HTTP/1.1 200 OK\r\n"; // Incomplete - connection will close
+```
+
+This is useful for testing client behavior with:
+- Malformed HTTP responses
+- Incomplete responses
+- Custom protocols over HTTP connections
 
 ### Context Object (`ctx`)
 
@@ -256,6 +274,10 @@ if (serverError) {
 
 ### Available Error Classes
 
+#### HTTP Status Errors
+
+These errors set the HTTP response status code and stop handler processing:
+
 - `BadRequestError` (400) - Invalid request
 - `UnauthorizedError` (401) - Authentication required
 - `ForbiddenError` (403) - Insufficient permissions
@@ -269,6 +291,30 @@ if (serverError) {
 - `NotImplementedError` (501) - Feature not implemented
 - `ServiceUnavailableError` (503) - Service unavailable
 - `GatewayTimeoutError` (504) - Gateway timeout
+
+#### Socket Control Error
+
+- `AbortSocketError` - Immediately terminates the socket connection without sending any HTTP response
+
+### Aborting Socket Connections
+
+For advanced testing scenarios where you need to simulate a server that closes the connection without sending a response, use `AbortSocketError`:
+
+```javascript
+// Abort the connection immediately without sending any response
+throw new AbortSocketError("Connection terminated");
+
+// Conditional abort based on request
+if (req.headers.find(([k]) => k.toLowerCase() === 'x-trigger-abort')) {
+  throw new AbortSocketError("Triggered by header");
+}
+```
+
+This is useful for testing client behavior with:
+- Server crashes or unexpected disconnections
+- Network failures
+- Connection timeouts
+- Client retry logic
 
 ## Handler Configuration
 

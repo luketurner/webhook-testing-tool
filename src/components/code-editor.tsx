@@ -18,6 +18,7 @@ loader.init().then((monaco) => {
       body?: any;
       headers: [string, string][];
       status: number;
+      socket?: string; // Raw data to write directly to socket, bypassing HTTP
     }
 
     declare interface KVPair<T> {
@@ -160,6 +161,11 @@ loader.init().then((monaco) => {
 
     declare class GatewayTimeoutError extends HandlerError {
       readonly statusCode: 504;
+    }
+
+    // Special error that causes socket to be aborted without sending a response
+    declare class AbortSocketError extends Error {
+      constructor(message?: string);
     }
     `,
   );

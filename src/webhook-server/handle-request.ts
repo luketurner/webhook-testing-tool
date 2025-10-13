@@ -18,7 +18,7 @@ import {
   type HandlerRequest,
   type HandlerResponse,
 } from "./schema";
-import { HandlerErrors, isHandlerError } from "./errors";
+import { HandlerErrors, isHandlerError, isAbortSocketError } from "./errors";
 import { parseAuthorizationHeader, isJWTAuth } from "@/util/authorization";
 import { verifyJWT, type JWTVerificationResult } from "@/util/jwt-verification";
 import { getSharedState, updateSharedState } from "@/shared-state/model";
@@ -197,30 +197,56 @@ export async function handleRequest(
         } catch (e) {
           console.error("Error running script", e);
 
-          if (isHandlerError(e)) {
+          // AIDEV-NOTE: AbortSocketError requires special handling - it aborts the socket without sending a response
+          if (isAbortSocketError(e)) {
+            // Update execution record to show socket was aborted
+            updateHandlerExecution({
+              id: executionId,
+              status: "error",
+              error_message: `Socket aborted: ${e.message}`,
+              response_data: null,
+              locals_data: JSON.stringify(locals),
+              console_output:
+                consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
+            });
+            // Pass the error to the next handler to propagate the abort
+            next(e);
+          } else if (isHandlerError(e)) {
             resp.status = e.statusCode;
             resp.body = {
               error: e.message,
             };
+
+            // Update to error status with error message and captured data
+            updateHandlerExecution({
+              id: executionId,
+              status: "error",
+              error_message: e instanceof Error ? e.message : String(e),
+              response_data: JSON.stringify(resp),
+              locals_data: JSON.stringify(locals),
+              console_output:
+                consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
+            });
+            next(e);
           } else {
             resp.status = 500;
             resp.body = {
               error:
                 "Error running responder script. See application logs for more details.",
             };
-          }
 
-          // Update to error status with error message and captured data
-          updateHandlerExecution({
-            id: executionId,
-            status: "error",
-            error_message: e instanceof Error ? e.message : String(e),
-            response_data: JSON.stringify(resp),
-            locals_data: JSON.stringify(locals),
-            console_output:
-              consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
-          });
-          next(e);
+            // Update to error status with error message and captured data
+            updateHandlerExecution({
+              id: executionId,
+              status: "error",
+              error_message: e instanceof Error ? e.message : String(e),
+              response_data: JSON.stringify(resp),
+              locals_data: JSON.stringify(locals),
+              console_output:
+                consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
+            });
+            next(e);
+          }
         }
       },
     );
@@ -242,7 +268,14 @@ export async function handleRequest(
         // Save the shared state after all handlers have executed
         updateSharedState(shared.data);
 
-        resolve([error, handlerResponseToRequestEvent(response)]);
+        // AIDEV-NOTE: If resp.socket is set, include it in the response with a special marker
+        // This allows the webhook server to write raw data directly to the socket
+        const responseEvent = handlerResponseToRequestEvent(response);
+        if (response.socket !== undefined) {
+          (responseEvent as any)._socketRawData = response.socket;
+        }
+
+        resolve([error, responseEvent]);
       },
     );
   });

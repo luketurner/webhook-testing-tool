@@ -1617,4 +1617,142 @@ describe("handleRequest()", () => {
       expect(resp.response_body).toBe(parseBase64(base64Data));
     });
   });
+
+  describe("AbortSocketError functionality", () => {
+    test("it should return AbortSocketError when thrown from handler", async () => {
+      defineHandler(
+        1,
+        "GET",
+        "/",
+        'throw new AbortSocketError("Connection aborted");',
+      );
+      const [err, resp] = await handleRequest(request);
+      expect(err).not.toBeNull();
+      expect(err.name).toBe("AbortSocketError");
+      expect(err.message).toBe("Connection aborted");
+    });
+
+    test("it should record handler execution with socket aborted status", async () => {
+      defineHandler(
+        1,
+        "GET",
+        "/",
+        `
+        console.log("Before abort");
+        throw new AbortSocketError("Test abort");
+      `,
+      );
+      const [err, resp] = await handleRequest(request);
+      expect(err).not.toBeNull();
+
+      const executions = getHandlerExecutionsByRequestId(request.id);
+      expect(executions).toHaveLength(1);
+      expect(executions[0].status).toBe("error");
+      expect(executions[0].error_message).toBe("Socket aborted: Test abort");
+      expect(executions[0].console_output).toContain("[LOG] Before abort");
+    });
+
+    test("it should abort without running subsequent handlers", async () => {
+      defineHandler(
+        1,
+        "GET",
+        "/",
+        `
+        console.log("Handler 1 executed");
+        throw new AbortSocketError("Aborting");
+      `,
+      );
+      defineHandler(
+        2,
+        "GET",
+        "/",
+        `
+        console.log("Handler 2 - should not execute");
+        resp.body = "should not reach";
+      `,
+      );
+      const [err, resp] = await handleRequest(request);
+      expect(err).not.toBeNull();
+
+      const executions = getHandlerExecutionsByRequestId(request.id);
+      expect(executions).toHaveLength(1); // Only first handler should execute
+      expect(executions[0].console_output).toContain(
+        "[LOG] Handler 1 executed",
+      );
+    });
+
+    test("it should support AbortSocketError with default message", async () => {
+      defineHandler(1, "GET", "/", "throw new AbortSocketError();");
+      const [err, resp] = await handleRequest(request);
+      expect(err).not.toBeNull();
+      expect(err.name).toBe("AbortSocketError");
+      expect(err.message).toBe("Socket connection aborted");
+    });
+  });
+
+  describe("resp.socket functionality", () => {
+    test("it should include raw socket data in response when resp.socket is set", async () => {
+      const rawData = "Raw socket data";
+      defineHandler(1, "GET", "/", `resp.socket = "${rawData}";`);
+      const [err, resp] = await handleRequest(request);
+      expect(err).toBeNull();
+      expect((resp as any)._socketRawData).toBe(rawData);
+    });
+
+    test("it should prioritize resp.socket and mark it with special property", async () => {
+      defineHandler(
+        1,
+        "GET",
+        "/",
+        `
+        resp.status = 200;
+        resp.body = "This should be ignored";
+        resp.socket = "HTTP/1.1 400 Bad Request\\r\\n\\r\\n";
+      `,
+      );
+      const [err, resp] = await handleRequest(request);
+      expect(err).toBeNull();
+      // Note: JavaScript interprets \\r\\n in the handler code as actual escape sequences
+      expect((resp as any)._socketRawData).toContain(
+        "HTTP/1.1 400 Bad Request",
+      );
+    });
+
+    test("it should support partial HTTP responses via resp.socket", async () => {
+      defineHandler(1, "GET", "/", 'resp.socket = "HTTP/1.1 200 OK\\r\\n";');
+      const [err, resp] = await handleRequest(request);
+      expect(err).toBeNull();
+      // Note: JavaScript interprets \\r\\n in the handler code as actual escape sequences
+      expect((resp as any)._socketRawData).toContain("HTTP/1.1 200 OK");
+    });
+
+    test("it should record handler execution when resp.socket is set", async () => {
+      defineHandler(
+        1,
+        "GET",
+        "/",
+        `
+        console.log("Setting raw socket data");
+        resp.socket = "Raw data";
+      `,
+      );
+      const [err, resp] = await handleRequest(request);
+      expect(err).toBeNull();
+
+      const executions = getHandlerExecutionsByRequestId(request.id);
+      expect(executions).toHaveLength(1);
+      expect(executions[0].status).toBe("success");
+      expect(executions[0].console_output).toContain(
+        "[LOG] Setting raw socket data",
+      );
+    });
+
+    test("it should support empty socket data", async () => {
+      defineHandler(1, "GET", "/", 'resp.socket = "";');
+      const [err, resp] = await handleRequest(request);
+      expect(err).toBeNull();
+      // Empty string should still be set
+      expect((resp as any)._socketRawData).toBeDefined();
+    });
+  });
 });
