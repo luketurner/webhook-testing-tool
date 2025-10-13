@@ -6,6 +6,7 @@ import {
   BookOpen,
   User,
   Network,
+  Cable,
 } from "lucide-react";
 import * as React from "react";
 
@@ -52,6 +53,11 @@ const navMain = [
     title: "TCP Connections",
     icon: Network,
   },
+  {
+    title: "TCP Handler",
+    icon: Cable,
+    route: "/tcp-handler",
+  },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -76,14 +82,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const handleTestTcpConnection = React.useCallback(async () => {
     try {
-      const response = await fetch("/api/tcp-connections/test", {
+      await fetch("/api/tcp-connections/test", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
       });
-
-      const result = await response.json();
     } catch (error) {
       console.error("TCP test connection error:", error);
     }
@@ -152,12 +156,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         hidden: false,
                       }}
                       onClick={() => {
-                        setActiveItem(item);
-                        setOpen(
-                          open && activeItem?.title === item.title
-                            ? false
-                            : true,
-                        );
+                        if ((item as any).route) {
+                          // Navigate to the route for items with a route
+                          window.location.hash = (item as any).route;
+                        } else {
+                          setActiveItem(item);
+                          setOpen(
+                            open && activeItem?.title === item.title
+                              ? false
+                              : true,
+                          );
+                        }
                       }}
                       isActive={activeItem?.title === item.title}
                       className="px-2.5 md:px-2"
@@ -244,6 +253,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         onSelect={() => handleOpenManual("handlers")}
                       >
                         Handlers
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={() => handleOpenManual("tcp-handlers")}
+                      >
+                        TCP Handlers
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

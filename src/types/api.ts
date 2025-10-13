@@ -11,7 +11,8 @@ export type ResourceType =
   | "requests"
   | "handlers"
   | "handler-executions"
-  | "tcp-connections";
+  | "tcp-connections"
+  | "tcp-handlers";
 
 export interface ResourceFetcherOptions {
   action: ResourceFetcherAction;

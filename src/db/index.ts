@@ -6,6 +6,7 @@ import { clearRequestEvents } from "@/request-events/model";
 import { clearHandlers } from "@/handlers/model";
 import { updateSharedState } from "@/shared-state/model";
 import { clearTcpConnections } from "@/tcp-connections/model";
+import { clearTcpHandlers } from "@/tcp-handlers/model";
 import { mkdir } from "fs/promises";
 import { dirname } from "path";
 
@@ -22,6 +23,7 @@ import * as migration8 from "./migrations/1748202268147_add_tls_info_column";
 import * as migration9 from "./migrations/1751506075000_add_shared_id_column";
 import * as migration10 from "./migrations/1751651182763_create_shared_state";
 import * as migration11 from "./migrations/1751905200000_add_tcp_connections_table";
+import * as migration12 from "./migrations/1760318121000_add_tcp_handlers_table";
 
 // Load all migrations
 const migrations: MigrationDefn[] = [
@@ -36,6 +38,7 @@ const migrations: MigrationDefn[] = [
   { name: "1751506075000_add_shared_id_column", ...migration9 },
   { name: "1751651182763_create_shared_state", ...migration10 },
   { name: "1751905200000_add_tcp_connections_table", ...migration11 },
+  { name: "1760318121000_add_tcp_handlers_table", ...migration12 },
 ];
 
 await mkdir(dirname(DB_FILE), { recursive: true });
@@ -102,4 +105,5 @@ export const resetDb = () => {
   clearRequestEvents();
   clearHandlers();
   clearTcpConnections();
+  clearTcpHandlers();
 };

@@ -8,6 +8,11 @@ import { randomUUID, type UUID } from "@/util/uuid";
 import { broadcastEvent } from "@/db/events";
 import { now } from "@/util/datetime";
 import type { Socket } from "bun";
+import { getActiveTcpHandler } from "@/tcp-handlers/model";
+import { runInNewContext } from "vm";
+import { Transpiler } from "bun";
+import { deepFreeze } from "@/util/object";
+import { getSharedState, updateSharedState } from "@/shared-state/model";
 
 // AIDEV-NOTE: TCP server implementation using Bun's TCP API to handle raw socket connections
 // Tracks connection metadata and data in the database, automatically sends "ack" responses
@@ -73,10 +78,96 @@ export function startTcpServer(port: number) {
         // Store received data
         state.receivedData.push(new Uint8Array(data));
 
-        // Send ack response
-        const ackMessage = new Uint8Array(Buffer.from("ack\n"));
-        socket.write(ackMessage);
-        state.sentData.push(ackMessage);
+        // AIDEV-NOTE: Check if there's an active TCP handler and execute it
+        const tcpHandler = getActiveTcpHandler();
+        if (tcpHandler) {
+          try {
+            // Convert received data to string
+            const dataString = new TextDecoder().decode(data);
+
+            // Load shared state
+            const shared = getSharedState();
+
+            const consoleOutput: string[] = [];
+
+            const captureConsole = {
+              log: (...args: unknown[]) => {
+                consoleOutput.push(
+                  `[LOG] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+                );
+              },
+              debug: (...args: unknown[]) => {
+                consoleOutput.push(
+                  `[DEBUG] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+                );
+              },
+              info: (...args: unknown[]) => {
+                consoleOutput.push(
+                  `[INFO] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+                );
+              },
+              warn: (...args: unknown[]) => {
+                consoleOutput.push(
+                  `[WARN] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+                );
+              },
+              error: (...args: unknown[]) => {
+                consoleOutput.push(
+                  `[ERROR] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+                );
+              },
+            };
+
+            // Function to send data back to the client
+            const send = (responseData: string) => {
+              const responseBuffer = new Uint8Array(Buffer.from(responseData));
+              socket.write(responseBuffer);
+              state.sentData.push(responseBuffer);
+            };
+
+            const sleep = (ms: number): Promise<void> => {
+              return new Promise((resolve) => setTimeout(resolve, ms));
+            };
+
+            const transpiler = new Transpiler({ loader: "ts" });
+            const code = transpiler.transformSync(tcpHandler.code);
+
+            // Wrap the code in an async function to support await
+            const wrappedCode = `(async () => { ${code} })()`;
+
+            // Execute the handler
+            runInNewContext(wrappedCode, {
+              data: deepFreeze(dataString),
+              send,
+              console: captureConsole,
+              shared: shared.data,
+              sleep,
+              btoa,
+              atob,
+            });
+
+            // Save the shared state after handler execution
+            updateSharedState(shared.data);
+
+            // Log console output if any
+            if (consoleOutput.length > 0) {
+              console.log(
+                `TCP Handler console output:\n${consoleOutput.join("\n")}`,
+              );
+            }
+          } catch (e) {
+            console.error("Error running TCP handler script", e);
+            // Send error response if handler fails
+            const errorMessage = new Uint8Array(Buffer.from("error\n"));
+            socket.write(errorMessage);
+            state.sentData.push(errorMessage);
+          }
+        } else {
+          // No handler configured, send default ack response
+          const ackMessage = new Uint8Array(Buffer.from("ack\n"));
+          socket.write(ackMessage);
+          state.sentData.push(ackMessage);
+        }
 
         // Update connection record with accumulated data
         const receivedData = Buffer.from(
