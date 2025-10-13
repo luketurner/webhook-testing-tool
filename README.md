@@ -11,7 +11,7 @@
 
 </div>
 
-`wtt` is an open-source alternative to webhook testing tools like https://webhook.site. It's designed for easy and lightweight self-hosting:
+`wtt` is an open-source alternative to webhook testing tools like https://webhook.site, plus some powerful extra [features](#features). It's designed for easy and lightweight self-hosting:
 
 - **Single-file executable**: Released as a single-file executable for easy, zero-dependency deployment. Just download and run the binary.
 - **No external database**: Uses SQLite and the local filesystem for data storage. There is no need for an external database.
@@ -25,7 +25,7 @@
 - **:screwdriver: Typescript response handlers**: Write custom response logic using Typescript handlers with Intellisense (uses an embedded Monaco editor and compiles with Bun's transpiler).
     - **Middleware pattern**: Multiple handlers can run per request in a middleware-like pattern.
     - **Persistent state**: Handlers can share state local to a given request, or globally (a persistent pseudo-DB for sharing data across multiple requests).
-    - **Protocol Beakers**: Handlers can write non-HTTP data and terminate socket connections to test client behavior when the HTTP protocol is broken.
+    - **Protocol Breakers**: Handlers can write non-HTTP data and terminate socket connections to test client behavior when the HTTP protocol is broken.
 - **:world_map: Admin dashboard**: Authenticated Web UI exposed on a separate port from the main webhook server.
 - **:card_file_box: Stores everything**: All requests and responses, handler execution state, etc. are stored in the SQLite DB and viewable in the dashboard.
 - **:shield: TLS Termination**: Supports TLS termination via self-signed certificate or Let's Encrypt ( :construction: WIP; TLS socket info not currently available in Bun. See [related issue](https://github.com/oven-sh/bun/issues/16834)).
@@ -167,6 +167,12 @@ Handlers are written in Typescript and can be edited in the `wtt` admin UI. You 
 - Use `resp.body_raw` to return a base64 encoded payload that can include arbitrary content.
 
 Documentation about handlers is available in the in-app manual, or you can open [the manual page](./src/docs/handlers.md) in Github.
+
+### TCP Handlers
+
+`wtt` also supports executing TCP handlers in response to incoming data on a TCP connection. This can be used to handle and respond to non-HTTP protocols.
+
+As with HTTP handlers, TCP handler documentation is available in the in-app manual, or you can open [the TCP handler manual page](./src/docs/tcp-handlers.md) in Github.
 
 ## Local testing
 
