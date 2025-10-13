@@ -182,6 +182,8 @@ export async function handleRequest(
             jwt: jwtUtils,
             shared: shared.data,
             sleep,
+            btoa,
+            atob,
             ...HandlerErrors,
           });
           // Update to success status with captured data

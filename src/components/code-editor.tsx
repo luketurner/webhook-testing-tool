@@ -105,6 +105,10 @@ loader.init().then((monaco) => {
     declare var Promise<T>: any; // placeholder
     declare var sleep: (ms: number) => Promise<void>;
 
+    // Base64 encoding/decoding functions
+    declare function btoa(data: string): string;
+    declare function atob(data: string): string;
+
     // Error classes available for throwing in handler code
     declare abstract class HandlerError extends Error {
       abstract readonly statusCode: number;

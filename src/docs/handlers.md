@@ -206,6 +206,18 @@ await sleep(100);
 
 Handler code is automatically wrapped in an `async` function, so you can use top-level `await` in the handler body.
 
+### Base64 Encoding/Decoding (`btoa`, `atob`)
+
+Use `btoa` to encode strings to base64 and `atob` to decode base64 strings.
+
+```javascript
+// Encode a string to base64
+const encoded = btoa("Hello, World!");
+
+// Decode a base64 string
+const decoded = atob("SGVsbG8sIFdvcmxkIQ==");
+```
+
 ## JWT Authentication
 
 If your handler is configured with JWT verification, use the `jwt` utilities:
