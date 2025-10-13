@@ -2,7 +2,12 @@ import { useCallback, useMemo } from "react";
 import { randomUUID } from "@/util/uuid";
 import type { TcpHandler } from "@/tcp-handlers/schema";
 import { TcpHandlerForm } from "@/components/tcp-handler-form";
-import { useResource, useResourceCreator, useResourceUpdater } from "../hooks";
+import {
+  useResourceList,
+  useResourceCreator,
+  useResourceUpdater,
+  useResourceDeleter,
+} from "../hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
@@ -18,12 +23,14 @@ import {
 
 // AIDEV-NOTE: This page manages the single TCP handler (only one can exist at a time)
 export const TcpHandlerPage = () => {
-  const { data: handlers, isLoading } = useResource<TcpHandler[]>(
-    "tcp-handlers",
-    "",
-  );
+  const { data: handlers, isLoading } =
+    useResourceList<TcpHandler>("tcp-handlers");
   const { mutate: createHandler } = useResourceCreator("tcp-handlers");
   const { mutate: updateHandler } = useResourceUpdater(
+    "tcp-handlers",
+    handlers?.[0]?.id || "",
+  );
+  const { mutate: deleteHandler } = useResourceDeleter(
     "tcp-handlers",
     handlers?.[0]?.id || "",
   );
@@ -42,14 +49,8 @@ export const TcpHandlerPage = () => {
     [existingHandler, createHandler, updateHandler],
   );
 
-  const handleDelete = async () => {
-    if (existingHandler) {
-      await fetch(`/api/tcp-handlers/${existingHandler.id}`, {
-        method: "DELETE",
-      });
-      // Reload the page to show the create form
-      window.location.reload();
-    }
+  const handleDelete = () => {
+    deleteHandler();
   };
 
   if (isLoading) {
