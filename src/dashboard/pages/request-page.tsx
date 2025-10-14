@@ -64,7 +64,7 @@ export const RequestPage = () => {
       queryClient.invalidateQueries({ queryKey: ["requests", id] });
 
       if (data.shared) {
-        const fullUrl = `${window.location.origin}${data.shareUrl}`;
+        const fullUrl = `${window.location.origin}/#${data.shareUrl}`;
         navigator.clipboard.writeText(fullUrl);
         toast.success("Share link copied to clipboard!");
       } else {
