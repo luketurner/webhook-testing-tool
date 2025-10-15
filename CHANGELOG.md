@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.1 (2025-10-15)
+
+- Fix: Use hash-based routing URL for shared requests
+
+---
+
 ## 2.5.0 (2025-10-13)
 
 - Add `resp.socket` property for HTTP handlers to break the HTTP protocol.
