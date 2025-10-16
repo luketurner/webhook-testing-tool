@@ -13,6 +13,9 @@ swap_size_mb = 512
   WTT_ADMIN_PORT = '3000'
   WTT_WEBHOOK_PORT = '3080'
   WTT_WEBHOOK_SSL_PORT = '3443'
+  WTT_PUBLIC_WEBHOOK_PORT = '80'
+  WTT_PUBLIC_WEBHOOK_SSL_PORT = '443'
+  WTT_PUBLIC_TCP_PORT = '3002'
 
 [[mounts]]
   source = 'data'
