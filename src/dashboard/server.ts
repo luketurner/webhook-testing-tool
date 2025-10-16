@@ -21,6 +21,10 @@ import {
   DASHBOARD_SSL_ENABLED,
   SSL_CERT_PATH,
   SSL_KEY_PATH,
+  TCP_PORT,
+  PUBLIC_WEBHOOK_PORT,
+  PUBLIC_WEBHOOK_SSL_PORT,
+  PUBLIC_TCP_PORT,
 } from "@/config";
 import indexPage from "./index.html";
 import { marked } from "marked";
@@ -74,6 +78,10 @@ export const startDashboardServer = () =>
               webhookPort: WEBHOOK_PORT,
               webhookSslPort: WEBHOOK_SSL_PORT,
               webhookSslEnabled: WEBHOOK_SSL_ENABLED,
+              tcpPort: TCP_PORT,
+              publicWebhookPort: PUBLIC_WEBHOOK_PORT,
+              publicWebhookSslPort: PUBLIC_WEBHOOK_SSL_PORT,
+              publicTcpPort: PUBLIC_TCP_PORT,
             });
           },
         },

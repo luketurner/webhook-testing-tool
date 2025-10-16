@@ -1,5 +1,4 @@
-import { useResourceList, useServerConfig } from "@/dashboard/hooks";
-import { useWebhookUrl } from "@/util/hooks/use-webhook-url";
+import { useResourceList, useServerUrls } from "@/dashboard/hooks";
 import { DataSection } from "@/components/data-section";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
@@ -12,8 +11,7 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 export const HomePage = () => {
   const { data: requests } = useResourceList<RequestEventMeta>("requests");
   const { data: handlers } = useResourceList<Handler>("handlers");
-  const { baseUrl } = useWebhookUrl();
-  const { data: serverConfig } = useServerConfig();
+  const { httpUrl, httpsUrl, tcpHost } = useServerUrls();
 
   const recentRequests = requests?.slice(0, 5) || [];
   const activeHandlers =
@@ -118,16 +116,15 @@ export const HomePage = () => {
             <TableBody>
               <TableRow>
                 <TableCell>Webhook (HTTP)</TableCell>
-                <TableCell>
-                  {baseUrl.replace(/^https:/, "http:")}:
-                  {serverConfig?.webhookPort}
-                </TableCell>
+                <TableCell>{httpUrl}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Webhook (HTTPS)</TableCell>
-                <TableCell>
-                  {baseUrl}:{serverConfig?.webhookSslPort}
-                </TableCell>
+                <TableCell>{httpsUrl || "N/A"}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>TCP</TableCell>
+                <TableCell>{tcpHost}</TableCell>
               </TableRow>
             </TableBody>
           </Table>

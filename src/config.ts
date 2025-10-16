@@ -30,6 +30,10 @@ export const WEBHOOK_PORT = parseInt(
   process.env.WTT_WEBHOOK_PORT || "3000",
   10,
 );
+export const PUBLIC_WEBHOOK_PORT = process.env.WTT_PUBLIC_WEBHOOK_PORT
+  ? parseInt(process.env.WTT_PUBLIC_WEBHOOK_PORT, 10)
+  : undefined;
+
 export const ADMIN_PORT = parseInt(process.env.WTT_ADMIN_PORT || "3001", 10);
 export const EXCLUDE_HEADERS = process.env.WTT_EXCLUDE_HEADERS ?? "";
 export const EXCLUDE_HEADER_MAP = EXCLUDE_HEADERS.split(",").reduce(
@@ -47,6 +51,9 @@ export const WEBHOOK_SSL_PORT = parseInt(
   process.env.WTT_WEBHOOK_SSL_PORT || "3443",
   10,
 );
+export const PUBLIC_WEBHOOK_SSL_PORT = process.env.WTT_PUBLIC_WEBHOOK_SSL_PORT
+  ? parseInt(process.env.WTT_PUBLIC_WEBHOOK_SSL_PORT, 10)
+  : undefined;
 export const SSL_CERT_PATH =
   process.env.WTT_SSL_CERT_PATH || join(DATA_DIR, "certs/cert.pem");
 export const SSL_KEY_PATH =
@@ -69,3 +76,6 @@ export const ACME_STAGING = process.env.WTT_ACME_STAGING === "true";
 
 // TCP Server Configuration
 export const TCP_PORT = parseInt(process.env.WTT_TCP_PORT || "3002", 10);
+export const PUBLIC_TCP_PORT = process.env.WTT_PUBLIC_TCP_PORT
+  ? parseInt(process.env.WTT_PUBLIC_TCP_PORT, 10)
+  : undefined;

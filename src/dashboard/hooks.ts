@@ -2,7 +2,6 @@ import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { HandlerRequest } from "../webhook-server/schema";
 import type {
-  ResourceFetcherAction,
   Resource,
   ResourceType,
   ResourceFetcherOptions,
@@ -207,9 +206,13 @@ export function useManualPage(pageName: string | null) {
 }
 
 export interface ServerConfig {
-  webhookPort: string;
-  webhookSslPort: string;
+  webhookPort: number;
+  webhookSslPort: number;
   webhookSslEnabled: boolean;
+  publicWebhookPort?: number;
+  publicWebhookSslPort?: number;
+  tcpPort: number;
+  publicTcpPort?: number;
 }
 
 export function useServerConfig() {
@@ -223,4 +226,37 @@ export function useServerConfig() {
       return response.json();
     },
   });
+}
+
+export function useServerUrls() {
+  const { data: serverConfig } = useServerConfig();
+  const hostname = window.location.hostname;
+
+  const httpPort =
+    serverConfig?.publicWebhookPort || serverConfig?.webhookPort || 80;
+  const httpsPort =
+    serverConfig?.publicWebhookSslPort || serverConfig?.webhookSslPort || 443;
+  const tcpPort = serverConfig?.publicTcpPort || serverConfig?.tcpPort || 3000;
+
+  const httpUrl = `http://${hostname}${httpPort == 80 ? "" : `:${httpPort}`}/`;
+  const httpsUrl =
+    serverConfig?.publicWebhookSslPort || serverConfig?.webhookSslEnabled
+      ? `https://${hostname}${httpsPort == 443 ? "" : `:${httpsPort}`}/`
+      : null;
+  const tcpHost = `${hostname}:${tcpPort}`;
+
+  const getFullUrl = (path: string) => {
+    // use HTTPS if we can, otherwise fall back to HTTP
+    const baseUrl = httpsUrl || httpUrl;
+    // Ensure path doesn't start with /, since baseUrl ends with /
+    const normalizedPath = path.startsWith("/") ? path.slice(1) : path;
+    return `${baseUrl}${normalizedPath}`;
+  };
+
+  return {
+    httpUrl,
+    httpsUrl,
+    tcpHost,
+    getFullUrl,
+  };
 }

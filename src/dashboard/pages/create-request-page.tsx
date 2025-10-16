@@ -1,6 +1,5 @@
 import { useSendRequest } from "@/dashboard/hooks";
 import { requestSchema, type HandlerRequest } from "@/webhook-server/schema";
-import { useWebhookUrl } from "@/util/hooks/use-webhook-url";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -22,7 +21,6 @@ import {
 import { CardFooter } from "@/components/ui/card";
 
 export const CreateRequestPage = () => {
-  const { baseUrl } = useWebhookUrl();
   const [searchParams] = useSearchParams();
 
   const form = useForm<HandlerRequest>({
@@ -65,12 +63,7 @@ export const CreateRequestPage = () => {
         <FormCard
           className="mt-4"
           title="Test Request"
-          description={
-            <>
-              Sends a test request from your browser. (Or you can send your own
-              test requests to: <code>{baseUrl}/</code>)
-            </>
-          }
+          description={<>Sends a test request from your browser.</>}
         >
           <div className="space-y-4">
             <HttpMethodSelect

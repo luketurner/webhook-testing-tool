@@ -7,9 +7,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useServerUrls } from "@/dashboard/hooks";
 import type { RequestEvent } from "@/request-events/schema";
 import { headerNameDisplay } from "@/util/http";
-import { useWebhookUrl } from "@/util/hooks/use-webhook-url";
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 
@@ -25,7 +25,7 @@ export const CopyRequestModal = ({
   onOpenChange,
 }: CopyRequestModalProps) => {
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
-  const { getFullUrl } = useWebhookUrl();
+  const { getFullUrl } = useServerUrls();
 
   const requestBody = request.request_body ? atob(request.request_body) : "";
   const headers = request.request_headers || [];
@@ -97,7 +97,10 @@ export const CopyRequestModal = ({
   const generateRawRequest = () => {
     const url = new URL(fullUrl);
     let rawRequest = `${request.request_method} ${url.pathname}${url.search} HTTP/1.1\r\n`;
-    rawRequest += `Host: ${url.host}\r\n`;
+
+    if (!headers.some(([k, v]) => k.toLowerCase() === "host")) {
+      rawRequest += `Host: ${url.host}\r\n`;
+    }
 
     // Add headers
     headers.forEach(([name, value]) => {
