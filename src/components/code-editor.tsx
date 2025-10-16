@@ -16,6 +16,7 @@ loader.init().then((monaco) => {
 
     declare interface HandlerResponse {
       body?: any;
+      body_raw?: string;
       headers: [string, string][];
       status: number;
       socket?: string; // Raw data to write directly to socket, bypassing HTTP
