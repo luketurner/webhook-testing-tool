@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.5.2 (2025-10-16)
+
+- Add WTT_PUBLIC_WEBHOOK_PORT, WTT_PUBLIC_WEBHOOK_SSL_PORT, and WTT_PUBLIC_TCP_PORT env vars.
+- Improve how webhook URLs are listed on the homepage, and add TCP host to the homepage.
+- Fixes to how URLs are generated when copying requests as cURL/fetch/raw.
+- Fixes duplicate Host headers when copying requests as raw.
+
+---
+
 ## 2.5.1 (2025-10-15)
 
 - Fix: Use hash-based routing URL for shared requests
