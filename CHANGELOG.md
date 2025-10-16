@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.3 (2025-10-16)
+
+- add resp.body_raw to types for HTTP handler code editor
+
+---
+
 ## 2.5.2 (2025-10-16)
 
 - Add WTT_PUBLIC_WEBHOOK_PORT, WTT_PUBLIC_WEBHOOK_SSL_PORT, and WTT_PUBLIC_TCP_PORT env vars.
