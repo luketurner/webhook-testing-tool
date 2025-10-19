@@ -180,7 +180,7 @@ app.all("*", async (req: express.Request, res: express.Response) => {
       status: "complete",
       response_status: null,
       response_status_message: null,
-      response_headers: null,
+      response_headers: [],
       response_body: null,
       response_timestamp: now(),
     });
@@ -193,15 +193,14 @@ app.all("*", async (req: express.Request, res: express.Response) => {
   const socketRawData = (response as any)?._socketRawData;
   if (socketRawData) {
     // Write raw data directly to the socket
-    req.socket.write(socketRawData, () => {
-      // Close the socket after writing
-      req.socket.end();
+    req.socket.write(socketRawData, "utf8");
+    req.socket.end(() => {
       const updatedEvent = updateRequestEvent({
         id: event.id,
         status: "complete",
         response_status: null,
         response_status_message: null,
-        response_headers: null,
+        response_headers: [],
         response_body: null,
         response_timestamp: now(),
       });
