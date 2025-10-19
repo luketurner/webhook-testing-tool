@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.5.4 (2025-10-19)
+
+- Automatically wrap text when viewing payloads with base64, hex, or binary encodings.
+- Fix: Downloading non-textual payloads (e.g. PNGs) now works without mangling the bytes
+- Fix: Data written with resp.socket is now being properly flushed
+- Finalize RequestEvent and HandlerExecutions when aborting the connection early via resp.socket or AbortSocketError
+- Don't treat thrown HandlerErrors as failed handler executions, since the user threw them deliberately to return a specific HTTP status code.
+
+---
+
 ## 2.5.3 (2025-10-16)
 
 - add resp.body_raw to types for HTTP handler code editor
