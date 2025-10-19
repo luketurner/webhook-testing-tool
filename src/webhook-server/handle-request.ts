@@ -200,12 +200,12 @@ export async function handleRequest(
           console.error("Error running script", e);
 
           // AIDEV-NOTE: AbortSocketError requires special handling - it aborts the socket without sending a response
+          // Since this is deliberately thrown by the user, it's not actually an execution failure.
           if (isAbortSocketError(e)) {
             // Update execution record to show socket was aborted
             updateHandlerExecution({
               id: executionId,
-              status: "error",
-              error_message: `Socket aborted: ${e.message}`,
+              status: "success",
               response_data: null,
               locals_data: JSON.stringify(locals),
               console_output:
@@ -219,11 +219,11 @@ export async function handleRequest(
               error: e.message,
             };
 
-            // Update to error status with error message and captured data
+            // Note -- handler errors are deliberately thrown by the user to cause a certain HTTP status code.
+            // So, they are not actually an "execution failure", which is why the status should be successful.
             updateHandlerExecution({
               id: executionId,
-              status: "error",
-              error_message: e instanceof Error ? e.message : String(e),
+              status: "success",
               response_data: JSON.stringify(resp),
               locals_data: JSON.stringify(locals),
               console_output:
