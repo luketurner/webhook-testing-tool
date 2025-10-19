@@ -173,9 +173,18 @@ app.all("*", async (req, res) => {
 
   // AIDEV-NOTE: Handle AbortSocketError - destroy socket without sending response
   if (error && isAbortSocketError(error)) {
-    console.log(`Aborting socket connection: ${error.message}`);
     // Destroy the socket without sending any response
     req.socket.destroy();
+    const updatedEvent = updateRequestEvent({
+      id: event.id,
+      status: "complete",
+      response_status: null,
+      response_status_message: null,
+      response_headers: null,
+      response_body: null,
+      response_timestamp: now(),
+    });
+    appEvents.emit("request:updated", updatedEvent);
     return;
   }
 
@@ -187,6 +196,16 @@ app.all("*", async (req, res) => {
     req.socket.write(socketRawData, () => {
       // Close the socket after writing
       req.socket.end();
+      const updatedEvent = updateRequestEvent({
+        id: event.id,
+        status: "complete",
+        response_status: null,
+        response_status_message: null,
+        response_headers: null,
+        response_body: null,
+        response_timestamp: now(),
+      });
+      appEvents.emit("request:updated", updatedEvent);
     });
     return;
   }
