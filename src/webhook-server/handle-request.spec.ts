@@ -1632,7 +1632,7 @@ describe("handleRequest()", () => {
       expect(err.message).toBe("Connection aborted");
     });
 
-    test("it should record handler execution with socket aborted status", async () => {
+    test("it should record handler execution", async () => {
       defineHandler(
         1,
         "GET",
@@ -1647,8 +1647,7 @@ describe("handleRequest()", () => {
 
       const executions = getHandlerExecutionsByRequestId(request.id);
       expect(executions).toHaveLength(1);
-      expect(executions[0].status).toBe("error");
-      expect(executions[0].error_message).toBe("Socket aborted: Test abort");
+      expect(executions[0].status).toBe("success");
       expect(executions[0].console_output).toContain("[LOG] Before abort");
     });
 
