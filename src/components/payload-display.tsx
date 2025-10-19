@@ -228,16 +228,15 @@ export const PayloadDisplay = ({
     }
   }
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     // Download the raw content (decoded from base64)
-    let rawContent: string;
-    try {
-      rawContent = atob(content);
-    } catch {
-      rawContent = content; // fallback if not valid base64
-    }
 
-    const blob = new Blob([rawContent], { type: "application/octet-stream" });
+    // this is a trick to convert base64 => blob using only browser APIs (no Buffer)
+    // see https://stackoverflow.com/a/36183085
+    const blob = await (
+      await fetch(`data:${contentType};base64,${content}`)
+    ).blob();
+
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
