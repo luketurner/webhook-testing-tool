@@ -20,6 +20,7 @@ import { getExtensionFromMimeType } from "@/util/mime";
 import { QueryParamsTable } from "@/components/display/query-params-table";
 import type { KVList } from "@/util/kv-list";
 import { formatXml, getContentFormat } from "@/util/xml";
+import { cn } from "@/util/ui";
 
 const ENCODINGS = [
   { value: "utf8", label: "UTF-8" },
@@ -388,7 +389,15 @@ export const PayloadDisplay = ({
             <ActionButtons />
           </div>
           <TabsContent value="raw">
-            <pre className="overflow-x-auto p-2 bg-muted rounded text-sm">
+            <pre
+              className={cn("overflow-x-auto p-2 bg-muted rounded text-sm", {
+                "text-wrap":
+                  encoding === "hex" ||
+                  encoding === "binary" ||
+                  encoding === "base64",
+                "break-all": encoding === "base64",
+              })}
+            >
               <code>{decodedContent}</code>
             </pre>
           </TabsContent>
