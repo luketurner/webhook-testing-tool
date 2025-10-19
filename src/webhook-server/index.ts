@@ -100,7 +100,7 @@ function extractTlsInfo(socket: any) {
   }
 }
 
-app.all("*", async (req, res) => {
+app.all("*", async (req: express.Request, res: express.Response) => {
   const headers = { ...req.headers };
   for (const header of Object.keys(headers)) {
     if (EXCLUDE_HEADER_MAP[header]) delete headers[header];
