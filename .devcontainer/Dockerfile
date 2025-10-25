@@ -138,6 +138,16 @@ RUN npm install -g backlog.md
 # install wt
 RUN bun install -g @luketurner/wt
 
+# Install Claude plugins
+RUN claude plugin marketplace add lackeyjb/playwright-skill
+RUN claude plugin install playwright-skill@playwright-skill
+RUN cd ~/.claude/plugins/marketplaces/playwright-skill/skills/playwright-skill && bun install && cd -
+
+# install spec-kit
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH=$PATH:/home/node/.local/bin
+RUN uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
+
 # Copy and set up firewall script
 COPY init-firewall.sh /usr/local/bin/
 USER root
