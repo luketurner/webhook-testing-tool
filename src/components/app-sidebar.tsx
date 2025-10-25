@@ -32,7 +32,7 @@ import {
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSendRequest } from "@/dashboard/hooks";
-import { Link, useSearchParams, useLocation } from "react-router";
+import { Link, useSearchParams, useLocation, NavLink } from "react-router";
 import { RequestSidebar } from "@/components/request-sidebar";
 import { HandlerSidebar } from "@/components/handler-sidebar";
 import { TcpConnectionsSidebar } from "@/components/tcp-connections-sidebar";
@@ -308,6 +308,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="right" align="end">
+                  <DropdownMenuItem asChild>
+                    <NavLink to="/user-management">Manage user</NavLink>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onSelect={handleSignOut}>
                     Sign out
                   </DropdownMenuItem>
