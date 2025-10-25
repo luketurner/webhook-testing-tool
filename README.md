@@ -152,6 +152,44 @@ Once deployed, you can access your app at the following URLs:
 | `WTT_ACME_STAGING` | `"false"` | Whether the ACME directory is a staging environment. |
 | `NODE_ENV` | `"development"` or `"production"` | Controls certain development features (e.g. hot-module reloading) and security checks. Note this is always set to `"production"` for release builds and cannot be changed. |
 
+## Admin commands
+
+The `wtt` executable can also be used as a CLI tool to perform some database administration tasks, like resetting login information and exporting the DB. This can be useful if, for example, you forgot your admin username or password and need to reset it.
+
+```
+WTT Database Admin CLI
+
+Usage:
+  wtt                     (starts WTT server - default behavior)
+  wtt [command] [args...]
+
+Commands:
+  change-email <email>    Change admin user's email address
+                          Updates immediately (no confirmation email)
+
+  change-password         Change admin user's password (interactive prompt)
+                          Minimum 8 characters
+                          Must contain: uppercase, lowercase, number
+
+  export-db [path]        Export database to file for backup
+                          Default filename: backup-YYYY-MM-DDTHH-MM-SS.db
+
+  --help, help            Show this help message
+
+Examples:
+  # Change admin email to new address
+  wtt change-email admin@newdomain.com
+
+  # Change admin password (will prompt twice for confirmation)
+  wtt change-password
+
+  # Export database with automatic timestamp filename
+  wtt export-db
+
+  # Export database to specific location
+  wtt export-db /backups/wtt-2025-10-25.db
+```
+
 ## Handlers
 
 One special feature is the ability to configure how `wtt` responds to requests using handlers.
