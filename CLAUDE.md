@@ -281,6 +281,7 @@ A task is **Done** only when **ALL** of the following are complete:
 ## Active Technologies
 - TypeScript 5.8.3 with Bun 1.x runtime + React 19, better-auth 1.2.10, react-hook-form 7.56, Zod 3.25, shadcn/ui (Radix UI components), Tailwind CSS 4.1 (001-user-management)
 - SQLite (better-sqlite3 12.0.0) for user credentials and session data (001-user-management)
+- SQLite database (existing at path from DB_FILE config) (001-db-admin-cli)
 
 ## Recent Changes
 - 001-user-management: Added TypeScript 5.8.3 with Bun 1.x runtime + React 19, better-auth 1.2.10, react-hook-form 7.56, Zod 3.25, shadcn/ui (Radix UI components), Tailwind CSS 4.1

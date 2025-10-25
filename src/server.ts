@@ -1,4 +1,20 @@
 import "@/server-only";
+
+// AIDEV-NOTE: CLI mode detection - critical for database admin CLI feature
+// This MUST run before any server imports that start servers
+// If process.argv has commands (length > 2), route to CLI handler and exit
+// Otherwise, continue with normal server startup (default behavior)
+const args = process.argv.slice(2); // Skip 'bun' and 'src/server.ts'
+
+if (args.length > 0) {
+  // CLI mode detected - import and run CLI command handler
+  const { runCliCommand } = await import("@/cli-admin");
+  await runCliCommand(args);
+  process.exit(0); // Exit after CLI command completes (don't start servers)
+}
+
+// Normal server mode continues below (no args provided)
+
 import {
   DB_FILE,
   ADMIN_PORT,
