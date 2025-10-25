@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.0 (2025-10-25)
+
+- Add user management page, with ability to change email/password
+
+---
+
 ## 2.5.4 (2025-10-19)
 
 - Automatically wrap text when viewing payloads with base64, hex, or binary encodings.
