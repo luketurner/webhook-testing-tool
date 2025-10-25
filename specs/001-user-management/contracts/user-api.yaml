@@ -1,0 +1,360 @@
+openapi: 3.0.0
+info:
+  title: User Management API
+  description: API endpoints for updating admin user email and password
+  version: 1.0.0
+  contact:
+    name: WTT User Management Feature
+    url: https://github.com/luketurner/webhook-testing-tool
+
+servers:
+  - url: http://localhost:3001
+    description: Local development server (admin dashboard)
+
+tags:
+  - name: user-management
+    description: Operations for managing the admin user account
+
+paths:
+  /api/user/update-email:
+    post:
+      summary: Update admin user email address
+      description: |
+        Updates the authenticated admin user's email address. The new email is immediately
+        active and can be used for login without verification (system has no email-sending
+        capabilities). Requires valid session authentication.
+      tags:
+        - user-management
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 254
+                  description: New email address (RFC 5322 compliant, max 254 characters)
+                  example: "admin@example.com"
+            examples:
+              validEmail:
+                summary: Valid email update
+                value:
+                  email: "newemail@example.com"
+              emailWithWhitespace:
+                summary: Email with whitespace (will be trimmed)
+                value:
+                  email: "  admin@example.com  "
+      responses:
+        '200':
+          description: Email successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Email updated successfully"
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: "550e8400-e29b-41d4-a716-446655440000"
+                      email:
+                        type: string
+                        format: email
+                        example: "newemail@example.com"
+                      name:
+                        type: string
+                        example: "Admin"
+        '400':
+          description: Invalid email format or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidFormat:
+                  summary: Invalid email format
+                  value:
+                    success: false
+                    error: "Invalid email format"
+                tooLong:
+                  summary: Email too long
+                  value:
+                    success: false
+                    error: "Email must be 254 characters or less"
+                duplicate:
+                  summary: Email already in use
+                  value:
+                    success: false
+                    error: "Email already in use"
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Authentication required"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Failed to update email"
+
+  /api/user/update-password:
+    post:
+      summary: Update admin user password
+      description: |
+        Updates the authenticated admin user's password. Requires current password verification
+        for security (prevents unauthorized changes if session is hijacked). The new password
+        is immediately active and the old password is invalidated. Session remains active
+        (no logout required).
+      tags:
+        - user-management
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currentPassword
+                - newPassword
+                - confirmPassword
+              properties:
+                currentPassword:
+                  type: string
+                  format: password
+                  description: Current password (for verification)
+                  example: "currentpassword123"
+                newPassword:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: |
+                    New password (minimum 8 characters, accepts all printable characters
+                    including spaces, special characters, emoji, and unicode)
+                  example: "newpassword456"
+                confirmPassword:
+                  type: string
+                  format: password
+                  description: Confirmation of new password (must match newPassword)
+                  example: "newpassword456"
+            examples:
+              validPasswordUpdate:
+                summary: Valid password update
+                value:
+                  currentPassword: "oldpassword123"
+                  newPassword: "newpassword456"
+                  confirmPassword: "newpassword456"
+              unicodePassword:
+                summary: Password with unicode characters
+                value:
+                  currentPassword: "oldpassword123"
+                  newPassword: "new🔒password你好"
+                  confirmPassword: "new🔒password你好"
+      responses:
+        '200':
+          description: Password successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Password updated successfully"
+        '400':
+          description: Validation error (password too short or confirmation mismatch)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                tooShort:
+                  summary: Password too short
+                  value:
+                    success: false
+                    error: "Password must be at least 8 characters"
+                mismatch:
+                  summary: Confirmation mismatch
+                  value:
+                    success: false
+                    error: "Passwords do not match"
+        '401':
+          description: Not authenticated or current password incorrect
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notAuthenticated:
+                  summary: No valid session
+                  value:
+                    success: false
+                    error: "Authentication required"
+                incorrectPassword:
+                  summary: Current password incorrect
+                  value:
+                    success: false
+                    error: "Invalid credentials"
+          note: |
+            Per SR-003: Error message does not reveal whether authentication failed due to
+            missing session or incorrect current password (prevents timing attacks)
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Failed to update password"
+
+  /api/user/profile:
+    get:
+      summary: Get current user profile
+      description: |
+        Retrieves the authenticated admin user's profile information including email,
+        name, and account creation timestamp. Used by the user management page to
+        display current user information.
+      tags:
+        - user-management
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: "550e8400-e29b-41d4-a716-446655440000"
+                      email:
+                        type: string
+                        format: email
+                        example: "admin@example.com"
+                      name:
+                        type: string
+                        example: "Admin"
+                      createdAt:
+                        type: integer
+                        format: int64
+                        description: Unix timestamp of account creation
+                        example: 1698163200
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Authentication required"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Failed to retrieve profile"
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
+      description: Better-auth session cookie (automatically set after login)
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Human-readable error message
+          example: "An error occurred"
+
+  examples:
+    EmailUpdateRequest:
+      value:
+        email: "newemail@example.com"
+
+    PasswordUpdateRequest:
+      value:
+        currentPassword: "oldpassword123"
+        newPassword: "newpassword456"
+        confirmPassword: "newpassword456"
+
+# Security Considerations
+
+## Authentication
+- All endpoints require valid session authentication
+- Session managed by better-auth via HTTP-only cookies
+- Session expires after 7 days of inactivity
+- Session refreshes after 1 day of activity
+
+## Password Security (per Security Requirements SR-001 through SR-005)
+- Current password verification required for password updates (SR-001)
+- Passwords never transmitted or stored in plain text (SR-002)
+- Error messages don't reveal whether current password check or other validation failed (SR-003)
+- Failed password change attempts logged for security auditing (SR-004)
+- Password hashing uses better-auth's bcrypt implementation (SR-005)
+
+## Email Verification
+- Email verification explicitly NOT required (FR-022, FR-023)
+- System has no email-sending capabilities
+- Updated email addresses immediately active for login
+
+## Rate Limiting
+- Not specified in current requirements
+- Consider adding rate limiting to prevent brute-force attacks on password updates
+- Suggestion: Max 5 password update attempts per hour per session
+
+## HTTPS
+- Production deployments should use HTTPS
+- WTT supports TLS termination with self-signed or Let's Encrypt certificates
+- Session cookies should use Secure flag in production
