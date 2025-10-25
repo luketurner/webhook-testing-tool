@@ -90,10 +90,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     // Only update if the active item changed to avoid unnecessary re-renders
     if (activeItem.title !== newActiveItem.title) {
       setActiveItem(newActiveItem);
-      // Ensure sidebar is open when navigating to a new section
-      setOpen(true);
     }
-  }, [location.pathname, setOpen]);
+  }, [location.pathname]);
 
   const handleDownloadDatabase = React.useCallback(() => {
     window.location.href = "/api/db/export";
