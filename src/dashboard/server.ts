@@ -115,9 +115,6 @@ export const startDashboardServer = () =>
         return Response.json(Object.keys(manualPages));
       },
 
-      // T019: User management static route
-      "/user-management": indexPage,
-
       "/*": new Response(null, { status: 404 }),
     },
     // error() {},
