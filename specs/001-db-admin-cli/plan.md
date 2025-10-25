@@ -123,7 +123,7 @@ tests/
 ### Technology Decisions
 
 - **CLI Framework**: None (using Bun's `process.argv` directly for simplicity)
-- **Argument Pattern**: Command-based (e.g., `bun run src/server.ts change-email new@example.com`)
+- **Argument Pattern**: Command-based (e.g., `wtt change-email new@example.com`)
 - **Password Hashing**: Reuse better-auth's existing password hashing utilities
 - **Database Export Method**: SQLite VACUUM INTO or simple file copy
 - **Input Validation**: Zod schemas for all CLI inputs
@@ -176,13 +176,13 @@ This preserves backward compatibility while adding CLI functionality.
 
 ```bash
 # Default behavior (no arguments) - starts server
-bun run src/server.ts
+wtt
 
 # CLI commands (new)
-bun run src/server.ts change-email <new-email>
-bun run src/server.ts change-password
-bun run src/server.ts export-db [output-path]
-bun run src/server.ts --help
+wtt change-email <new-email>
+wtt change-password
+wtt export-db [output-path]
+wtt --help
 ```
 
 ### Integration Points

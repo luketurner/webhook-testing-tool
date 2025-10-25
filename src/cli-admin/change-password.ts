@@ -4,7 +4,7 @@ import { hashPassword } from "better-auth/crypto";
 import { passwordSchema } from "@/cli-admin/validation";
 
 // AIDEV-NOTE: Change password implementation - updates admin user's password in database
-// Used by CLI command: bun run src/server.ts change-password
+// Used by CLI command: wtt change-password
 // Password is hashed using better-auth's Scrypt algorithm before storage
 
 /**

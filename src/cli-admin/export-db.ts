@@ -6,7 +6,7 @@ import { promptConfirm } from "@/cli-admin/io";
 import { stat } from "fs/promises";
 
 // AIDEV-NOTE: Database export implementation - uses VACUUM INTO for atomic export
-// Used by CLI command: bun run src/server.ts export-db [path]
+// Used by CLI command: wtt export-db [path]
 // VACUUM INTO creates a new database file with optimized storage (removes deleted rows, defragments)
 
 /**

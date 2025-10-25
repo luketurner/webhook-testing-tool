@@ -6,9 +6,9 @@
 ## Command Signature
 
 ```bash
-bun run src/server.ts --help
+wtt --help
 # or
-bun run src/server.ts help
+wtt help
 ```
 
 ## Arguments
@@ -19,7 +19,7 @@ None.
 
 ### Input Example
 ```bash
-bun run src/server.ts --help
+wtt --help
 ```
 
 ### Expected Output (stdout)
@@ -27,7 +27,7 @@ bun run src/server.ts --help
 WTT Database Admin CLI
 
 Usage:
-  bun run src/server.ts [command] [arguments...]
+  wtt [command] [arguments...]
 
 Commands:
   change-email <email>    Change admin user's email address
@@ -37,16 +37,16 @@ Commands:
 
 Examples:
   # Change admin email
-  bun run src/server.ts change-email admin@newdomain.com
+  wtt change-email admin@newdomain.com
 
   # Change admin password (prompts for new password)
-  bun run src/server.ts change-password
+  wtt change-password
 
   # Export database with default filename
-  bun run src/server.ts export-db
+  wtt export-db
 
   # Export database to specific path
-  bun run src/server.ts export-db /backups/wtt-2025-10-25.db
+  wtt export-db /backups/wtt-2025-10-25.db
 
 Notes:
   - Server must be stopped before running admin commands
@@ -64,8 +64,8 @@ For more information:
 ## Alternative Invocations
 
 Both of these MUST work identically:
-- `bun run src/server.ts --help`
-- `bun run src/server.ts help`
+- `wtt --help`
+- `wtt help`
 
 ## Help Output Format Requirements
 
@@ -129,9 +129,9 @@ test("help: contains all commands", async () => {
   expect(result.stdout).toContain("--help");
 
   // All commands must have examples
-  expect(result.stdout).toContain("bun run src/server.ts change-email");
-  expect(result.stdout).toContain("bun run src/server.ts change-password");
-  expect(result.stdout).toContain("bun run src/server.ts export-db");
+  expect(result.stdout).toContain("wtt change-email");
+  expect(result.stdout).toContain("wtt change-password");
+  expect(result.stdout).toContain("wtt export-db");
 });
 ```
 
@@ -166,7 +166,7 @@ const commands: CommandInfo[] = [
     name: "change-email",
     description: "Change admin user's email address",
     usage: "change-email <email>",
-    example: "bun run src/server.ts change-email admin@newdomain.com"
+    example: "wtt change-email admin@newdomain.com"
   },
   // ... other commands
 ];
@@ -206,7 +206,7 @@ When an unrecognized command is provided, a condensed help message should be sho
 
 ### Input Example
 ```bash
-bun run src/server.ts invalid-command
+wtt invalid-command
 ```
 
 ### Expected Output (stderr)
@@ -219,7 +219,7 @@ Available commands:
   export-db [path]      - Export database to file
   --help                - Show this help message
 
-Run 'bun run src/server.ts --help' for more information.
+Run 'wtt --help' for more information.
 ```
 
 ### Expected Exit Code

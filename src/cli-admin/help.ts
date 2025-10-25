@@ -13,8 +13,8 @@ export function showHelp(): void {
   console.log(`WTT Database Admin CLI
 
 Usage:
-  bun run src/server.ts [command] [arguments...]
-  bun run src/server.ts              (starts WTT server - default behavior)
+  wtt [command] [arguments...]
+  wtt              (starts WTT server - default behavior)
 
 Commands:
   change-email <email>    Change admin user's email address

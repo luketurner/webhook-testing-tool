@@ -10,7 +10,7 @@ This contract defines the overall CLI interface behavior for the WTT application
 ## Executable
 
 ```bash
-bun run src/server.ts [command] [arguments...]
+wtt [command] [arguments...]
 ```
 
 ## Mode Detection
@@ -52,7 +52,7 @@ Example:
 ```
 Error: Unrecognized command 'foo'
 
-Run 'bun run src/server.ts --help' to see available commands.
+Run 'wtt --help' to see available commands.
 ```
 
 ## Success Output Format
@@ -77,7 +77,7 @@ Example:
 
 **Input**:
 ```bash
-bun run src/server.ts
+wtt
 ```
 
 **Expected Behavior**:
@@ -89,7 +89,7 @@ bun run src/server.ts
 
 **Input**:
 ```bash
-bun run src/server.ts change-email test@example.com
+wtt change-email test@example.com
 ```
 
 **Expected Behavior**:
@@ -101,7 +101,7 @@ bun run src/server.ts change-email test@example.com
 
 **Input**:
 ```bash
-bun run src/server.ts invalid-command
+wtt invalid-command
 ```
 
 **Expected Output (stderr)**:
@@ -114,7 +114,7 @@ Available commands:
   export-db [path]      - Export database to file
   --help                - Show this help message
 
-Run 'bun run src/server.ts --help' for more information.
+Run 'wtt --help' for more information.
 ```
 
 **Expected Exit Code**: 1
@@ -123,14 +123,14 @@ Run 'bun run src/server.ts --help' for more information.
 
 **Input**:
 ```bash
-bun run src/server.ts --help
+wtt --help
 ```
 
 **Expected Output (stdout)**:
 ```
 WTT Database Admin CLI
 
-Usage: bun run src/server.ts [command] [arguments...]
+Usage: wtt [command] [arguments...]
 
 Commands:
   change-email <email>  - Change admin user's email address
@@ -139,9 +139,9 @@ Commands:
   --help                - Show this help message
 
 Examples:
-  bun run src/server.ts change-email admin@newdomain.com
-  bun run src/server.ts change-password
-  bun run src/server.ts export-db /backups/wtt-backup.db
+  wtt change-email admin@newdomain.com
+  wtt change-password
+  wtt export-db /backups/wtt-backup.db
 
 For more information, see: specs/001-db-admin-cli/quickstart.md
 ```

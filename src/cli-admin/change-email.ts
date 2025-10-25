@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { emailSchema } from "@/cli-admin/validation";
 
 // AIDEV-NOTE: Change email implementation - updates admin user's email in database
-// Used by CLI command: bun run src/server.ts change-email <email>
+// Used by CLI command: wtt change-email <email>
 
 /**
  * Changes the admin user's email address

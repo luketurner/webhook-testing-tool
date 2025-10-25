@@ -19,19 +19,19 @@ The WTT Database Admin CLI provides command-line tools for managing the admin us
 
 ```bash
 # Change admin email
-bun run src/server.ts change-email <new-email>
+wtt change-email <new-email>
 
 # Change admin password (interactive)
-bun run src/server.ts change-password
+wtt change-password
 
 # Export database (default filename)
-bun run src/server.ts export-db
+wtt export-db
 
 # Export database (custom path)
-bun run src/server.ts export-db /path/to/backup.db
+wtt export-db /path/to/backup.db
 
 # Show help
-bun run src/server.ts --help
+wtt --help
 ```
 
 ---
@@ -63,7 +63,7 @@ Execute the desired CLI command (see examples below).
 After completing CLI operations, restart the server:
 
 ```bash
-bun run src/server.ts
+wtt
 ```
 
 ---
@@ -74,7 +74,7 @@ bun run src/server.ts
 
 **Basic Usage**:
 ```bash
-bun run src/server.ts change-email newemail@example.com
+wtt change-email newemail@example.com
 ```
 
 **Example Output**:
@@ -100,7 +100,7 @@ bun run src/server.ts change-email newemail@example.com
 
 **Basic Usage**:
 ```bash
-bun run src/server.ts change-password
+wtt change-password
 ```
 
 **Interactive Prompts**:
@@ -143,7 +143,7 @@ Confirm new password: ********** (input masked)
 
 **Basic Usage (Default Filename)**:
 ```bash
-bun run src/server.ts export-db
+wtt export-db
 ```
 
 **Example Output**:
@@ -156,7 +156,7 @@ bun run src/server.ts export-db
 
 **Custom Path**:
 ```bash
-bun run src/server.ts export-db /backups/wtt-backup.db
+wtt export-db /backups/wtt-backup.db
 ```
 
 **Example Output**:
@@ -298,7 +298,7 @@ Overwrite? (y/N): _
 2. Run CLI with appropriate user account (same user as WTT server)
 3. For exports, use a directory where you have write access:
    ```bash
-   bun run src/server.ts export-db ~/backups/wtt-backup.db
+   wtt export-db ~/backups/wtt-backup.db
    ```
 
 ---
@@ -315,7 +315,7 @@ Overwrite? (y/N): _
 2. Free up space by removing old files
 3. Or export to a different volume with more space:
    ```bash
-   bun run src/server.ts export-db /mnt/external/backup.db
+   wtt export-db /mnt/external/backup.db
    ```
 
 ---
@@ -350,11 +350,11 @@ sleep 2
 # Export database
 echo "Exporting database..."
 cd "$WTT_DIR"
-bun run src/server.ts export-db "$BACKUP_DIR/wtt-$(date +%Y-%m-%d).db"
+wtt export-db "$BACKUP_DIR/wtt-$(date +%Y-%m-%d).db"
 
 # Restart server
 echo "Restarting WTT server..."
-bun run src/server.ts &
+wtt &
 
 echo "Backup complete!"
 
@@ -408,14 +408,14 @@ pkill -f "src/server.ts"
 sleep 2
 
 # Change email
-bun run src/server.ts change-email new-admin@example.com
+wtt change-email new-admin@example.com
 
 # Change password (requires interactive input)
 # Note: For non-interactive password changes, modify database directly
 # or use a tool like 'expect' to automate input
 
 # Restart server
-bun run src/server.ts &
+wtt &
 ```
 
 **Caution**: Be careful with automated password changes. They require interactive input by design (for security).
@@ -443,7 +443,7 @@ To restore from a backup:
 
 4. **Restart server**:
    ```bash
-   bun run src/server.ts
+   wtt
    ```
 
 5. **Verify** that application works and data is correct
@@ -457,15 +457,15 @@ If managing multiple WTT instances:
 ```bash
 # Development
 cd /app/wtt-dev
-bun run src/server.ts change-email dev-admin@example.com
+wtt change-email dev-admin@example.com
 
 # Staging
 cd /app/wtt-staging
-bun run src/server.ts change-email staging-admin@example.com
+wtt change-email staging-admin@example.com
 
 # Production
 cd /app/wtt-prod
-bun run src/server.ts change-email prod-admin@example.com
+wtt change-email prod-admin@example.com
 ```
 
 **Tip**: Use different email addresses for each environment to avoid confusion.
@@ -528,7 +528,7 @@ When reporting issues, include:
 
 | Aspect | Details |
 |--------|---------|
-| **Syntax** | `bun run src/server.ts change-email <new-email>` |
+| **Syntax** | `wtt change-email <new-email>` |
 | **Arguments** | `<new-email>`: New email address (required) |
 | **Interactive** | No |
 | **Typical Duration** | <2 seconds |
@@ -540,7 +540,7 @@ When reporting issues, include:
 
 | Aspect | Details |
 |--------|---------|
-| **Syntax** | `bun run src/server.ts change-password` |
+| **Syntax** | `wtt change-password` |
 | **Arguments** | None |
 | **Interactive** | Yes (prompts for password twice) |
 | **Typical Duration** | 1-2 seconds (after input) |
@@ -552,7 +552,7 @@ When reporting issues, include:
 
 | Aspect | Details |
 |--------|---------|
-| **Syntax** | `bun run src/server.ts export-db [output-path]` |
+| **Syntax** | `wtt export-db [output-path]` |
 | **Arguments** | `[output-path]`: Export path (optional, defaults to timestamped name) |
 | **Interactive** | Optional (prompts if file exists) |
 | **Typical Duration** | Depends on database size (5s for 1GB on SSD) |

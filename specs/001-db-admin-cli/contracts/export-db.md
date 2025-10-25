@@ -6,7 +6,7 @@
 ## Command Signature
 
 ```bash
-bun run src/server.ts export-db [output-path]
+wtt export-db [output-path]
 ```
 
 ## Arguments
@@ -19,7 +19,7 @@ bun run src/server.ts export-db [output-path]
 
 ### Input Example (With Path)
 ```bash
-bun run src/server.ts export-db /backups/wtt-backup.db
+wtt export-db /backups/wtt-backup.db
 ```
 
 ### Expected Output (stdout)
@@ -42,7 +42,7 @@ bun run src/server.ts export-db /backups/wtt-backup.db
 
 ### Input Example (Default Path)
 ```bash
-bun run src/server.ts export-db
+wtt export-db
 ```
 
 ### Expected Output (stdout)
@@ -64,7 +64,7 @@ bun run src/server.ts export-db
 
 **Input**:
 ```bash
-bun run src/server.ts export-db existing-file.db
+wtt export-db existing-file.db
 ```
 
 **Expected Output (stderr + prompt)**:
@@ -97,7 +97,7 @@ Export cancelled.
 
 **Input**:
 ```bash
-bun run src/server.ts export-db /nonexistent/directory/backup.db
+wtt export-db /nonexistent/directory/backup.db
 ```
 
 **Expected Output (stderr)**:
@@ -122,7 +122,7 @@ Or specify a different output path.
 
 **Input**:
 ```bash
-bun run src/server.ts export-db /root/backup.db
+wtt export-db /root/backup.db
 # User doesn't have write permission to /root/
 ```
 
@@ -137,7 +137,7 @@ Action required:
   - Or run the command with appropriate permissions
 
 Example alternative:
-  bun run src/server.ts export-db ~/backups/wtt-backup.db
+  wtt export-db ~/backups/wtt-backup.db
 ```
 
 **Expected Exit Code**: `1`
@@ -148,7 +148,7 @@ Example alternative:
 
 **Input**:
 ```bash
-bun run src/server.ts export-db /backup.db
+wtt export-db /backup.db
 # Not enough disk space
 ```
 
@@ -174,7 +174,7 @@ Action required:
 
 **Input**:
 ```bash
-bun run src/server.ts export-db backup.db
+wtt export-db backup.db
 # While WTT server is running
 ```
 
@@ -201,7 +201,7 @@ Alternatively, run CLI commands during planned downtime.
 
 **Input**:
 ```bash
-bun run src/server.ts export-db backup.db
+wtt export-db backup.db
 # Database file is corrupted or inaccessible
 ```
 
@@ -233,7 +233,7 @@ If the problem persists, contact support.
 
 **Input**:
 ```bash
-bun run src/server.ts export-db backup.txt
+wtt export-db backup.txt
 ```
 
 **Expected Output (stderr)**:
@@ -246,7 +246,7 @@ You provided: backup.txt
 Correct format: backup.db
 
 Example:
-  bun run src/server.ts export-db backup.db
+  wtt export-db backup.db
 ```
 
 **Expected Exit Code**: `1`

@@ -27,11 +27,9 @@ export async function runCliCommand(args: string[]): Promise<void> {
 
         if (!newEmail) {
           console.error("Error: Missing required argument <email>");
-          console.error("Usage: bun run src/server.ts change-email <email>");
+          console.error("Usage: wtt change-email <email>");
           console.error("\nExample:");
-          console.error(
-            "  bun run src/server.ts change-email admin@newdomain.com",
-          );
+          console.error("  wtt change-email admin@newdomain.com");
           process.exit(1);
         }
 
@@ -93,9 +91,7 @@ export async function runCliCommand(args: string[]): Promise<void> {
         console.error("  export-db [path]      - Export database to file");
         console.error("  --help                - Show this help message");
         console.error("");
-        console.error(
-          "Run 'bun run src/server.ts --help' for more information.",
-        );
+        console.error("Run 'wtt --help' for more information.");
         process.exit(1);
     }
   } catch (error) {

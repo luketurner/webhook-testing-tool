@@ -6,7 +6,7 @@
 ## Command Signature
 
 ```bash
-bun run src/server.ts change-email <new-email>
+wtt change-email <new-email>
 ```
 
 ## Arguments
@@ -19,7 +19,7 @@ bun run src/server.ts change-email <new-email>
 
 ### Input Example
 ```bash
-bun run src/server.ts change-email newemail@example.com
+wtt change-email newemail@example.com
 ```
 
 ### Expected Output (stdout)
@@ -43,17 +43,17 @@ bun run src/server.ts change-email newemail@example.com
 
 **Input**:
 ```bash
-bun run src/server.ts change-email
+wtt change-email
 ```
 
 **Expected Output (stderr)**:
 ```
 Error: Missing required argument: <new-email>
 
-Usage: bun run src/server.ts change-email <new-email>
+Usage: wtt change-email <new-email>
 
 Example:
-  bun run src/server.ts change-email admin@newdomain.com
+  wtt change-email admin@newdomain.com
 ```
 
 **Expected Exit Code**: `1`
@@ -64,7 +64,7 @@ Example:
 
 **Input**:
 ```bash
-bun run src/server.ts change-email notanemail
+wtt change-email notanemail
 ```
 
 **Expected Output (stderr)**:
@@ -89,7 +89,7 @@ Example: user@example.com
 
 **Input**:
 ```bash
-bun run src/server.ts change-email existing@example.com
+wtt change-email existing@example.com
 ```
 
 **Expected Output (stderr)**:
@@ -108,7 +108,7 @@ Please choose a different email address.
 
 **Input**:
 ```bash
-bun run src/server.ts change-email new@example.com
+wtt change-email new@example.com
 ```
 
 **Expected Output (stderr)**:
@@ -131,7 +131,7 @@ Please contact support or check database integrity.
 
 **Input**:
 ```bash
-bun run src/server.ts change-email new@example.com
+wtt change-email new@example.com
 # While WTT server is running
 ```
 
@@ -158,7 +158,7 @@ Alternatively, run CLI commands during planned downtime.
 
 **Input**:
 ```bash
-bun run src/server.ts change-email new@example.com
+wtt change-email new@example.com
 # Database file permissions issue, corrupted database, etc.
 ```
 

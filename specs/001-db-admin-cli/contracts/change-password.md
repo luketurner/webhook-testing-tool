@@ -6,7 +6,7 @@
 ## Command Signature
 
 ```bash
-bun run src/server.ts change-password
+wtt change-password
 ```
 
 ## Arguments
@@ -17,7 +17,7 @@ None. This command is fully interactive with password prompts.
 
 ### Input Example
 ```bash
-bun run src/server.ts change-password
+wtt change-password
 ```
 
 ### Interactive Prompts
@@ -48,7 +48,7 @@ Confirm new password: **********
 
 **Input**:
 ```bash
-bun run src/server.ts change-password
+wtt change-password
 ```
 
 **Interactive Input**:
@@ -74,7 +74,7 @@ Please try again and ensure both passwords are identical.
 
 **Input**:
 ```bash
-bun run src/server.ts change-password
+wtt change-password
 ```
 
 **Interactive Input**:
@@ -104,7 +104,7 @@ Your password failed: Be at least 8 characters long
 
 **Input**:
 ```bash
-bun run src/server.ts change-password
+wtt change-password
 ```
 
 **Interactive Input**:
@@ -134,7 +134,7 @@ Your password failed: Contain at least one uppercase letter (A-Z)
 
 **Input**:
 ```bash
-bun run src/server.ts change-password
+wtt change-password
 ```
 
 **Interactive Input**:
@@ -164,7 +164,7 @@ Your password failed: Contain at least one lowercase letter (a-z)
 
 **Input**:
 ```bash
-bun run src/server.ts change-password
+wtt change-password
 ```
 
 **Interactive Input**:
@@ -194,7 +194,7 @@ Your password failed: Contain at least one number (0-9)
 
 **Input**:
 ```bash
-bun run src/server.ts change-password
+wtt change-password
 ```
 
 **Expected Output (stderr)**:
@@ -217,7 +217,7 @@ Please contact support or check database integrity.
 
 **Input**:
 ```bash
-bun run src/server.ts change-password
+wtt change-password
 # While WTT server is running
 ```
 
@@ -244,7 +244,7 @@ Alternatively, run CLI commands during planned downtime.
 
 **Input**:
 ```bash
-bun run src/server.ts change-password
+wtt change-password
 # After successful password input
 ```
 

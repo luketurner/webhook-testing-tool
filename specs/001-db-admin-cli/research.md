@@ -263,10 +263,10 @@ const defaultFilename = `backup-${timestamp}.db`;
 
 **Chosen**: Subcommand pattern with imperative verbs
 ```bash
-bun run src/server.ts change-email <email>
-bun run src/server.ts change-password
-bun run src/server.ts export-db [path]
-bun run src/server.ts --help
+wtt change-email <email>
+wtt change-password
+wtt export-db [path]
+wtt --help
 ```
 
 **Rationale**:
