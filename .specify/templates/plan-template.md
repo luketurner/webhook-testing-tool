@@ -31,7 +31,17 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+Verify adherence to core principles from `.specify/memory/constitution.md`:
+
+- [ ] **I. Type Safety & Validation**: Plan includes Zod schemas for all external data
+- [ ] **II. Server-Only Boundaries**: Server-only files identified and marked
+- [ ] **III. Feature-Based Organization**: Structure organized by feature areas, not technical types
+- [ ] **IV. One Concept Per File**: Files focused on single responsibilities
+- [ ] **V. Test-First Development**: Tests planned before implementation (contract, integration, unit)
+- [ ] **VI. AI Developer Anchors**: Complex areas identified for AIDEV-NOTE comments
+- [ ] **VII. Simplicity & YAGNI**: Simplest viable approach chosen, complexity justified
+
+*If any check fails, document justification in Complexity Tracking section below.*
 
 ## Project Structure
 
@@ -57,11 +67,12 @@ specs/[###-feature]/
 
 ```text
 # [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
+# Organize by feature areas, NOT by technical types (per Constitution Principle III)
 src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+├── [feature-area-1]/     # e.g., auth/, webhooks/, handlers/
+├── [feature-area-2]/
+├── util/                 # Cross-cutting utilities only
+└── components/           # Truly reusable UI components only
 
 tests/
 ├── contract/
@@ -69,21 +80,38 @@ tests/
 └── unit/
 
 # [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
+# WTT example: single codebase with client/server separation
+src/
+├── [feature-area-1]/     # e.g., webhooks/, handlers/, tcp/
+├── [feature-area-2]/
+├── dashboard/            # Admin UI feature area
+│   ├── client.tsx       # Client entrypoint
+│   └── server.ts        # Server entrypoint
+├── util/                # Cross-cutting utilities
+└── components/          # Shared UI components
+
+tests/
+├── contract/
+├── integration/
+└── unit/
+
+# [REMOVE IF UNUSED] Option 3: Separate frontend/backend codebases
 backend/
 ├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
+│   ├── [feature-area-1]/
+│   ├── [feature-area-2]/
+│   └── util/
 └── tests/
 
 frontend/
 ├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
+│   ├── [feature-area-1]/
+│   ├── [feature-area-2]/
+│   ├── components/      # Shared UI components
+│   └── util/
 └── tests/
 
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
+# [REMOVE IF UNUSED] Option 4: Mobile + API
 api/
 └── [same as backend above]
 
