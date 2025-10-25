@@ -46,6 +46,6 @@ Examples:
   wtt export-db
 
   # Export database to specific location
-  wtt /backups/wtt-2025-10-25.db
+  wtt export-db /backups/wtt-2025-10-25.db
 `);
 }
