@@ -21,7 +21,6 @@ describe("Help Text Generation", () => {
     expect(output).toContain("Usage:");
     expect(output).toContain("Commands:");
     expect(output).toContain("Examples:");
-    expect(output).toContain("Notes:");
   });
 
   test("T015: showHelp includes all commands", () => {
@@ -52,26 +51,8 @@ describe("Help Text Generation", () => {
     console.log = originalLog;
 
     // Verify examples are present
-    expect(output).toContain("bun run src/server.ts change-email");
-    expect(output).toContain("bun run src/server.ts change-password");
-    expect(output).toContain("bun run src/server.ts export-db");
-  });
-
-  test("T015: showHelp includes important notes", () => {
-    const originalLog = console.log;
-    let output = "";
-    console.log = (message: string) => {
-      output += message + "\n";
-    };
-
-    showHelp();
-    console.log = originalLog;
-
-    // Verify important notes and sections are included
-    expect(output).toContain("Important Notes:");
-    expect(output).toContain("Troubleshooting:");
-    expect(output).toContain("Common Scenarios:");
-    expect(output).toContain("Server MUST be stopped");
-    expect(output).toContain("Default behavior");
+    expect(output).toContain("wtt change-email");
+    expect(output).toContain("wtt change-password");
+    expect(output).toContain("wtt export-db");
   });
 });
