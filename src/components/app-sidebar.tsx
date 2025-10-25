@@ -93,7 +93,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       // Ensure sidebar is open when navigating to a new section
       setOpen(true);
     }
-  }, [location.pathname, activeItem.title, setOpen]);
+  }, [location.pathname, setOpen]);
 
   const handleDownloadDatabase = React.useCallback(() => {
     window.location.href = "/api/db/export";
