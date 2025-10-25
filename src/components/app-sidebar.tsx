@@ -32,7 +32,7 @@ import {
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSendRequest } from "@/dashboard/hooks";
-import { Link, useSearchParams } from "react-router";
+import { Link, useSearchParams, useLocation } from "react-router";
 import { RequestSidebar } from "@/components/request-sidebar";
 import { HandlerSidebar } from "@/components/handler-sidebar";
 import { TcpConnectionsSidebar } from "@/components/tcp-connections-sidebar";
@@ -67,6 +67,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [showJWTInspector, setShowJWTInspector] = React.useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const location = useLocation();
+
+  // AIDEV-NOTE: Auto-sync sidebar navigation based on current URL path
+  // This ensures the sidebar displays the correct section when navigating via URL
+  React.useEffect(() => {
+    const path = location.pathname;
+
+    // Map URL paths to navigation items
+    let newActiveItem = navMain[0]; // Default to Requests
+
+    if (path.startsWith("/handlers")) {
+      newActiveItem = navMain[1]; // Handlers
+    } else if (path.startsWith("/tcp-connections")) {
+      newActiveItem = navMain[2]; // TCP Connections
+    } else if (path === "/tcp-handler") {
+      newActiveItem = navMain[3]; // TCP Handler
+    } else if (path.startsWith("/requests") || path === "/") {
+      newActiveItem = navMain[0]; // Requests
+    }
+
+    // Only update if the active item changed to avoid unnecessary re-renders
+    if (activeItem.title !== newActiveItem.title) {
+      setActiveItem(newActiveItem);
+      // Ensure sidebar is open when navigating to a new section
+      setOpen(true);
+    }
+  }, [location.pathname, activeItem.title, setOpen]);
 
   const handleDownloadDatabase = React.useCallback(() => {
     window.location.href = "/api/db/export";
