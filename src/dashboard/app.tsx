@@ -18,6 +18,7 @@ import { RequestPage } from "./pages/request-page";
 import { SharedRequestPage } from "./pages/shared-request-page";
 import { TcpConnectionPage } from "./pages/tcp-connection-page";
 import { TcpHandlerPage } from "./pages/tcp-handler-page";
+import { UserManagementPage } from "@/user-management/page";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Layout } from "@/components/layout";
 import { SSEProvider } from "@/components/sse-provider";
@@ -78,6 +79,10 @@ export function App() {
                         <Route
                           path="/tcp-handler"
                           element={<TcpHandlerPage />}
+                        />
+                        <Route
+                          path="/user-management"
+                          element={<UserManagementPage />}
                         />
                       </Routes>
                     </Layout>

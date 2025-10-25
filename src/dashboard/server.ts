@@ -8,6 +8,7 @@ import { authController } from "@/auth/controller";
 import { tcpConnectionController } from "@/tcp-connections/controller";
 import { tcpHandlerController } from "@/tcp-handlers/controller";
 import { tcpHandlerExecutionController } from "@/tcp-handler-executions/controller";
+import { userManagementController } from "@/user-management/controller";
 import { withAuth } from "@/auth/middleware";
 import { getRequestEventBySharedId } from "@/request-events/model";
 import { appEvents } from "@/db/events";
@@ -71,6 +72,7 @@ export const startDashboardServer = () =>
       ...buildController(tcpConnectionController),
       ...buildController(tcpHandlerController),
       ...buildController(tcpHandlerExecutionController),
+      ...buildController(userManagementController),
       ...buildController({
         "/api/config": {
           GET: () => {
@@ -112,6 +114,9 @@ export const startDashboardServer = () =>
       "/api/manual": async () => {
         return Response.json(Object.keys(manualPages));
       },
+
+      // T019: User management static route
+      "/user-management": indexPage,
 
       "/*": new Response(null, { status: 404 }),
     },
