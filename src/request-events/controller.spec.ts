@@ -1,11 +1,11 @@
-import { expect, test, describe, beforeEach, afterEach } from "bun:test";
+import { expect, test, describe, beforeEach } from "bun:test";
 import { requestEventController } from "./controller";
 import {
   createRequestEvent,
   deleteRequestEvent,
   getAllRequestEvents,
 } from "./model";
-import type { RequestEvent, RequestId } from "./schema";
+import type { RequestEvent } from "./schema";
 import { randomUUID } from "@/util/uuid";
 import { now } from "@/util/datetime";
 import { parseBase64 } from "@/util/base64";
@@ -46,7 +46,9 @@ describe("request-events/controller", () => {
         type: "outbound",
       });
 
-      const mockReq = {} as any;
+      const mockReq = {
+        url: "http://localhost:3000/",
+      } as any;
       const response = requestEventController["/api/requests"].GET(mockReq);
 
       expect(response).toBeInstanceOf(Response);
@@ -83,7 +85,9 @@ describe("request-events/controller", () => {
         }
       });
 
-      const mockReq = {} as any;
+      const mockReq = {
+        url: "http://localhost:3000/",
+      } as any;
       const response = requestEventController["/api/requests"].GET(mockReq);
 
       expect(response).toBeInstanceOf(Response);
