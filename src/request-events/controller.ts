@@ -4,13 +4,42 @@ import {
   getRequestEvent,
   updateRequestEvent,
   getRequestEventBySharedId,
+  deleteRequestEvent,
+  clearRequestEvents,
+  bulkDeleteRequestEvents,
+  archiveRequestEvent,
+  unarchiveRequestEvent,
+  bulkArchiveRequestEvents,
 } from "./model";
 import { sendWebhookRequest } from "@/webhook-server/send-request";
+import { z } from "zod/v4";
+import { uuidSchema } from "@/util/uuid";
+import { timestampSchema } from "@/util/datetime";
+
+const bulkDeleteBodySchema = z.object({
+  ids: z.array(uuidSchema).optional().default([]),
+});
+
+const archiveBodySchema = z.object({
+  archived_timestamp: timestampSchema.nullish(),
+});
+
+const bulkArchiveBodySchema = z.object({
+  ids: z.array(uuidSchema).optional().default([]),
+  archived_timestamp: timestampSchema,
+});
 
 export const requestEventController = {
   "/api/requests": {
     GET: (req) => {
-      return Response.json(getAllRequestEventsMeta());
+      const url = new URL(req.url);
+      const includeArchived =
+        url.searchParams.get("includeArchived") === "true";
+      return Response.json(getAllRequestEventsMeta(includeArchived));
+    },
+    DELETE: (req) => {
+      const count = clearRequestEvents();
+      return Response.json({ status: "ok", deleted_count: count });
     },
   },
   "/api/requests/send": {
@@ -22,6 +51,24 @@ export const requestEventController = {
       });
     },
   },
+  "/api/requests/bulk-delete": {
+    DELETE: async (req) => {
+      const body = bulkDeleteBodySchema.parse(await req.json());
+      const count = bulkDeleteRequestEvents(
+        body.ids.length > 0 ? body.ids : undefined,
+      );
+      return Response.json({ status: "ok", deleted_count: count });
+    },
+  },
+  "/api/requests/bulk-archive": {
+    PATCH: async (req) => {
+      const body = bulkArchiveBodySchema.parse(await req.json());
+      const count = bulkArchiveRequestEvents(
+        body.ids.length > 0 ? body.ids : undefined,
+      );
+      return Response.json({ status: "ok", archived_count: count });
+    },
+  },
   "/api/requests/:id": {
     GET: (req) => {
       const request = getRequestEvent(req.params.id);
@@ -31,6 +78,21 @@ export const requestEventController = {
       }
 
       return Response.json(request);
+    },
+    PATCH: async (req) => {
+      const body = archiveBodySchema.parse(await req.json());
+
+      if (body.archived_timestamp === null) {
+        const result = unarchiveRequestEvent(req.params.id);
+        return Response.json(result);
+      } else {
+        const result = archiveRequestEvent(req.params.id);
+        return Response.json(result);
+      }
+    },
+    DELETE: (req) => {
+      deleteRequestEvent(req.params.id);
+      return Response.json({ status: "ok" });
     },
   },
   "/api/requests/:id/share": {

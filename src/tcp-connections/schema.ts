@@ -17,6 +17,7 @@ export const tcpConnectionSchema = z.object({
   status: z.enum(TCP_CONNECTION_STATUSES),
   open_timestamp: timestampSchema,
   closed_timestamp: timestampSchema.nullish(),
+  archived_timestamp: timestampSchema.nullish(),
 });
 
 export const tcpConnectionMetaSchema = tcpConnectionSchema.omit({

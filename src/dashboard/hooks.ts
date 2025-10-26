@@ -8,7 +8,12 @@ import type {
 } from "@/types/api";
 
 export async function resourceFetcher(
-  { action, type, id }: ResourceFetcherOptions,
+  {
+    action,
+    type,
+    id,
+    includeArchived,
+  }: ResourceFetcherOptions & { includeArchived?: boolean },
   resource?: Resource,
 ) {
   let url = "";
@@ -22,6 +27,12 @@ export async function resourceFetcher(
         ? `/api/${type}`
         : `/api/${type}/${id}`;
   }
+
+  // Add includeArchived query parameter for list actions
+  if (action === "list" && includeArchived !== undefined) {
+    url += `?includeArchived=${includeArchived}`;
+  }
+
   let init: RequestInit | undefined = undefined;
   switch (action) {
     case "create":
@@ -45,10 +56,14 @@ export function useResource<T>(type: ResourceType, id: string | number) {
   });
 }
 
-export function useResourceList<T>(type: ResourceType) {
+export function useResourceList<T>(
+  type: ResourceType,
+  options?: { includeArchived?: boolean },
+) {
+  const includeArchived = options?.includeArchived ?? false;
   return useQuery<T[]>({
-    queryKey: [type],
-    queryFn: () => resourceFetcher({ action: "list", type }),
+    queryKey: [type, includeArchived ? "with-archived" : "active-only"],
+    queryFn: () => resourceFetcher({ action: "list", type, includeArchived }),
   });
 }
 

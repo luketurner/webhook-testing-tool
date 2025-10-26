@@ -4,18 +4,59 @@ import {
   getTcpConnection,
   deleteTcpConnection,
   clearTcpConnections,
+  bulkDeleteTcpConnections,
+  archiveTcpConnection,
+  unarchiveTcpConnection,
+  bulkArchiveTcpConnections,
 } from "./model";
 import { TCP_PORT } from "@/config";
 import { sleep } from "bun";
+import { z } from "zod/v4";
+import { uuidSchema } from "@/util/uuid";
+import { timestampSchema } from "@/util/datetime";
+
+const bulkDeleteBodySchema = z.object({
+  ids: z.array(uuidSchema).optional().default([]),
+});
+
+const archiveBodySchema = z.object({
+  archived_timestamp: timestampSchema.nullish(),
+});
+
+const bulkArchiveBodySchema = z.object({
+  ids: z.array(uuidSchema).optional().default([]),
+  archived_timestamp: timestampSchema,
+});
 
 export const tcpConnectionController = {
   "/api/tcp-connections": {
     GET: (req) => {
-      return Response.json(getAllTcpConnectionsMeta());
+      const url = new URL(req.url);
+      const includeArchived =
+        url.searchParams.get("includeArchived") === "true";
+      return Response.json(getAllTcpConnectionsMeta(includeArchived));
     },
     DELETE: (req) => {
-      clearTcpConnections();
-      return Response.json({ status: "ok" });
+      const count = clearTcpConnections();
+      return Response.json({ status: "ok", deleted_count: count });
+    },
+  },
+  "/api/tcp-connections/bulk-delete": {
+    DELETE: async (req) => {
+      const body = bulkDeleteBodySchema.parse(await req.json());
+      const count = bulkDeleteTcpConnections(
+        body.ids.length > 0 ? body.ids : undefined,
+      );
+      return Response.json({ status: "ok", deleted_count: count });
+    },
+  },
+  "/api/tcp-connections/bulk-archive": {
+    PATCH: async (req) => {
+      const body = bulkArchiveBodySchema.parse(await req.json());
+      const count = bulkArchiveTcpConnections(
+        body.ids.length > 0 ? body.ids : undefined,
+      );
+      return Response.json({ status: "ok", archived_count: count });
     },
   },
   "/api/tcp-connections/:id": {
@@ -27,6 +68,17 @@ export const tcpConnectionController = {
       }
 
       return Response.json(connection);
+    },
+    PATCH: async (req) => {
+      const body = archiveBodySchema.parse(await req.json());
+
+      if (body.archived_timestamp === null) {
+        const result = unarchiveTcpConnection(req.params.id);
+        return Response.json(result);
+      } else {
+        const result = archiveTcpConnection(req.params.id);
+        return Response.json(result);
+      }
     },
     DELETE: (req) => {
       deleteTcpConnection(req.params.id);

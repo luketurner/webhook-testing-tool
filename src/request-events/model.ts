@@ -16,6 +16,8 @@ import {
 } from "./schema";
 import { jsonFieldToSql } from "@/util/json";
 import { base64FieldToSql } from "@/util/base64";
+import { broadcastEvent } from "@/db/events";
+import { now } from "@/util/datetime";
 
 const tableName = "requests";
 
@@ -68,12 +70,15 @@ export function getAllRequestEvents(): RequestEvent[] {
     .map((v) => requestEventSchema.parse(v) as RequestEvent);
 }
 
-export function getAllRequestEventsMeta(): RequestEventMeta[] {
+export function getAllRequestEventsMeta(
+  includeArchived = false,
+): RequestEventMeta[] {
+  const filter = includeArchived ? "" : "WHERE archived_timestamp IS NULL";
   return db
     .query(
       `select ${keysForSelect(
         requestEventMetaSchema,
-      )} from "${tableName}" order by request_timestamp desc;`,
+      )} from "${tableName}" ${filter} order by request_timestamp desc;`,
     )
     .all()
     .map((v) => requestEventMetaSchema.parse(v));
@@ -110,12 +115,77 @@ export function updateRequestEvent(
   ) as RequestEvent;
 }
 
-export function deleteRequestEvent(id: RequestId) {
-  return db.query(`delete from "${tableName}" where id = ?`).run(id);
+// AIDEV-NOTE: Archive and delete operations emit SSE events for real-time UI updates
+// Archive operations set archived_timestamp to current Date.now(), unarchive sets it to null
+// Delete operations permanently remove records and emit request:deleted with ID
+// Bulk operations use transactions to ensure atomicity
+export function deleteRequestEvent(id: RequestId): void {
+  db.query(`delete from "${tableName}" where id = ?`).run(id);
+  broadcastEvent("request:deleted", id);
 }
 
-export function clearRequestEvents() {
-  return db.query(`delete from ${tableName}`).run();
+export function clearRequestEvents(): number {
+  const result = db
+    .query(`delete from ${tableName} WHERE archived_timestamp IS NULL`)
+    .run();
+  return result.changes;
+}
+
+export function bulkDeleteRequestEvents(ids?: RequestId[]): number {
+  return db.transaction(() => {
+    let result;
+
+    if (!ids || ids.length === 0) {
+      // Delete all active items only
+      result = db.run("DELETE FROM requests WHERE archived_timestamp IS NULL");
+    } else {
+      // Delete specific IDs
+      const placeholders = ids.map(() => "?").join(",");
+      result = db.run(
+        `DELETE FROM requests WHERE id IN (${placeholders})`,
+        ids,
+      );
+    }
+
+    return result.changes;
+  })();
+}
+
+export function archiveRequestEvent(id: RequestId): RequestEvent {
+  const archived_timestamp = now();
+  const updated = updateRequestEvent({ id, archived_timestamp });
+  broadcastEvent("request:archived", requestEventMetaSchema.parse(updated));
+  return updated;
+}
+
+export function unarchiveRequestEvent(id: RequestId): RequestEvent {
+  const updated = updateRequestEvent({ id, archived_timestamp: null });
+  broadcastEvent("request:unarchived", requestEventMetaSchema.parse(updated));
+  return updated;
+}
+
+export function bulkArchiveRequestEvents(ids?: RequestId[]): number {
+  return db.transaction(() => {
+    const archived_timestamp = now();
+    let result;
+
+    if (!ids || ids.length === 0) {
+      // Archive all active items
+      result = db.run(
+        "UPDATE requests SET archived_timestamp = ? WHERE archived_timestamp IS NULL",
+        [archived_timestamp],
+      );
+    } else {
+      // Archive specific IDs
+      const placeholders = ids.map(() => "?").join(",");
+      result = db.run(
+        `UPDATE requests SET archived_timestamp = ? WHERE id IN (${placeholders})`,
+        [archived_timestamp, ...ids],
+      );
+    }
+
+    return result.changes;
+  })();
 }
 
 export function getRequestEventBySharedId(

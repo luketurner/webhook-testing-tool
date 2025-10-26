@@ -26,6 +26,7 @@ import * as migration10 from "./migrations/1751651182763_create_shared_state";
 import * as migration11 from "./migrations/1751905200000_add_tcp_connections_table";
 import * as migration12 from "./migrations/1760318121000_add_tcp_handlers_table";
 import * as migration13 from "./migrations/1760318122000_add_tcp_handler_executions_table";
+import * as migration14 from "./migrations/1760319000000_add_archived_timestamp_columns";
 
 // Load all migrations
 const migrations: MigrationDefn[] = [
@@ -42,6 +43,7 @@ const migrations: MigrationDefn[] = [
   { name: "1751905200000_add_tcp_connections_table", ...migration11 },
   { name: "1760318121000_add_tcp_handlers_table", ...migration12 },
   { name: "1760318122000_add_tcp_handler_executions_table", ...migration13 },
+  { name: "1760319000000_add_archived_timestamp_columns", ...migration14 },
 ];
 
 await mkdir(dirname(DB_FILE), { recursive: true });

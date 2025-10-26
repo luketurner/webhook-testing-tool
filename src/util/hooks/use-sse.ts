@@ -5,11 +5,17 @@ export interface SSEEvent {
     | "connected"
     | "request:created"
     | "request:updated"
+    | "request:archived"
+    | "request:unarchived"
+    | "request:deleted"
     | "ping"
     | "tcp_connection:created"
     | "tcp_connection:updated"
     | "tcp_connection:closed"
-    | "tcp_connection:failed";
+    | "tcp_connection:failed"
+    | "tcp_connection:archived"
+    | "tcp_connection:unarchived"
+    | "tcp_connection:deleted";
   payload?: {
     id: string;
     status?: string;

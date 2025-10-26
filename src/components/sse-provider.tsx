@@ -10,7 +10,10 @@ export function SSEProvider({ children }) {
     onEvent: (event) => {
       if (
         event.type === "request:created" ||
-        event.type === "request:updated"
+        event.type === "request:updated" ||
+        event.type === "request:archived" ||
+        event.type === "request:unarchived" ||
+        event.type === "request:deleted"
       ) {
         console.log("event", event.type, event.payload);
         // Invalidate and refetch the requests list to get the latest data
@@ -19,7 +22,10 @@ export function SSEProvider({ children }) {
         event.type === "tcp_connection:created" ||
         event.type === "tcp_connection:updated" ||
         event.type === "tcp_connection:closed" ||
-        event.type === "tcp_connection:failed"
+        event.type === "tcp_connection:failed" ||
+        event.type === "tcp_connection:archived" ||
+        event.type === "tcp_connection:unarchived" ||
+        event.type === "tcp_connection:deleted"
       ) {
         console.log("event", event.type, event.payload);
         // Invalidate and refetch the TCP connections list to get the latest data
