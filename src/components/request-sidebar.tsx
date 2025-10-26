@@ -50,7 +50,6 @@ export function RequestSidebar() {
     return localStorage.getItem("showArchivedRequests") === "true";
   });
   const [searchQuery, setSearchQuery] = useState("");
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
@@ -65,26 +64,6 @@ export function RequestSidebar() {
     setShowArchived(checked);
     localStorage.setItem("showArchivedRequests", String(checked));
   };
-
-  // Mutations
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`/api/requests/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to delete request");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["requests"] });
-      toast.success("Request deleted");
-      setDeleteDialogOpen(false);
-      setItemToDelete(null);
-    },
-    onError: (error) => {
-      toast.error(`Failed to delete request: ${error.message}`);
-    },
-  });
 
   const deleteAllMutation = useMutation({
     mutationFn: async () => {
@@ -101,25 +80,6 @@ export function RequestSidebar() {
     },
     onError: (error) => {
       toast.error(`Failed to delete all requests: ${error.message}`);
-    },
-  });
-
-  const archiveMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`/api/requests/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ archived_timestamp: Date.now() }),
-      });
-      if (!response.ok) throw new Error("Failed to archive request");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["requests"] });
-      toast.success("Request archived");
-    },
-    onError: (error) => {
-      toast.error(`Failed to archive request: ${error.message}`);
     },
   });
 
@@ -142,25 +102,6 @@ export function RequestSidebar() {
     },
     onError: (error) => {
       toast.error(`Failed to archive all requests: ${error.message}`);
-    },
-  });
-
-  const unarchiveMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`/api/requests/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ archived_timestamp: null }),
-      });
-      if (!response.ok) throw new Error("Failed to unarchive request");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["requests"] });
-      toast.success("Request unarchived");
-    },
-    onError: (error) => {
-      toast.error(`Failed to unarchive request: ${error.message}`);
     },
   });
 
@@ -350,54 +291,6 @@ export function RequestSidebar() {
                           )}
                         </div>
                       </NavLink>
-                      <div className="flex gap-1 px-4 pb-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {isArchived ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              unarchiveMutation.mutate(request.id);
-                            }}
-                            disabled={unarchiveMutation.isPending}
-                            className="h-7 text-xs"
-                          >
-                            <ArchiveRestore className="mr-1 h-3 w-3" />
-                            Unarchive
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              archiveMutation.mutate(request.id);
-                            }}
-                            disabled={archiveMutation.isPending}
-                            className="h-7 text-xs"
-                          >
-                            <Archive className="mr-1 h-3 w-3" />
-                            Archive
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setItemToDelete(request.id);
-                            setDeleteDialogOpen(true);
-                          }}
-                          disabled={deleteMutation.isPending}
-                          className="h-7 text-xs text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="mr-1 h-3 w-3" />
-                          Delete
-                        </Button>
-                      </div>
                     </div>
                   );
                 })
@@ -406,30 +299,6 @@ export function RequestSidebar() {
           </SidebarGroup>
         </SidebarContent>
       </Sidebar>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Request</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the request. This action cannot be
-              undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() =>
-                itemToDelete && deleteMutation.mutate(itemToDelete)
-              }
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Delete All Confirmation Dialog */}
       <AlertDialog

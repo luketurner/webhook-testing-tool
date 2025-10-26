@@ -65,26 +65,6 @@ export function TcpConnectionsSidebar() {
     localStorage.setItem("showArchivedTcpConnections", String(checked));
   };
 
-  // Mutations
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`/api/tcp-connections/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to delete TCP connection");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tcp-connections"] });
-      toast.success("TCP connection deleted");
-      setDeleteDialogOpen(false);
-      setItemToDelete(null);
-    },
-    onError: (error) => {
-      toast.error(`Failed to delete TCP connection: ${error.message}`);
-    },
-  });
-
   const deleteAllMutation = useMutation({
     mutationFn: async () => {
       const response = await fetch(`/api/tcp-connections`, {
@@ -100,25 +80,6 @@ export function TcpConnectionsSidebar() {
     },
     onError: (error) => {
       toast.error(`Failed to delete all TCP connections: ${error.message}`);
-    },
-  });
-
-  const archiveMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`/api/tcp-connections/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ archived_timestamp: Date.now() }),
-      });
-      if (!response.ok) throw new Error("Failed to archive TCP connection");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tcp-connections"] });
-      toast.success("TCP connection archived");
-    },
-    onError: (error) => {
-      toast.error(`Failed to archive TCP connection: ${error.message}`);
     },
   });
 
@@ -142,25 +103,6 @@ export function TcpConnectionsSidebar() {
     },
     onError: (error) => {
       toast.error(`Failed to archive all TCP connections: ${error.message}`);
-    },
-  });
-
-  const unarchiveMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`/api/tcp-connections/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ archived_timestamp: null }),
-      });
-      if (!response.ok) throw new Error("Failed to unarchive TCP connection");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tcp-connections"] });
-      toast.success("TCP connection unarchived");
-    },
-    onError: (error) => {
-      toast.error(`Failed to unarchive TCP connection: ${error.message}`);
     },
   });
 
@@ -328,54 +270,6 @@ export function TcpConnectionsSidebar() {
                           </span>
                         </div>
                       </NavLink>
-                      <div className="flex gap-1 px-4 pb-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {isArchived ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              unarchiveMutation.mutate(connection.id);
-                            }}
-                            disabled={unarchiveMutation.isPending}
-                            className="h-7 text-xs"
-                          >
-                            <ArchiveRestore className="mr-1 h-3 w-3" />
-                            Unarchive
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              archiveMutation.mutate(connection.id);
-                            }}
-                            disabled={archiveMutation.isPending}
-                            className="h-7 text-xs"
-                          >
-                            <Archive className="mr-1 h-3 w-3" />
-                            Archive
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setItemToDelete(connection.id);
-                            setDeleteDialogOpen(true);
-                          }}
-                          disabled={deleteMutation.isPending}
-                          className="h-7 text-xs text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="mr-1 h-3 w-3" />
-                          Delete
-                        </Button>
-                      </div>
                     </div>
                   );
                 })
@@ -384,30 +278,6 @@ export function TcpConnectionsSidebar() {
           </SidebarGroup>
         </SidebarContent>
       </Sidebar>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete TCP Connection</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the TCP connection. This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() =>
-                itemToDelete && deleteMutation.mutate(itemToDelete)
-              }
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Delete All Confirmation Dialog */}
       <AlertDialog
