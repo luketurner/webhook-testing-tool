@@ -3,11 +3,10 @@ import {
   Plus,
   Search,
   Archive,
-  ArchiveRestore,
   Trash2,
   MoreVertical,
 } from "lucide-react";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { useState, useMemo } from "react";
 import { DateDisplay } from "@/components/date-display";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -51,7 +50,7 @@ export function RequestSidebar() {
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const { data: requests, isLoading: requestsLoading } =
     useResourceList<RequestEventMeta>("requests", {
@@ -77,6 +76,7 @@ export function RequestSidebar() {
       queryClient.invalidateQueries({ queryKey: ["requests"] });
       toast.success("All requests deleted");
       setDeleteAllDialogOpen(false);
+      navigate("/");
     },
     onError: (error) => {
       toast.error(`Failed to delete all requests: ${error.message}`);

@@ -6,7 +6,7 @@ import {
   Trash2,
   MoreVertical,
 } from "lucide-react";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { useState, useMemo } from "react";
 import { DateDisplay } from "@/components/date-display";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -49,9 +49,8 @@ export function TcpConnectionsSidebar() {
     return localStorage.getItem("showArchivedTcpConnections") === "true";
   });
   const [searchQuery, setSearchQuery] = useState("");
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const { data: connections, isLoading: connectionsLoading } =
     useResourceList<TcpConnectionMeta>("tcp-connections", {
@@ -100,6 +99,7 @@ export function TcpConnectionsSidebar() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tcp-connections"] });
       toast.success("All TCP connections archived");
+      navigate("/");
     },
     onError: (error) => {
       toast.error(`Failed to archive all TCP connections: ${error.message}`);
