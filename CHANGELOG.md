@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.7.0 (2025-10-26)
+
+- Add ability to permanently delete requests/connections.
+- Add ability to archive requests/connections.
+- Add admin CLI with DB administration commands.
+
+---
+
 ## 2.6.0 (2025-10-25)
 
 - Add user management page, with ability to change email/password
