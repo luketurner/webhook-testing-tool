@@ -26,6 +26,8 @@ import {
   Link,
   Link2Off,
   Plus,
+  Archive,
+  Trash,
 } from "lucide-react";
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
@@ -73,6 +75,46 @@ export const RequestPage = () => {
     },
     onError: () => {
       toast.error("Failed to update sharing");
+    },
+  });
+
+  const archiveRequest = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/requests/${id}/archive`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to archive request");
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["requests", id] });
+      toast.success("Request archived");
+    },
+    onError: () => {
+      toast.error("Failed to archive request");
+    },
+  });
+
+  const deleteRequest = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/requests/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete request");
+      }
+    },
+    onSuccess: () => {
+      toast.success("Request deleted");
+      navigate("/");
+    },
+    onError: () => {
+      toast.error("Failed to delete request");
     },
   });
 
@@ -142,6 +184,21 @@ export const RequestPage = () => {
                 >
                   <Copy className="mr-2 h-4 w-4" />
                   Copy response as...
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => archiveRequest.mutate()}
+                  disabled={archiveRequest.isPending}
+                >
+                  <Archive className="mr-2 h-4 w-4" />
+                  Archive request
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => deleteRequest.mutate()}
+                  disabled={deleteRequest.isPending}
+                  variant="destructive"
+                >
+                  <Trash className="mr-2 h-4 w-4" />
+                  Delete request
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
