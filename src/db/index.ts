@@ -27,6 +27,7 @@ import * as migration11 from "./migrations/1751905200000_add_tcp_connections_tab
 import * as migration12 from "./migrations/1760318121000_add_tcp_handlers_table";
 import * as migration13 from "./migrations/1760318122000_add_tcp_handler_executions_table";
 import * as migration14 from "./migrations/1760319000000_add_archived_timestamp_columns";
+import * as migration15 from "./migrations/1760320000000_add_cascade_to_foreign_keys";
 
 // Load all migrations
 const migrations: MigrationDefn[] = [
@@ -44,6 +45,7 @@ const migrations: MigrationDefn[] = [
   { name: "1760318121000_add_tcp_handlers_table", ...migration12 },
   { name: "1760318122000_add_tcp_handler_executions_table", ...migration13 },
   { name: "1760319000000_add_archived_timestamp_columns", ...migration14 },
+  { name: "1760320000000_add_cascade_to_foreign_keys", ...migration15 },
 ];
 
 await mkdir(dirname(DB_FILE), { recursive: true });
