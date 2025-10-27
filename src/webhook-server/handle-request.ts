@@ -1,5 +1,5 @@
 import "@/server-only";
-import Router from "router";
+import { match as createMatcher } from "path-to-regexp";
 
 import { getAllHandlers } from "@/handlers/model";
 import type { RequestEvent } from "@/request-events/schema";
@@ -23,8 +23,6 @@ import { parseAuthorizationHeader, isJWTAuth } from "@/util/authorization";
 import { verifyJWT, type JWTVerificationResult } from "@/util/jwt-verification";
 import { getSharedState, updateSharedState } from "@/shared-state/model";
 import { Transpiler } from "bun";
-
-type NextFunction = (error?: Error) => void;
 
 async function performJWTVerification(
   req: HandlerRequest,
@@ -69,216 +67,237 @@ export async function handleRequest(
   requestEvent: RequestEvent,
 ): Promise<[Error | null, Partial<RequestEvent>]> {
   const handlers = getAllHandlers();
-  const router = Router();
   const locals: Record<string, unknown> = {};
   let executionOrder = 0;
 
   // Load shared state for all handlers
   const shared = getSharedState();
 
-  for (const handler of handlers) {
-    router[handler.method === "*" ? "use" : handler.method.toLowerCase()](
-      handler.path,
-      async (
-        req: HandlerRequest,
-        resp: HandlerResponse,
-        next: NextFunction,
-      ) => {
-        const currentOrder = executionOrder++;
-        const executionId = randomUUID();
-        const timestamp = now();
+  // AIDEV-NOTE: Convert handler paths to matchers using path-to-regexp
+  // Each matcher will match the path and extract named parameters
+  // When method is "*" (wildcard), use prefix matching (end: false)
+  // Otherwise, use exact matching (end: true)
+  const handlerMatchers = handlers.map((handler) => ({
+    handler,
+    matcher: createMatcher(handler.path, {
+      decode: decodeURIComponent,
+      end: handler.method !== "*",
+    }),
+  }));
 
-        const handlerExecution: HandlerExecution = {
-          id: executionId,
-          handler_id: handler.id,
-          request_event_id: requestEvent.id,
-          order: currentOrder,
-          timestamp,
-          status: "running",
-          error_message: null,
-          response_data: null,
-          locals_data: null,
-          console_output: null,
-        };
-
-        // Create the execution record with "running" status
-        createHandlerExecution(handlerExecution);
-
-        const consoleOutput: string[] = [];
-
-        try {
-          // Perform JWT verification if configured
-          const jwtVerification = await performJWTVerification(req, handler);
-
-          const ctx = {
-            requestEvent,
-            jwtVerification,
-          };
-
-          const captureConsole = {
-            log: (...args: unknown[]) => {
-              consoleOutput.push(
-                `[LOG] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
-              );
-            },
-            debug: (...args: unknown[]) => {
-              consoleOutput.push(
-                `[DEBUG] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
-              );
-            },
-            info: (...args: unknown[]) => {
-              consoleOutput.push(
-                `[INFO] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
-              );
-            },
-            warn: (...args: unknown[]) => {
-              consoleOutput.push(
-                `[WARN] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
-              );
-            },
-            error: (...args: unknown[]) => {
-              consoleOutput.push(
-                `[ERROR] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
-              );
-            },
-          };
-
-          // Add JWT utility functions for handlers
-          const jwtUtils = {
-            isJWTVerified: () => jwtVerification?.isValid === true,
-            getJWTError: () => jwtVerification?.error || null,
-            getJWTAlgorithm: () => jwtVerification?.algorithm || null,
-            getJWTKeyId: () => jwtVerification?.keyId || null,
-            requireJWTVerification: () => {
-              if (!jwtVerification) {
-                throw new HandlerErrors.UnauthorizedError(
-                  "JWT verification not configured for this handler",
-                );
-              }
-              if (!jwtVerification.isValid) {
-                throw new HandlerErrors.UnauthorizedError(
-                  `JWT verification failed: ${jwtVerification.error}`,
-                );
-              }
-            },
-          };
-
-          const sleep = (ms: number): Promise<void> => {
-            return new Promise((resolve) => setTimeout(resolve, ms));
-          };
-
-          const transpiler = new Transpiler({ loader: "ts" });
-          const code = transpiler.transformSync(handler.code);
-
-          // Wrap the code in an async function to support await
-          const wrappedCode = `(async () => { ${code} })()`;
-
-          await runInNewContext(wrappedCode, {
-            req: deepFreeze(req),
-            resp,
-            locals,
-            ctx: deepFreeze(ctx),
-            console: captureConsole,
-            jwt: jwtUtils,
-            shared: shared.data,
-            sleep,
-            btoa,
-            atob,
-            ...HandlerErrors,
-          });
-          // Update to success status with captured data
-          updateHandlerExecution({
-            id: executionId,
-            status: "success",
-            response_data: JSON.stringify(resp),
-            locals_data: JSON.stringify(locals),
-            console_output:
-              consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
-          });
-          next();
-        } catch (e) {
-          console.error("Error running script", e);
-
-          // AIDEV-NOTE: AbortSocketError requires special handling - it aborts the socket without sending a response
-          // Since this is deliberately thrown by the user, it's not actually an execution failure.
-          if (isAbortSocketError(e)) {
-            // Update execution record to show socket was aborted
-            updateHandlerExecution({
-              id: executionId,
-              status: "success",
-              response_data: null,
-              locals_data: JSON.stringify(locals),
-              console_output:
-                consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
-            });
-            // Pass the error to the next handler to propagate the abort
-            next(e);
-          } else if (isHandlerError(e)) {
-            resp.status = e.statusCode;
-            resp.body = {
-              error: e.message,
-            };
-
-            // Note -- handler errors are deliberately thrown by the user to cause a certain HTTP status code.
-            // So, they are not actually an "execution failure", which is why the status should be successful.
-            updateHandlerExecution({
-              id: executionId,
-              status: "success",
-              response_data: JSON.stringify(resp),
-              locals_data: JSON.stringify(locals),
-              console_output:
-                consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
-            });
-            next(e);
-          } else {
-            resp.status = 500;
-            resp.body = {
-              error:
-                "Error running responder script. See application logs for more details.",
-            };
-
-            // Update to error status with error message and captured data
-            updateHandlerExecution({
-              id: executionId,
-              status: "error",
-              error_message: e instanceof Error ? e.message : String(e),
-              response_data: JSON.stringify(resp),
-              locals_data: JSON.stringify(locals),
-              console_output:
-                consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
-            });
-            next(e);
-          }
-        }
-      },
-    );
-  }
   const response: HandlerResponse = {
     headers: [],
     status: 200,
     statusMessage: null,
     body: null,
   };
+
   let error: Error | null = null;
-  return new Promise((resolve) => {
-    router(
-      requestEventToHandlerRequest(requestEvent),
-      response,
-      (err?: Error) => {
-        if (err) error = err;
+  const req = requestEventToHandlerRequest(requestEvent);
 
-        // Save the shared state after all handlers have executed
-        updateSharedState(shared.data);
+  // AIDEV-NOTE: Process handlers sequentially, matching path and method
+  for (const { handler, matcher } of handlerMatchers) {
+    // Check if method matches (wildcard "*" matches all methods)
+    const methodMatches =
+      handler.method === "*" ||
+      handler.method.toUpperCase() === req.method.toUpperCase();
 
-        // AIDEV-NOTE: If resp.socket is set, include it in the response with a special marker
-        // This allows the webhook server to write raw data directly to the socket
-        const responseEvent = handlerResponseToRequestEvent(response);
-        if (response.socket !== undefined) {
-          (responseEvent as any)._socketRawData = response.socket;
-        }
+    if (!methodMatches) {
+      continue;
+    }
 
-        resolve([error, responseEvent]);
-      },
-    );
-  });
+    // Check if path matches and extract params
+    const matchResult = matcher(req.url);
+
+    if (!matchResult) {
+      continue;
+    }
+
+    // AIDEV-NOTE: Extract params from the match result
+    // path-to-regexp returns params as an object with named parameters
+    req.params = matchResult.params as Record<string, string>;
+
+    const currentOrder = executionOrder++;
+    const executionId = randomUUID();
+    const timestamp = now();
+
+    const handlerExecution: HandlerExecution = {
+      id: executionId,
+      handler_id: handler.id,
+      request_event_id: requestEvent.id,
+      order: currentOrder,
+      timestamp,
+      status: "running",
+      error_message: null,
+      response_data: null,
+      locals_data: null,
+      console_output: null,
+    };
+
+    // Create the execution record with "running" status
+    createHandlerExecution(handlerExecution);
+
+    const consoleOutput: string[] = [];
+
+    try {
+      // Perform JWT verification if configured
+      const jwtVerification = await performJWTVerification(req, handler);
+
+      const ctx = {
+        requestEvent,
+        jwtVerification,
+      };
+
+      const captureConsole = {
+        log: (...args: unknown[]) => {
+          consoleOutput.push(
+            `[LOG] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+          );
+        },
+        debug: (...args: unknown[]) => {
+          consoleOutput.push(
+            `[DEBUG] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+          );
+        },
+        info: (...args: unknown[]) => {
+          consoleOutput.push(
+            `[INFO] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+          );
+        },
+        warn: (...args: unknown[]) => {
+          consoleOutput.push(
+            `[WARN] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+          );
+        },
+        error: (...args: unknown[]) => {
+          consoleOutput.push(
+            `[ERROR] ${args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")}`,
+          );
+        },
+      };
+
+      // Add JWT utility functions for handlers
+      const jwtUtils = {
+        isJWTVerified: () => jwtVerification?.isValid === true,
+        getJWTError: () => jwtVerification?.error || null,
+        getJWTAlgorithm: () => jwtVerification?.algorithm || null,
+        getJWTKeyId: () => jwtVerification?.keyId || null,
+        requireJWTVerification: () => {
+          if (!jwtVerification) {
+            throw new HandlerErrors.UnauthorizedError(
+              "JWT verification not configured for this handler",
+            );
+          }
+          if (!jwtVerification.isValid) {
+            throw new HandlerErrors.UnauthorizedError(
+              `JWT verification failed: ${jwtVerification.error}`,
+            );
+          }
+        },
+      };
+
+      const sleep = (ms: number): Promise<void> => {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      };
+
+      const transpiler = new Transpiler({ loader: "ts" });
+      const code = transpiler.transformSync(handler.code);
+
+      // Wrap the code in an async function to support await
+      const wrappedCode = `(async () => { ${code} })()`;
+
+      await runInNewContext(wrappedCode, {
+        req: deepFreeze(req),
+        resp: response,
+        locals,
+        ctx: deepFreeze(ctx),
+        console: captureConsole,
+        jwt: jwtUtils,
+        shared: shared.data,
+        sleep,
+        btoa,
+        atob,
+        ...HandlerErrors,
+      });
+      // Update to success status with captured data
+      updateHandlerExecution({
+        id: executionId,
+        status: "success",
+        response_data: JSON.stringify(response),
+        locals_data: JSON.stringify(locals),
+        console_output:
+          consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
+      });
+    } catch (e) {
+      console.error("Error running script", e);
+
+      // AIDEV-NOTE: AbortSocketError requires special handling - it aborts the socket without sending a response
+      // Since this is deliberately thrown by the user, it's not actually an execution failure.
+      if (isAbortSocketError(e)) {
+        // Update execution record to show socket was aborted
+        updateHandlerExecution({
+          id: executionId,
+          status: "success",
+          response_data: null,
+          locals_data: JSON.stringify(locals),
+          console_output:
+            consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
+        });
+        // Set error and break out of loop
+        error = e as Error;
+        break;
+      } else if (isHandlerError(e)) {
+        response.status = e.statusCode;
+        response.body = {
+          error: e.message,
+        };
+
+        // Note -- handler errors are deliberately thrown by the user to cause a certain HTTP status code.
+        // So, they are not actually an "execution failure", which is why the status should be successful.
+        updateHandlerExecution({
+          id: executionId,
+          status: "success",
+          response_data: JSON.stringify(response),
+          locals_data: JSON.stringify(locals),
+          console_output:
+            consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
+        });
+        // Set error and break out of loop
+        error = e as Error;
+        break;
+      } else {
+        response.status = 500;
+        response.body = {
+          error:
+            "Error running responder script. See application logs for more details.",
+        };
+
+        // Update to error status with error message and captured data
+        updateHandlerExecution({
+          id: executionId,
+          status: "error",
+          error_message: e instanceof Error ? e.message : String(e),
+          response_data: JSON.stringify(response),
+          locals_data: JSON.stringify(locals),
+          console_output:
+            consoleOutput.length > 0 ? consoleOutput.join("\n") : null,
+        });
+        // Set error and break out of loop
+        error = e as Error;
+        break;
+      }
+    }
+  }
+
+  // Save the shared state after all handlers have executed
+  updateSharedState(shared.data);
+
+  // AIDEV-NOTE: If resp.socket is set, include it in the response with a special marker
+  // This allows the webhook server to write raw data directly to the socket
+  const responseEvent = handlerResponseToRequestEvent(response);
+  if (response.socket !== undefined) {
+    (responseEvent as any)._socketRawData = response.socket;
+  }
+
+  return [error, responseEvent];
 }
