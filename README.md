@@ -255,6 +255,15 @@ This project is designed to be developed in tandem with Claude Code using the fo
    - Lazygit for seeing what changes were made.
 3. Once finished working in that worktree, exit Zellij with `C-b q` and you will be prompted to cherry-pick the commits from the worktree into the `main` branch.
 
+## Devcontainer
+
+To push commits from a devcontainer other than a Github Codespace, you need to create an add an SSH key for repository write access. In the container, run:
+
+```bash
+ssh-keygen -t ed25519 -C "your_email@example.com"
+```
+
+Then add the resulting key (in `/home/node/.ssh/id_ed25519.pub`) as a deploy key in the Github repository.
 
 ## SSL/TLS Configuration
 

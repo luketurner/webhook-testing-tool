@@ -1,5 +1,5 @@
 {
-  "name": "Claude Code Sandbox",
+  "name": "wtt-dev",
   "build": {
     "dockerfile": "Dockerfile",
     "args": {

@@ -105,7 +105,7 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
   -a "source /usr/share/doc/fzf/examples/key-bindings.zsh" \
   -a "source /usr/share/doc/fzf/examples/completion.zsh" \
   -a "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
-   -a "alias bc=\"backlog task create\"" \
+  -a "alias bc=\"backlog task create\"" \
   -a "alias bv=\"backlog board view\"" \
   -x
 
@@ -155,3 +155,6 @@ RUN chmod +x /usr/local/bin/init-firewall.sh && \
   echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
   chmod 0440 /etc/sudoers.d/node-firewall
 USER node
+
+# Set crlf option to avoid newline diffs when base OS is windows
+RUN git config --local core.autocrlf input
