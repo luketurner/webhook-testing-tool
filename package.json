@@ -14,7 +14,7 @@
     "compile": "tsc",
     "build:tailwind": "tailwindcss -m -i ./src/dashboard/index.css -o ./src/dashboard/index.compiled.css",
     "build": "bun run build:tailwind && bakery build",
-    "version": "bakery version"
+    "bakery": "bakery"
   },
   "author": "Luke Turner",
   "license": "MIT",
