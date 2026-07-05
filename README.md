@@ -106,7 +106,8 @@ Steps:
 
 1. Download those two files into the same directory.
 2. Edit the `app` value in the `fly.toml` to something unique for your app.
-3. Run the following commands (changing secret and region values as needed):
+3. Edit the `WTT_BASE_URL` value in the `fly.toml` to match your app name (`https://$APP_NAME.fly.dev:8000`). This is the public dashboard URL, used as the OAuth issuer so MCP clients can authenticate. (If you skip this, the dashboard still works but MCP clients won't be able to connect.)
+4. Run the following commands (changing secret and region values as needed):
 
 ```bash
 flyctl launch --no-deploy
@@ -121,6 +122,7 @@ Once deployed, you can access your app at the following URLs:
 - Webhook server (HTTP): `http://$APP_NAME.fly.dev`
 - Webhook server (HTTPS): `https://$APP_NAME.fly.dev`
 - TCP server: `$APP_NAME.fly.dev:3002`
+- MCP server (for AI clients like Claude): `https://$APP_NAME.fly.dev:8000/mcp`
 
 ## Configuration
 
