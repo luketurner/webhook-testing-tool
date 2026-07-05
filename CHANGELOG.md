@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.8.0 (2026-07-05)
+
+- Add MCP support w/OAuth auth. See [mcp.md](./src/docs/mcp.md) for details. 
+
+---
+
 ## 2.7.0 (2025-10-26)
 
 - Add ability to permanently delete requests/connections.
