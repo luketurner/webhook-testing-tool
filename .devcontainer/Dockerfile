@@ -66,7 +66,7 @@ USER node
 
 # Install global packages
 ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
-ENV PATH=$PATH:/usr/local/share/npm-global/bin:/home/node/.bun/bin
+ENV PATH=$PATH:/usr/local/share/npm-global/bin:/home/node/.bun/bin:/home/node/.local/bin
 
 # Set the default shell to zsh rather than sh
 ENV SHELL=/bin/zsh
@@ -81,23 +81,18 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
   -x
 
 # Install Claude
-RUN npm install -g @anthropic-ai/claude-code
+RUN curl -fsSL https://claude.ai/install.sh | bash
 
 # Install Bun
 RUN npm install -g bun
 
-# Install Claude plugins
-RUN claude plugin marketplace add lackeyjb/playwright-skill
-RUN claude plugin install playwright-skill@playwright-skill
-RUN cd ~/.claude/plugins/marketplaces/playwright-skill/skills/playwright-skill && bun install && cd -
-
 # Copy and set up firewall script
-COPY init-firewall.sh /usr/local/bin/
-USER root
-RUN chmod +x /usr/local/bin/init-firewall.sh && \
-  echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
-  chmod 0440 /etc/sudoers.d/node-firewall
-USER node
+# COPY init-firewall.sh /usr/local/bin/
+# USER root
+# RUN chmod +x /usr/local/bin/init-firewall.sh && \
+#   echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
+#   chmod 0440 /etc/sudoers.d/node-firewall
+# USER node
 
 # Set crlf option to avoid newline diffs when base OS is windows
 # RUN git config --local core.autocrlf input
