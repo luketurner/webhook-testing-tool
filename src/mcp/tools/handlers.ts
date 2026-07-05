@@ -24,6 +24,7 @@ export function registerHandlerTools(server: McpServer) {
       title: "List webhook handlers",
       description:
         "Returns metadata for all webhook handlers in execution order. Handler code is omitted; use get-handler to read it.",
+      annotations: { readOnlyHint: true, openWorldHint: false },
     },
     () => jsonResult(getAllHandlersMeta()),
   );
@@ -36,6 +37,7 @@ export function registerHandlerTools(server: McpServer) {
       inputSchema: {
         id: z.uuid().describe("The handler id"),
       },
+      annotations: { readOnlyHint: true, openWorldHint: false },
     },
     ({ id }) => {
       try {
@@ -74,6 +76,13 @@ export function registerHandlerTools(server: McpServer) {
           .optional()
           .describe("Inline JWKS for JWT verification"),
       },
+      annotations: {
+        readOnlyHint: false,
+        // Additive: creates a new handler without touching existing ones
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
     },
     ({ name, code, path, method, order, jku, jwks }) =>
       jsonResult(
@@ -107,6 +116,13 @@ export function registerHandlerTools(server: McpServer) {
         jku: z.string().nullable().optional(),
         jwks: z.string().nullable().optional(),
       },
+      annotations: {
+        readOnlyHint: false,
+        // Overwrites existing fields (e.g. handler code) irreversibly
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
     },
     ({ id, ...updates }) => {
       let existing;
@@ -129,6 +145,12 @@ export function registerHandlerTools(server: McpServer) {
       description: "Permanently deletes a webhook handler.",
       inputSchema: {
         id: z.uuid().describe("The handler id"),
+      },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
       },
     },
     ({ id }) => {

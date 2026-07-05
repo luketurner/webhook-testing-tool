@@ -11,6 +11,7 @@ export function registerManualTools(server: McpServer) {
       title: "List manual pages",
       description:
         "Returns the names of the built-in manual pages documenting Webhook Testing Tool features.",
+      annotations: { readOnlyHint: true, openWorldHint: false },
     },
     () => jsonResult(Object.keys(manualPages)),
   );
@@ -23,6 +24,7 @@ export function registerManualTools(server: McpServer) {
       inputSchema: {
         name: z.string().min(1).describe("The manual page name"),
       },
+      annotations: { readOnlyHint: true, openWorldHint: false },
     },
     async ({ name }) => {
       const pagePath = manualPages[name];

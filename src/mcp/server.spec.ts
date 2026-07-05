@@ -110,6 +110,43 @@ describe("mcp/server", () => {
     );
   });
 
+  test("tools carry behavior annotations", async () => {
+    const client = await connectClient();
+    const { tools } = await client.listTools();
+    const byName = Object.fromEntries(tools.map((t) => [t.name, t]));
+
+    // Every tool declares annotations
+    for (const tool of tools) {
+      expect(tool.annotations, tool.name).toBeDefined();
+      expect(tool.annotations!.readOnlyHint, tool.name).toBeBoolean();
+      expect(tool.annotations!.openWorldHint, tool.name).toBeBoolean();
+    }
+
+    expect(byName["list-http-requests"].annotations).toMatchObject({
+      readOnlyHint: true,
+      openWorldHint: false,
+    });
+    expect(byName["delete-handler"].annotations).toMatchObject({
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+    });
+    expect(byName["archive-http-request"].annotations).toMatchObject({
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+    });
+    expect(byName["send-http-request"].annotations).toMatchObject({
+      readOnlyHint: false,
+      destructiveHint: false,
+      openWorldHint: true,
+    });
+    expect(byName["verify-jwt"].annotations).toMatchObject({
+      readOnlyHint: true,
+      openWorldHint: true,
+    });
+  });
+
   describe("http request tools", () => {
     test("list-http-requests returns metadata without payloads", async () => {
       const event = createRequestEvent(makeRequestEvent());

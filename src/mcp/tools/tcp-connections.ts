@@ -22,6 +22,7 @@ export function registerTcpConnectionTools(server: McpServer) {
           .optional()
           .describe("Include archived connections (default false)"),
       },
+      annotations: { readOnlyHint: true, openWorldHint: false },
     },
     ({ include_archived }) =>
       jsonResult(getAllTcpConnectionsMeta(include_archived ?? false)),
@@ -36,6 +37,7 @@ export function registerTcpConnectionTools(server: McpServer) {
       inputSchema: {
         id: z.uuid().describe("The TCP connection id"),
       },
+      annotations: { readOnlyHint: true, openWorldHint: false },
     },
     ({ id }) => {
       const connection = getTcpConnection(parseUUID(id));
@@ -53,6 +55,13 @@ export function registerTcpConnectionTools(server: McpServer) {
       description: "Archives a TCP connection.",
       inputSchema: {
         id: z.uuid().describe("The TCP connection id"),
+      },
+      annotations: {
+        readOnlyHint: false,
+        // Reversible via the dashboard's unarchive action
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
       },
     },
     ({ id }) => {

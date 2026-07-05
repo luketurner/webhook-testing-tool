@@ -15,6 +15,7 @@ export function registerJwtTools(server: McpServer) {
       inputSchema: {
         token: z.string().min(1).describe("The raw JWT"),
       },
+      annotations: { readOnlyHint: true, openWorldHint: false },
     },
     ({ token }) => {
       const parsed = tryParseJWT(token.replace(/^Bearer\s+/, "").trim());
@@ -47,6 +48,11 @@ export function registerJwtTools(server: McpServer) {
           .string()
           .optional()
           .describe("JWKS endpoint URL to fetch keys from"),
+      },
+      annotations: {
+        readOnlyHint: true,
+        // May fetch a remote JWKS when jku is provided
+        openWorldHint: true,
       },
     },
     async ({ token, key, jku }) =>

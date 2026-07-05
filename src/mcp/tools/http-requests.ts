@@ -36,6 +36,13 @@ export function registerHttpRequestTools(server: McpServer) {
           .describe("Query parameters as [name, value] pairs"),
         body: z.base64().optional().describe("Base64-encoded request body"),
       },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        // Can target absolute URLs and triggers handler code
+        openWorldHint: true,
+      },
     },
     async ({ method, url, headers, query, body }) => {
       const response = await sendWebhookRequest({
@@ -66,6 +73,7 @@ export function registerHttpRequestTools(server: McpServer) {
           .optional()
           .describe("Include archived requests (default false)"),
       },
+      annotations: { readOnlyHint: true, openWorldHint: false },
     },
     ({ include_archived }) =>
       jsonResult(getAllRequestEventsMeta(include_archived ?? false)),
@@ -80,6 +88,7 @@ export function registerHttpRequestTools(server: McpServer) {
       inputSchema: {
         id: z.uuid().describe("The request event id"),
       },
+      annotations: { readOnlyHint: true, openWorldHint: false },
     },
     ({ id }) => {
       const requestId = parseUUID(id);
@@ -101,6 +110,13 @@ export function registerHttpRequestTools(server: McpServer) {
       description: "Archives an HTTP request event.",
       inputSchema: {
         id: z.uuid().describe("The request event id"),
+      },
+      annotations: {
+        readOnlyHint: false,
+        // Reversible via the dashboard's unarchive action
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
       },
     },
     ({ id }) => {
