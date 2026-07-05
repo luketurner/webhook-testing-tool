@@ -86,9 +86,6 @@ RUN npm install -g @anthropic-ai/claude-code
 # Install Bun
 RUN npm install -g bun
 
-# install Backlog.md (https://github.com/MrLesk/Backlog.md)
-RUN npm install -g backlog.md
-
 # Install Claude plugins
 RUN claude plugin marketplace add lackeyjb/playwright-skill
 RUN claude plugin install playwright-skill@playwright-skill
