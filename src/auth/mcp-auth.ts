@@ -2,6 +2,7 @@ import "@/server-only";
 import { verifyJwsAccessToken } from "better-auth/oauth2";
 import type { JWTPayload } from "jose";
 import { auth } from "./index";
+import { db } from "@/db";
 import { BASE_URL } from "@/config";
 import type { ControllerMethod } from "@/dashboard/server";
 
@@ -16,6 +17,26 @@ export type McpControllerMethod = (
 
 // Stable cache key so verifyJwsAccessToken caches the fetched JWKS
 const jwksCacheKey = {};
+
+// Access tokens are stateless JWTs, so consent is re-checked on every request
+// to make revoking an application in the dashboard take effect immediately
+// instead of when the token expires. WTT is both the authorization server and
+// the resource server, so this is one indexed query against the local DB.
+function hasActiveConsent(jwt: JWTPayload): boolean {
+  // client_id is populated from the azp claim by verifyJwsAccessToken
+  const clientId = jwt.client_id;
+  const userId = jwt.sub;
+  if (typeof clientId !== "string" || typeof userId !== "string") {
+    return false;
+  }
+  return (
+    db
+      .query(
+        `SELECT "id" FROM "oauthConsent" WHERE "clientId" = ? AND "userId" = ?`,
+      )
+      .get(clientId, userId) !== null
+  );
+}
 
 function unauthorized(message: string, invalidToken: boolean): Response {
   // MCP clients rely on resource_metadata for authorization server discovery
@@ -63,6 +84,10 @@ export function withMcpAuth(controller: McpControllerMethod): ControllerMethod {
     } catch (error) {
       console.error("MCP auth error:", error);
       return unauthorized("invalid access token", true);
+    }
+
+    if (!hasActiveConsent(jwt)) {
+      return unauthorized("authorization revoked", true);
     }
 
     return controller(req, server, jwt);

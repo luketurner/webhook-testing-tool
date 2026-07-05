@@ -288,6 +288,9 @@ describe("MCP OAuth flow", () => {
     );
     expect(tokens.refresh_token).toBeString();
 
+    // The access token works before revocation
+    expect((await callMcp(tokens.access_token)).status).toBe(200);
+
     const listResponse = await oauthConsentsController[
       "/api/oauth/consents"
     ].GET(
@@ -320,6 +323,14 @@ describe("MCP OAuth flow", () => {
       }),
     );
     expect(await afterResponse.json()).toHaveLength(0);
+
+    // The unexpired access token is rejected immediately (per-request
+    // consent check), not just when it expires
+    const revokedMcpResponse = await callMcp(tokens.access_token);
+    expect(revokedMcpResponse.status).toBe(401);
+    expect(revokedMcpResponse.headers.get("WWW-Authenticate")).toContain(
+      'error="invalid_token"',
+    );
 
     // Refresh grant now fails because the refresh token is revoked
     const refreshResponse = await auth.handler(

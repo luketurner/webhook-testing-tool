@@ -49,9 +49,9 @@ export const oauthConsentsController = {
         headers: req.headers,
       });
 
-      // Deleting a consent does not invalidate previously issued tokens, so
-      // revoke the client's refresh tokens and drop any opaque access tokens
-      // for this user. (JWT access tokens are stateless and simply expire.)
+      // Deleting a consent immediately locks the client out of /mcp (withMcpAuth
+      // re-checks consent per request), but also revoke the client's refresh
+      // tokens and drop any opaque access tokens so no new tokens can be minted.
       db.run(
         `UPDATE "oauthRefreshToken" SET "revoked" = ? WHERE "clientId" = ? AND "userId" = ? AND "revoked" IS NULL`,
         [new Date().toISOString(), consent.clientId, consent.userId],
