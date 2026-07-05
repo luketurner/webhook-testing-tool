@@ -21,8 +21,7 @@ export async function getUserProfile(request: Request) {
   const user = db
     .query("SELECT id, email, name, createdAt FROM user WHERE id = ?")
     .get(session.user.id) as
-    | { id: string; email: string; name: string; createdAt: number }
-    | undefined;
+    { id: string; email: string; name: string; createdAt: number } | undefined;
 
   if (!user) {
     throw new Error("User not found");

@@ -49,8 +49,7 @@ describe("CLI Admin - Integration Tests", () => {
 
     // Get admin user
     const admin = db.query("SELECT id FROM user WHERE name = 'Admin'").get() as
-      | { id: string }
-      | undefined;
+      { id: string } | undefined;
     expect(admin).toBeDefined();
 
     // Change password
@@ -83,8 +82,7 @@ describe("CLI Admin - Integration Tests", () => {
     // This test verifies error handling when admin doesn't exist
     // First delete the admin user (must delete dependent rows first due to FK constraints)
     const admin = db.query("SELECT id FROM user WHERE name = 'Admin'").get() as
-      | { id: string }
-      | undefined;
+      { id: string } | undefined;
     if (admin) {
       db.run("DELETE FROM session WHERE userId = ?", [admin.id]);
       db.run("DELETE FROM account WHERE userId = ?", [admin.id]);

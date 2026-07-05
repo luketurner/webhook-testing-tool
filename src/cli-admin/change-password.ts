@@ -18,8 +18,7 @@ export async function changePassword(newPassword: string): Promise<void> {
 
   // Find admin user
   const admin = db.query("SELECT id FROM user WHERE name = 'Admin'").get() as
-    | { id: string }
-    | undefined;
+    { id: string } | undefined;
 
   if (!admin) {
     throw new Error("Admin user not found");

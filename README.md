@@ -134,6 +134,7 @@ Once deployed, you can access your app at the following URLs:
 | `WTT_ADMIN_PASSWORD` | `"admin123"` | Configures the password for logging in to the admin dashboard. STRONGLY recommend to override the default value. |
 | `WTT_EXCLUDE_HEADERS` | `""` | Comma-separated list of headers to exclude from logging for incoming HTTP requests. Used to e.g. remove headers added by a cloud reverse proxy. |
 | `WTT_ADMIN_PORT` | `"3001"` | Port used for the admin dashboard Web UI. |
+| `WTT_BASE_URL` | `"http://localhost:$WTT_ADMIN_PORT"` | Public base URL of the admin dashboard (falls back to `BETTER_AUTH_URL` if unset). Used as the OAuth issuer and token audience for the MCP server, so it must be set to the externally reachable dashboard URL when deploying behind a reverse proxy. |
 | `WTT_WEBHOOK_PORT` | `"3000"` | Port used for the HTTP (non-TLS-terminating) webhook server. |
 | `WTT_PUBLIC_WEBHOOK_PORT` | `""` | Public-facing port for incoming HTTP requests (used if WTT is deployed behind a reverse proxy that changes the port). Only affects documentation and generated URLs. |
 | `WTT_TCP_PORT` | `"3002"` | Port used for the raw TCP (non-TLS-terminating) server. |

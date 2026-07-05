@@ -180,13 +180,13 @@ export function tryParseGenericBearerHeader(
   }
 }
 
-export function tryParseJWTHeader(rawHeader: string): ParsedAuthJWT | null {
-  const result = rawHeader.match(/^Bearer\s+([^\s.]+)\.([^\s.]+)\.([^\s.]+)/);
+export function tryParseJWT(rawToken: string): ParsedAuthJWT | null {
+  const result = rawToken.match(/^([^\s.]+)\.([^\s.]+)\.([^\s.]+)/);
   if (!result) return null;
   const parsed: ParsedAuthJWT = {
     authType: "jwt",
     isValid: true,
-    rawHeader,
+    rawHeader: rawToken,
   };
   try {
     const [, rawHeaders, rawPayload, rawSignature] = result;
@@ -207,6 +207,15 @@ export function tryParseJWTHeader(rawHeader: string): ParsedAuthJWT | null {
     parsed.error = e;
     return parsed;
   }
+}
+
+export function tryParseJWTHeader(rawHeader: string): ParsedAuthJWT | null {
+  const result = rawHeader.match(/^Bearer\s+(.*)/);
+  if (!result) return null;
+  const parsed = tryParseJWT(result[1]);
+  if (!parsed) return null;
+  parsed.rawHeader = rawHeader;
+  return parsed;
 }
 
 export function parseUnknownHeader(rawHeader: string): ParsedAuthUnknown {

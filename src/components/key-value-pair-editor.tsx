@@ -6,8 +6,10 @@ import { Button } from "./ui/button";
 import { PlusIcon, XIcon } from "lucide-react";
 import { arrayReplace } from "@/util/array";
 
-export interface KeyValuePairEditorProps<ValueType>
-  extends Omit<React.ComponentProps<"div">, "onChange"> {
+export interface KeyValuePairEditorProps<ValueType> extends Omit<
+  React.ComponentProps<"div">,
+  "onChange"
+> {
   value: KVList<ValueType>;
   onChange: (e: KVList<ValueType>) => void;
   addButtonText?: string;

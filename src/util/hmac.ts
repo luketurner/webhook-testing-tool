@@ -1,11 +1,7 @@
 // HMAC-related types and interfaces
 export interface IParsedSignature {
   signatureType:
-    | "hmac-sha1"
-    | "hmac-sha256"
-    | "hmac-sha512"
-    | "hmac"
-    | "unknown";
+    "hmac-sha1" | "hmac-sha256" | "hmac-sha512" | "hmac" | "unknown";
   isValid: boolean;
   rawHeader: string;
   algorithm?: string;
@@ -43,9 +39,7 @@ export function parseGitHubSignature(
   const [, algorithm, signature] = match;
   return {
     signatureType: `hmac-${algorithm}` as
-      | "hmac-sha1"
-      | "hmac-sha256"
-      | "hmac-sha512",
+      "hmac-sha1" | "hmac-sha256" | "hmac-sha512",
     isValid: true,
     rawHeader,
     algorithm: algorithm.toUpperCase(),

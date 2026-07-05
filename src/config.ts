@@ -35,6 +35,13 @@ export const PUBLIC_WEBHOOK_PORT = process.env.WTT_PUBLIC_WEBHOOK_PORT
   : undefined;
 
 export const ADMIN_PORT = parseInt(process.env.WTT_ADMIN_PORT || "3001", 10);
+
+// Public base URL of the admin dashboard. Used as the OAuth issuer and token
+// audience for the MCP server, so it must be stable and externally reachable.
+export const BASE_URL =
+  process.env.WTT_BASE_URL ||
+  process.env.BETTER_AUTH_URL ||
+  `http${process.env.WTT_DASHBOARD_SSL_ENABLED === "true" ? "s" : ""}://localhost:${ADMIN_PORT}`;
 export const EXCLUDE_HEADERS = process.env.WTT_EXCLUDE_HEADERS ?? "";
 export const EXCLUDE_HEADER_MAP = EXCLUDE_HEADERS.split(",").reduce(
   (obj, k) => {

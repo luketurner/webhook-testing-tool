@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { UpdateEmailForm } from "./update-email-form";
 import { UpdatePasswordForm } from "./update-password-form";
+import { AuthorizedApplications } from "./authorized-applications";
 
 // T017: User Management Page Component
 // Displays user profile with email and account creation date
@@ -215,6 +216,9 @@ export function UserManagementPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* OAuth authorized applications (MCP clients) */}
+      <AuthorizedApplications />
     </div>
   );
 }

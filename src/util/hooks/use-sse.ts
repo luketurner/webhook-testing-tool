@@ -31,10 +31,7 @@ export interface SSEOptions {
 }
 
 export type SSEConnectionState =
-  | "connecting"
-  | "connected"
-  | "disconnected"
-  | "error";
+  "connecting" | "connected" | "disconnected" | "error";
 
 export interface SSEState {
   connectionState: SSEConnectionState;

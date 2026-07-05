@@ -5,6 +5,10 @@ import { handlerController } from "@/handlers/controller";
 import { requestEventController } from "@/request-events/controller";
 import { handlerExecutionController } from "@/handler-executions/controller";
 import { authController } from "@/auth/controller";
+import { oauthController } from "@/auth/oauth-controller";
+import { wellKnownController } from "@/auth/well-known-controller";
+import { oauthConsentsController } from "@/auth/oauth-consents-controller";
+import { mcpController } from "@/mcp/controller";
 import { tcpConnectionController } from "@/tcp-connections/controller";
 import { tcpHandlerController } from "@/tcp-handlers/controller";
 import { tcpHandlerExecutionController } from "@/tcp-handler-executions/controller";
@@ -52,6 +56,13 @@ export const startDashboardServer = () =>
       // auth routes (no auth required)
       ...authController,
 
+      // OAuth provider endpoints + discovery documents (own auth; no session)
+      ...oauthController,
+      ...wellKnownController,
+
+      // MCP server (OAuth bearer token auth, not session auth)
+      ...mcpController,
+
       // public shared request endpoint (no auth required)
       "/api/shared/:sharedId": (req) => {
         const request = getRequestEventBySharedId(req.params.sharedId);
@@ -73,6 +84,7 @@ export const startDashboardServer = () =>
       ...buildController(tcpHandlerController),
       ...buildController(tcpHandlerExecutionController),
       ...buildController(userManagementController),
+      ...buildController(oauthConsentsController),
       ...buildController({
         "/api/config": {
           GET: () => {
@@ -122,7 +134,7 @@ export const startDashboardServer = () =>
 
 export type ControllerMethod = (
   req: Request,
-  server: Bun.Server,
+  server: Bun.Server<undefined>,
 ) => Response | Promise<Response>;
 export type Controller = Record<
   string,
@@ -151,7 +163,7 @@ function buildController(controller: Controller): Controller {
   return result;
 }
 
-function sseEndpoint(req: BunRequest, server: Bun.Server) {
+function sseEndpoint(req: BunRequest, server: Bun.Server<undefined>) {
   let cleanup: (() => void) | null = null;
 
   server.timeout(req, 0);

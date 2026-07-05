@@ -4,7 +4,7 @@ import type { BunRequest } from "bun";
 import type { ControllerMethod } from "@/dashboard/server";
 
 export function withAuth(controller: ControllerMethod): ControllerMethod {
-  return async (req: BunRequest, server: Bun.Server) => {
+  return async (req: BunRequest, server: Bun.Server<undefined>) => {
     try {
       // Get session from request headers
       const session = await auth.api.getSession({

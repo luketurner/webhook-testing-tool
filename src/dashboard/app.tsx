@@ -24,6 +24,7 @@ import { Layout } from "@/components/layout";
 import { SSEProvider } from "@/components/sse-provider";
 import { SessionProvider } from "@/auth/session-provider";
 import { LoginForm } from "@/auth/login-form";
+import { OAuthConsentPage } from "@/auth/oauth-consent-page";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,19 @@ export function App() {
                 <SharedRequestPage />
                 <Toaster position="top-center" />
               </>
+            }
+          />
+
+          {/* OAuth consent page: requires a session (the LoginForm fallback
+              doubles as the OAuth login step) but renders without the
+              dashboard layout chrome */}
+          <Route
+            path="/oauth/consent"
+            element={
+              <SessionProvider fallback={<LoginForm />}>
+                <OAuthConsentPage />
+                <Toaster position="top-center" />
+              </SessionProvider>
             }
           />
 

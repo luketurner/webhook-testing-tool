@@ -1,9 +1,5 @@
 export type ResourceFetcherAction =
-  | "list"
-  | "get"
-  | "create"
-  | "update"
-  | "delete";
+  "list" | "get" | "create" | "update" | "delete";
 
 export type Resource = Record<string, any>;
 
