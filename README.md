@@ -243,7 +243,7 @@ Some other useful commands:
 bun run build
 
 # Publish a new release
-bun run version VERSION # or patch, minor, major
+bun run bakery version VERSION # or patch, minor, major
 ```
 
 ## Development with Claude Code
