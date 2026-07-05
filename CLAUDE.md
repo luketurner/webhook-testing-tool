@@ -41,22 +41,6 @@ Some files are "server-only", indicated by `import "@/server-only";` being prese
 
 ## Code Style and Patterns
 
-### Anchor comments
-
-Add specially formatted comments throughout the codebase, where appropriate, for yourself as inline knowledge that can be easily `grep`ped for.
-
-### Guidelines:
-
-- Use `AIDEV-NOTE:`, `AIDEV-TODO:`, or `AIDEV-QUESTION:` (all-caps prefix) for comments aimed at AI and developers.
-- **Important:** Before scanning files, always first try to **grep for existing anchors** `AIDEV-*` in relevant subdirectories.
-- **Update relevant anchors** when modifying associated code.
-- **Do not remove `AIDEV-NOTE`s** without explicit human instruction.
-- Make sure to add relevant anchor comments, whenever a file or piece of code is:
-  - too complex, or
-  - very important, or
-  - confusing, or
-  - could have a bug
-
 ### Organize your project by feature areas
 
 Organize your project into subdirectories based on the features or your application or common themes to the code in those directories.
@@ -89,11 +73,3 @@ When writing tests:
 - Prefix all commit messages with "claude: "
 - Use `bun run format` to format code changes.
 - Use `bun run compile` to compile code changes. DO NOT use `bunx tsc`.
-
-## Active Technologies
-- TypeScript 5.8.3 with Bun 1.x runtime + React 19, better-auth 1.2.10, react-hook-form 7.56, Zod 3.25, shadcn/ui (Radix UI components), Tailwind CSS 4.1 (001-user-management)
-- SQLite (better-sqlite3 12.0.0) for user credentials and session data (001-user-management)
-- SQLite database (existing at path from DB_FILE config) (001-db-admin-cli)
-
-## Recent Changes
-- 001-user-management: Added TypeScript 5.8.3 with Bun 1.x runtime + React 19, better-auth 1.2.10, react-hook-form 7.56, Zod 3.25, shadcn/ui (Radix UI components), Tailwind CSS 4.1
