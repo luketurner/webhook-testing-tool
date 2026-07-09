@@ -86,6 +86,11 @@ RUN curl -fsSL https://claude.ai/install.sh | bash
 # Install Bun
 RUN npm install -g bun
 
+# superpowers
+RUN claude plugin marketplace add obra/superpowers-marketplace
+RUN claude plugin install superpowers@superpowers-marketplace
+RUN claude plugin install elements-of-style@superpowers-marketplace
+
 # Copy and set up firewall script
 # COPY init-firewall.sh /usr/local/bin/
 # USER root
