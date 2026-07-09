@@ -1090,7 +1090,69 @@ describe("HTTP/2 webhook server", () => {
     expect(event?.tls_info?.protocol).toMatch(/^TLSv1/);
     expect(event?.tls_info?.cipher?.name).toBeTruthy();
   });
+
+  test("runs the handler chain and returns its response", async () => {
+    createHandler({
+      id: randomUUID(),
+      version_id: "1",
+      name: "h2 handler",
+      method: "GET",
+      path: "/h2-handler",
+      code: `resp.status = 201; resp.body = { ok: true };`,
+      order: 0,
+    });
+
+    const result = await h2Request("/h2-handler");
+    expect(result.status).toBe(201);
+    expect(JSON.parse(result.body)).toEqual({ ok: true });
+
+    const event = getAllRequestEvents().find((e) => e.request_url === "/h2-handler");
+    expect(event?.response_status).toBe(201);
+  });
+
+  test("response_status_message is null because HTTP/2 has no reason phrase", async () => {
+    await h2Request("/h2-no-reason");
+    const event = getAllRequestEvents().find((e) => e.request_url === "/h2-no-reason");
+    expect(event?.status).toBe("complete");
+    expect(event?.response_status).toBe(200);
+    expect(event?.response_status_message ?? null).toBeNull();
+  });
+
+  test("strips connection-specific response headers set by a handler", async () => {
+    createHandler({
+      id: randomUUID(),
+      version_id: "1",
+      name: "forbidden headers",
+      method: "GET",
+      path: "/h2-forbidden",
+      code: `
+        resp.headers.push(["connection", "keep-alive"]);
+        resp.headers.push(["transfer-encoding", "chunked"]);
+        resp.headers.push(["x-kept", "yes"]);
+        resp.body = "ok";
+      `,
+      order: 0,
+    });
+
+    const result = await h2Request("/h2-forbidden");
+    expect(result.status).toBe(200);
+    expect(result.headers["x-kept"]).toBe("yes");
+    expect(result.headers["connection"]).toBeUndefined();
+    expect(result.headers["transfer-encoding"]).toBeUndefined();
+
+    const event = getAllRequestEvents().find((e) => e.request_url === "/h2-forbidden");
+    const names = (event?.response_headers ?? []).map(([k]) => k.toLowerCase());
+    expect(names).not.toContain("connection");
+    expect(names).toContain("x-kept");
+  });
 });
+```
+
+`createHandler` requires **all** of `id`, `version_id`, `name`, `code`, `path`, `method`, `order` (see `src/handlers/schema.ts`). Omitting `version_id` throws a Zod validation error. Add these imports to the top of the file alongside the others:
+
+```ts
+import { createHandler } from "@/handlers/model";
+import { randomUUID } from "@/util/uuid";
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -1201,23 +1263,13 @@ function createHttp2Responder(stream: ServerHttp2Stream): Responder {
           return;
         }
 
-        // AIDEV-NOTE: HTTP/2 analog of destroying the socket: reset the stream.
-        if (outcome.kind === "abort") {
-          stream.close(http2.constants.NGHTTP2_CANCEL);
-          resolve(EMPTY_SENT);
-          return;
-        }
-
-        // AIDEV-NOTE: `resp.socket` writes raw bytes bypassing HTTP. That is
-        // impossible on HTTP/2 without corrupting the connection's binary framing,
-        // so we fail loudly rather than silently ignoring the handler's instruction.
-        if (outcome.kind === "raw") {
-          console.error(
-            "resp.socket (raw socket writes) is not supported over HTTP/2; resetting stream",
+        // The "abort" and "raw" outcomes are implemented in Task 5, test-first.
+        // Until then they surface as an error rather than silently doing nothing;
+        // handleHttp2Stream's .catch resets the stream.
+        if (outcome.kind !== "http") {
+          throw new Error(
+            `Unsupported HTTP/2 response outcome: ${outcome.kind}`,
           );
-          stream.close(http2.constants.NGHTTP2_INTERNAL_ERROR);
-          resolve(EMPTY_SENT);
-          return;
         }
 
         const headers = stripForbiddenResponseHeaders(outcome.headers);
@@ -1502,7 +1554,7 @@ afterAll(async () => {
 - [ ] **Step 10: Run the HTTP/2 tests**
 
 Run: `bun test src/webhook-server/http2/server.spec.ts`
-Expected: PASS (6 tests). In particular `captures TLS info on the HTTP/2 path` passes, proving `tls_info` is populated for the first time.
+Expected: PASS (9 tests). In particular `captures TLS info on the HTTP/2 path` passes, proving `tls_info` is populated for the first time.
 
 - [ ] **Step 11: Run the whole suite and typecheck**
 
@@ -1523,85 +1575,28 @@ git commit -m "claude: serve http/2 webhook requests on a dedicated tls port"
 
 ---
 
-### Task 5: HTTP/2 response edge cases
+### Task 5: HTTP/2 abort and raw-socket handling
+
+Strict TDD: Task 4 deliberately left `abort` and `raw` unimplemented (its responder throws on any non-`http` outcome). Write the failing tests first, then implement the two branches.
 
 **Files:**
 - Modify: `src/webhook-server/http2/server.spec.ts` (append a `describe` block)
+- Modify: `src/webhook-server/http2/stream-handler.ts` (`createHttp2Responder`)
 
 **Interfaces:**
-- Consumes: everything from Task 4; `createHandler` from `@/handlers/model`; `randomUUID` from `@/util/uuid`.
+- Consumes: everything from Task 4; `createHandler` from `@/handlers/model`; `randomUUID` from `@/util/uuid` (both already imported by Task 4).
 - Produces: nothing new.
 
-`createHandler` requires **all** of `id`, `version_id`, `name`, `code`, `path`, `method`, `order` (see `src/handlers/schema.ts`). `version_id` is a non-empty string; the existing tests pass `"1"`. Omitting it throws a Zod validation error.
+`createHandler` requires **all** of `id`, `version_id`, `name`, `code`, `path`, `method`, `order` (see `src/handlers/schema.ts`). Omitting `version_id` throws a Zod validation error.
+
+`AbortSocketError` is available inside handler code: `handle-request.ts` spreads `HandlerErrors` into the VM context.
 
 - [ ] **Step 1: Write the failing tests**
 
-Add these two imports to the **top** of `src/webhook-server/http2/server.spec.ts`:
+Append to `src/webhook-server/http2/server.spec.ts`:
 
 ```ts
-import { createHandler } from "@/handlers/model";
-import { randomUUID } from "@/util/uuid";
-```
-
-Then append this block to the end of the file:
-
-```ts
-describe("HTTP/2 response edge cases", () => {
-  test("runs the handler chain and returns its response", async () => {
-    createHandler({
-      id: randomUUID(),
-      version_id: "1",
-      name: "h2 handler",
-      method: "GET",
-      path: "/h2-handler",
-      code: `resp.status = 201; resp.body = { ok: true };`,
-      order: 0,
-    });
-
-    const result = await h2Request("/h2-handler");
-    expect(result.status).toBe(201);
-    expect(JSON.parse(result.body)).toEqual({ ok: true });
-
-    const event = getAllRequestEvents().find((e) => e.request_url === "/h2-handler");
-    expect(event?.response_status).toBe(201);
-  });
-
-  test("response_status_message is null because HTTP/2 has no reason phrase", async () => {
-    await h2Request("/h2-no-reason");
-    const event = getAllRequestEvents().find((e) => e.request_url === "/h2-no-reason");
-    expect(event?.status).toBe("complete");
-    expect(event?.response_status).toBe(200);
-    expect(event?.response_status_message ?? null).toBeNull();
-  });
-
-  test("strips connection-specific response headers set by a handler", async () => {
-    createHandler({
-      id: randomUUID(),
-      version_id: "1",
-      name: "forbidden headers",
-      method: "GET",
-      path: "/h2-forbidden",
-      code: `
-        resp.headers.push(["connection", "keep-alive"]);
-        resp.headers.push(["transfer-encoding", "chunked"]);
-        resp.headers.push(["x-kept", "yes"]);
-        resp.body = "ok";
-      `,
-      order: 0,
-    });
-
-    const result = await h2Request("/h2-forbidden");
-    expect(result.status).toBe(200);
-    expect(result.headers["x-kept"]).toBe("yes");
-    expect(result.headers["connection"]).toBeUndefined();
-    expect(result.headers["transfer-encoding"]).toBeUndefined();
-
-    const event = getAllRequestEvents().find((e) => e.request_url === "/h2-forbidden");
-    const names = (event?.response_headers ?? []).map(([k]) => k.toLowerCase());
-    expect(names).not.toContain("connection");
-    expect(names).toContain("x-kept");
-  });
-
+describe("HTTP/2 abort and raw-socket handling", () => {
   test("AbortSocketError resets the stream and records a null response", async () => {
     createHandler({
       id: randomUUID(),
@@ -1613,6 +1608,7 @@ describe("HTTP/2 response edge cases", () => {
       order: 0,
     });
 
+    // The client sees the stream reset (RST_STREAM), so the request rejects.
     await expect(h2Request("/h2-abort")).rejects.toThrow();
 
     // Give the server a tick to persist the completed event.
@@ -1647,34 +1643,61 @@ describe("HTTP/2 response edge cases", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail (or reveal real bugs)**
+- [ ] **Step 2: Run tests to verify they fail**
 
-Run: `bun test src/webhook-server/http2/server.spec.ts -t "edge cases"`
-Expected: initially FAIL. If `AbortSocketError` / `resp.socket` already pass, that is fine — they were implemented in Task 4 Step 5, and these tests lock the behavior in.
+Run: `bun test src/webhook-server/http2/server.spec.ts -t "abort and raw-socket"`
+Expected: FAIL (2 tests).
 
-- [ ] **Step 3: Fix any implementation gaps**
+The stream does get reset (because Task 4's responder throws `Unsupported HTTP/2 response outcome` and `handleHttp2Stream`'s `.catch` calls `stream.close(NGHTTP2_INTERNAL_ERROR)`), so `rejects.toThrow()` may pass. The assertions on the persisted event are what fail: `processRequest` never reaches `updateRequestEvent`, so `event.status` is still `"running"`, not `"complete"`.
 
-If a test fails, fix `src/webhook-server/http2/stream-handler.ts`. Likely gaps:
-- Missing `content-type` on the default `{ status }` body.
-- `stream.end(body, cb)` callback not firing when the stream was already closed — guard with `stream.destroyed`.
-- The `abort`/`raw` paths must still resolve so `processRequest` records `status: "complete"`.
+Confirm the failure message mentions `expected "complete", got "running"`. If instead you see `event` is `undefined`, the handler never ran — fix that before proceeding.
+
+- [ ] **Step 3: Implement the two branches**
+
+In `src/webhook-server/http2/stream-handler.ts`, replace the `if (outcome.kind !== "http")` throw inside `createHttp2Responder` with the real handling:
+
+```ts
+        // AIDEV-NOTE: HTTP/2 analog of destroying the socket: reset the stream.
+        if (outcome.kind === "abort") {
+          stream.close(http2.constants.NGHTTP2_CANCEL);
+          resolve(EMPTY_SENT);
+          return;
+        }
+
+        // AIDEV-NOTE: `resp.socket` writes raw bytes bypassing HTTP. That is
+        // impossible on HTTP/2 without corrupting the connection's binary framing,
+        // so we fail loudly rather than silently ignoring the handler's instruction.
+        if (outcome.kind === "raw") {
+          console.error(
+            "resp.socket (raw socket writes) is not supported over HTTP/2; resetting stream",
+          );
+          stream.close(http2.constants.NGHTTP2_INTERNAL_ERROR);
+          resolve(EMPTY_SENT);
+          return;
+        }
+```
+
+Both branches `resolve(EMPTY_SENT)` rather than rejecting, so `processRequest` still runs `updateRequestEvent` and records the event as `complete` with a null response — matching how the Express adapter handles the same two outcomes.
 
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `bun test src/webhook-server/http2/server.spec.ts`
-Expected: PASS (11 tests total in this file)
+Expected: PASS (11 tests in this file).
 
-- [ ] **Step 5: Run the full suite**
+- [ ] **Step 5: Run the full suite and typecheck**
 
 Run: `bun test`
-Expected: PASS
+Expected: PASS, no regressions.
+
+Run: `bun run compile`
+Expected: no new errors vs. the baseline.
 
 - [ ] **Step 6: Format and commit**
 
 ```bash
 bun run format
 git add src/webhook-server/http2/server.spec.ts src/webhook-server/http2/stream-handler.ts
-git commit -m "claude: cover http/2 abort, raw-socket and forbidden-header edge cases"
+git commit -m "claude: handle abort and raw-socket outcomes over http/2"
 ```
 
 ---
