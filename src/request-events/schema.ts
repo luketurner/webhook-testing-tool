@@ -7,6 +7,7 @@ import { HTTP_METHODS } from "@/util/http";
 import { fromJSONString } from "@/util/json";
 import type { EntityId } from "@/types/common";
 import { BASE_STATUSES, type BaseStatus } from "@/types/status";
+import { http2InfoSchema, type Http2Info } from "./http2-info";
 
 export const REQUEST_EVENT_TYPES = ["inbound", "outbound"] as const;
 export const REQUEST_EVENT_STATUSES = BASE_STATUSES;
@@ -53,6 +54,8 @@ export const requestEventSchema = z.object({
   response_body: z.preprocess(fromBufferLike, base64Schema).nullish(),
   response_timestamp: timestampSchema.nullish(),
   tls_info: z.preprocess(fromJSONString, tlsInfoSchema.nullish()).nullish(),
+  http_version: z.string().nullish(),
+  http2_info: z.preprocess(fromJSONString, http2InfoSchema.nullish()).nullish(),
   archived_timestamp: timestampSchema.nullish(),
 });
 
@@ -63,12 +66,14 @@ export const requestEventMetaSchema = requestEventSchema.omit({
   response_headers: true,
   response_body: true,
   tls_info: true,
+  http2_info: true,
 });
 
 export interface RequestEvent extends z.infer<typeof requestEventSchema> {
   request_headers: KVList<string>;
   request_query_params: KVList<string>;
   response_headers?: KVList<string> | undefined | null;
+  http2_info?: Http2Info | undefined | null;
 }
 
 export type RequestEventMeta = z.infer<typeof requestEventMetaSchema>;
