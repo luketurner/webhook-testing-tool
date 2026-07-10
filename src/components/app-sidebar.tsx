@@ -64,7 +64,6 @@ const manualSections: { label: string; pages: [string, string][] }[] = [
     pages: [
       ["handlers", "Handlers"],
       ["tcp-handlers", "TCP handlers"],
-      ["mcp", "MCP server"],
     ],
   },
   {
@@ -72,6 +71,7 @@ const manualSections: { label: string; pages: [string, string][] }[] = [
     pages: [
       ["configuration", "Configuration"],
       ["cli", "Admin CLI"],
+      ["mcp", "MCP server"],
     ],
   },
 ];
@@ -313,7 +313,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       {manualSections.map(({ label, pages }) => (
                         <React.Fragment key={label}>
                           <DropdownMenuSeparator />
-                          <DropdownMenuLabel>{label}</DropdownMenuLabel>
+                          <DropdownMenuLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            {label}
+                          </DropdownMenuLabel>
                           {pages.map(([page, title]) => (
                             <DropdownMenuItem
                               key={page}
