@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react";
 import { useSearchParams } from "react-router";
 import {
   Sheet,
@@ -29,6 +30,19 @@ export function ManualSheet() {
     setSearchParams(searchParams);
   };
 
+  // Links between manual pages are written as relative markdown links so they
+  // also resolve on GitHub. The renderer tags them with data-manual-page; the
+  // href itself would navigate away from the HashRouter route.
+  const handleClick = (event: MouseEvent<HTMLDivElement>) => {
+    const link = (event.target as HTMLElement).closest<HTMLElement>(
+      "[data-manual-page]",
+    );
+    if (!link) return;
+    event.preventDefault();
+    searchParams.set("manual", link.dataset.manualPage!);
+    setSearchParams(searchParams);
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <SheetContent side="right" className="sm:max-w-[720px] overflow-y-auto">
@@ -48,6 +62,7 @@ export function ManualSheet() {
           ) : content ? (
             <div
               className="m-2 prose prose-sm dark:prose-invert max-w-none"
+              onClick={handleClick}
               dangerouslySetInnerHTML={{ __html: content }}
             />
           ) : null}

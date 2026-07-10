@@ -35,8 +35,8 @@ import {
   PUBLIC_TCP_PORT,
 } from "@/config";
 import indexPage from "./index.html";
-import { marked } from "marked";
 import { manualPages } from "@/docs";
+import { renderManualPage } from "@/docs/render";
 
 export const startDashboardServer = () =>
   Bun.serve({
@@ -113,12 +113,10 @@ export const startDashboardServer = () =>
       // Manual pages endpoint
       "/api/manual/:pageName": async (req) => {
         const pageName = req.params.pageName;
+        const pagePath = manualPages[pageName];
+        if (!pagePath) return new Response(null, { status: 404 });
         try {
-          const markdown = await Bun.file(manualPages[pageName]).text();
-          const html = await marked(markdown, {
-            breaks: true,
-            gfm: true,
-          });
+          const html = await renderManualPage(await Bun.file(pagePath).text());
           return new Response(html, {
             headers: { "Content-Type": "text/html" },
           });
