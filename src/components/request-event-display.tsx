@@ -1,9 +1,12 @@
 import { DateDisplay } from "@/components/date-display";
 import { HeadersTable } from "@/components/display/headers-table";
+import { Http2InfoSection } from "@/components/display/http2-info-section";
 import { QueryParamsTable } from "@/components/display/query-params-table";
+import { TlsInfoSection } from "@/components/display/tls-info-section";
 import { TwoPaneLayout } from "@/components/layout/two-pane-layout";
 import { PayloadDisplay } from "@/components/payload-display";
 import { StatusBadge } from "@/components/status-badge";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { RequestEvent } from "@/request-events/schema";
 import { findContentTypeHeader } from "@/util/mime";
@@ -33,6 +36,9 @@ export const RequestEventDisplay = ({
               {request.request_method} {request.request_url}
             </span>
             <StatusBadge status={request.status} />
+            {request.http_version && (
+              <Badge variant="outline">HTTP/{request.http_version}</Badge>
+            )}
             {titleActions}
           </CardTitle>
         </CardHeader>
@@ -72,6 +78,9 @@ export const RequestEventDisplay = ({
 
       {/* Additional content (e.g., handler executions) */}
       {children}
+
+      {request.http2_info && <Http2InfoSection info={request.http2_info} />}
+      {request.tls_info && <TlsInfoSection info={request.tls_info} />}
 
       {/* Two-pane Request/Response Layout */}
       <TwoPaneLayout

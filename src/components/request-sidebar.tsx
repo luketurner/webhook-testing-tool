@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/empty-state";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -264,6 +265,14 @@ export function RequestSidebar() {
                           <span className={`font-medium ${statusColor}`}>
                             {request.request_method}
                           </span>
+                          {request.http_version === "2.0" && (
+                            <Badge
+                              variant="outline"
+                              className="px-1 py-0 text-[10px]"
+                            >
+                              H2
+                            </Badge>
+                          )}
                           {isArchived && (
                             <Archive className="h-3 w-3 text-muted-foreground" />
                           )}
