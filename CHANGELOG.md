@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Reworked in-app documentation content and design.
+
+---
+
 ## 2.9.0 (2026-07-10)
 
 - HTTP/2 (`h2` over TLS) support for the webhook server on a dedicated port, enabled with `WTT_WEBHOOK_H2_ENABLED`.
