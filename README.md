@@ -146,6 +146,9 @@ Once deployed, you can access your app at the following URLs:
 | `WTT_WEBHOOK_SSL_ENABLED` | `"false"` | Set to `"true"` to enable the HTTPS (TLS-terminating) webhook server. |
 | `WTT_WEBHOOK_SSL_PORT` | `"3443"` | Port used for the HTTPS server. |
 | `WTT_PUBLIC_WEBHOOK_SSL_PORT` | `""` | Public-facing port for incoming HTTPS requests (used if WTT is deployed behind a reverse proxy that changes the port or terminates TLS). Only affects documentation and generated URLs. |
+| `WTT_WEBHOOK_H2_ENABLED` | `"false"` | Set to `"true"` to enable the HTTP/2 (`h2` over TLS) webhook server. Requires a certificate, but does not require `WTT_WEBHOOK_SSL_ENABLED`. HTTP/2 listens on its own port because Bun cannot serve HTTP/1.1 and HTTP/2 on a single TLS port ([bun#26721](https://github.com/oven-sh/bun/issues/26721)). |
+| `WTT_WEBHOOK_H2_PORT` | `"3444"` | Port used for the HTTP/2 webhook server. |
+| `WTT_PUBLIC_WEBHOOK_H2_PORT` | `""` | Public-facing port for incoming HTTP/2 requests (used if WTT is deployed behind a reverse proxy that changes the port). Only affects documentation and generated URLs. |
 | `WTT_SSL_CERT_PATH` | `"$WTT_DATA_DIR/certs/cert.pem"` | Path to the SSL/TLS certificate to use for HTTPS if not using ACME/Let's Encrypt. |
 | `WTT_SSL_KEY_PATH` | `"$WTT_DATA_DIR/certs/key.pem"` | Path to the SSL/TLS private key to use for HTTPS if not using ACME/Let's Encrypt. |
 | `WTT_ACME_ENABLED` | `"false"` | Set to `"true"` to enable certificate retrieval via ACME/Let's Encrypt. |

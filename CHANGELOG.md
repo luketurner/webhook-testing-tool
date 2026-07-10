@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- HTTP/2 (`h2` over TLS) support for the webhook server on a dedicated port, enabled with `WTT_WEBHOOK_H2_ENABLED`.
+- The request event viewer shows HTTP/2 protocol details (ALPN, stream ID, weight, HEADERS frame flags, pseudo-headers, local/remote SETTINGS).
+- The request event viewer shows TLS details, which are captured on the HTTP/2 path.
+- Request events record `http_version`, shown as a badge in the request list.
+
+---
+
 ## 2.8.0 (2026-07-05)
 
 - Add MCP support w/OAuth auth. See [mcp.md](./src/docs/mcp.md) for details. 
