@@ -224,8 +224,11 @@ export interface ServerConfig {
   webhookPort: number;
   webhookSslPort: number;
   webhookSslEnabled: boolean;
+  webhookH2Port: number;
+  webhookH2Enabled: boolean;
   publicWebhookPort?: number;
   publicWebhookSslPort?: number;
+  publicWebhookH2Port?: number;
   tcpPort: number;
   publicTcpPort?: number;
 }
@@ -253,10 +256,17 @@ export function useServerUrls() {
     serverConfig?.publicWebhookSslPort || serverConfig?.webhookSslPort || 443;
   const tcpPort = serverConfig?.publicTcpPort || serverConfig?.tcpPort || 3000;
 
+  const h2Port =
+    serverConfig?.publicWebhookH2Port || serverConfig?.webhookH2Port || 443;
+
   const httpUrl = `http://${hostname}${httpPort == 80 ? "" : `:${httpPort}`}/`;
   const httpsUrl =
     serverConfig?.publicWebhookSslPort || serverConfig?.webhookSslEnabled
       ? `https://${hostname}${httpsPort == 443 ? "" : `:${httpsPort}`}/`
+      : null;
+  const h2Url =
+    serverConfig?.publicWebhookH2Port || serverConfig?.webhookH2Enabled
+      ? `https://${hostname}${h2Port == 443 ? "" : `:${h2Port}`}/`
       : null;
   const tcpHost = `${hostname}:${tcpPort}`;
 
@@ -271,6 +281,7 @@ export function useServerUrls() {
   return {
     httpUrl,
     httpsUrl,
+    h2Url,
     tcpHost,
     getFullUrl,
   };

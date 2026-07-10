@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 export const HomePage = () => {
   const { data: requests } = useResourceList<RequestEventMeta>("requests");
   const { data: handlers } = useResourceList<Handler>("handlers");
-  const { httpUrl, httpsUrl, tcpHost } = useServerUrls();
+  const { httpUrl, httpsUrl, h2Url, tcpHost } = useServerUrls();
 
   const recentRequests = requests?.slice(0, 5) || [];
   const activeHandlers =
@@ -121,6 +121,10 @@ export const HomePage = () => {
               <TableRow>
                 <TableCell>Webhook (HTTPS)</TableCell>
                 <TableCell>{httpsUrl || "N/A"}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Webhook (HTTP/2)</TableCell>
+                <TableCell>{h2Url || "N/A"}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>TCP</TableCell>

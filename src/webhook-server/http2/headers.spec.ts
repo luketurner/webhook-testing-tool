@@ -22,6 +22,14 @@ describe("normalizeHeaderValue", () => {
   test("returns null for undefined", () => {
     expect(normalizeHeaderValue(undefined)).toBeNull();
   });
+
+  test("does not drop a falsy number (0)", () => {
+    expect(normalizeHeaderValue(0)).toBe("0");
+  });
+
+  test("does not turn an empty string into null", () => {
+    expect(normalizeHeaderValue("")).toBe("");
+  });
 });
 
 describe("splitPseudoHeaders", () => {
@@ -55,6 +63,14 @@ describe("splitPseudoHeaders", () => {
   test("normalizes multi-value regular headers", () => {
     const { regular } = splitPseudoHeaders({ "x-dup": ["p", "q"] });
     expect(regular).toEqual([["x-dup", "p, q"]]);
+  });
+
+  test("keeps falsy header values (0, empty string) instead of dropping them", () => {
+    const { regular } = splitPseudoHeaders({ "x-zero": 0, "x-empty": "" });
+    expect(regular).toEqual([
+      ["x-zero", "0"],
+      ["x-empty", ""],
+    ]);
   });
 });
 

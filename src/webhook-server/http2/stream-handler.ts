@@ -64,8 +64,11 @@ function createHttp2Responder(stream: ServerHttp2Stream): Responder {
             status: outcome.status,
             // HTTP/2 carries no status reason phrase.
             statusMessage: null,
-            // Record what was ACTUALLY sent (including any content-type we added),
-            // mirroring the fidelity the Express adapter gets from its res.end hook.
+            // Records only the headers this adapter explicitly set (including any
+            // content-type we added). Unlike the HTTP/1 path — which reads back
+            // res.getHeaders() and so also captures runtime-added headers such as
+            // content-length and date — this does not reflect headers nghttp2 adds
+            // on the wire.
             headers: Object.entries(responseHeaders),
             body,
           });

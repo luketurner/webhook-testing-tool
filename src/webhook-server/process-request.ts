@@ -109,6 +109,9 @@ function toResponseOutcome(
     return { kind: "abort" };
   }
 
+  // AIDEV-NOTE: If a handler sets `resp.socket`, raw data bypasses normal HTTP
+  // response handling entirely; the transport adapter writes it directly to
+  // the socket (or, on HTTP/2 where that's impossible, resets the stream).
   const rawData = (response as RawSocketResponse)?._socketRawData;
   if (rawData) {
     return { kind: "raw", data: rawData };

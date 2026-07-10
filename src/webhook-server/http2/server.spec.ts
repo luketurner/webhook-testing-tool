@@ -203,6 +203,25 @@ describe("HTTP/2 webhook server", () => {
     expect(names).not.toContain("connection");
     expect(names).toContain("x-kept");
   });
+
+  test("response header names set by a handler arrive lowercased on the wire", async () => {
+    // AIDEV-NOTE: HTTP/2 field names are lowercase on the wire (RFC 9113 8.1.2).
+    // Verified on Bun 1.3.14 and Node v24: nghttp2 lowercases them for us, so the
+    // adapter deliberately does NOT call toLowerCase() before stream.respond().
+    createHandler({
+      id: randomUUID(),
+      version_id: "1",
+      name: "mixed case header",
+      method: "GET",
+      path: "/h2-header-case",
+      code: `resp.headers.push(["X-Mixed-Case", "yes"]); resp.body = "ok";`,
+      order: 0,
+    });
+
+    const result = await h2Request("/h2-header-case");
+    expect(result.status).toBe(200);
+    expect(result.headers["x-mixed-case"]).toBe("yes");
+  });
 });
 
 describe("HTTP/2 abort and raw-socket handling", () => {
