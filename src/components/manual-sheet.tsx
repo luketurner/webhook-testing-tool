@@ -45,11 +45,7 @@ export function ManualSheet() {
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent side="right" className="sm:max-w-[720px] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Manual</SheetTitle>
-        </SheetHeader>
-
+      <SheetContent side="left" className="sm:max-w-[1024px] overflow-y-auto">
         <div className="mt-6">
           {loading ? (
             <div className="flex items-center justify-center py-8">
@@ -61,7 +57,7 @@ export function ManualSheet() {
             </div>
           ) : content ? (
             <div
-              className="m-2 prose prose-sm dark:prose-invert max-w-none"
+              className="prose dark:prose-invert max-w-none px-8 pb-8 pl-24 prose-code:before:content-none prose-code:after:content-none"
               onClick={handleClick}
               dangerouslySetInnerHTML={{ __html: content }}
             />
