@@ -73,3 +73,7 @@ When writing tests:
 - Prefix all commit messages with "claude: "
 - Use `bun run format` to format code changes.
 - Use `bun run compile` to compile code changes. DO NOT use `bunx tsc`.
+
+## Documentation
+
+Remember to update the in-app documentation in the `src/docs` folder if applicable after any changes.
