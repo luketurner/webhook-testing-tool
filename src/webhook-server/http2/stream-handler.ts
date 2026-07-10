@@ -25,13 +25,23 @@ function createHttp2Responder(stream: ServerHttp2Stream): Responder {
           return;
         }
 
-        // The "abort" and "raw" outcomes are implemented in Task 5, test-first.
-        // Until then they surface as an error rather than silently doing nothing;
-        // handleHttp2Stream's .catch resets the stream.
-        if (outcome.kind !== "http") {
-          throw new Error(
-            `Unsupported HTTP/2 response outcome: ${outcome.kind}`,
+        // AIDEV-NOTE: HTTP/2 analog of destroying the socket: reset the stream.
+        if (outcome.kind === "abort") {
+          stream.close(http2.constants.NGHTTP2_CANCEL);
+          resolve(EMPTY_SENT);
+          return;
+        }
+
+        // AIDEV-NOTE: `resp.socket` writes raw bytes bypassing HTTP. That is
+        // impossible on HTTP/2 without corrupting the connection's binary framing,
+        // so we fail loudly rather than silently ignoring the handler's instruction.
+        if (outcome.kind === "raw") {
+          console.error(
+            "resp.socket (raw socket writes) is not supported over HTTP/2; resetting stream",
           );
+          stream.close(http2.constants.NGHTTP2_INTERNAL_ERROR);
+          resolve(EMPTY_SENT);
+          return;
         }
 
         const headers = stripForbiddenResponseHeaders(outcome.headers);

@@ -204,3 +204,65 @@ describe("HTTP/2 webhook server", () => {
     expect(names).toContain("x-kept");
   });
 });
+
+describe("HTTP/2 abort and raw-socket handling", () => {
+  test("AbortSocketError resets the stream and records a null response", async () => {
+    createHandler({
+      id: randomUUID(),
+      version_id: "1",
+      name: "abort",
+      method: "GET",
+      path: "/h2-abort",
+      code: `throw new AbortSocketError("nope");`,
+      order: 0,
+    });
+
+    // AIDEV-NOTE: A stream reset sent BEFORE any HEADERS frame does not reject on
+    // the client. Verified on both Bun 1.3.14 and Node v24: the request stream just
+    // emits 'end' with no `:status` and an empty body. The runtimes differ only in
+    // `rstCode` (Node reports 8 = NGHTTP2_CANCEL; Bun leaves it 0), so the reset
+    // *reason* is not portably assertable. Assert the portable observable instead:
+    // no response status was ever received.
+    const result = await h2Request("/h2-abort");
+    expect(result.status).toBe(0);
+    expect(result.body).toBe("");
+
+    // Give the server a tick to persist the completed event.
+    await new Promise((r) => setTimeout(r, 100));
+
+    const event = getAllRequestEvents().find(
+      (e) => e.request_url === "/h2-abort",
+    );
+    expect(event).toBeDefined();
+    expect(event?.status).toBe("complete");
+    expect(event?.response_status ?? null).toBeNull();
+    expect(event?.response_body ?? null).toBeNull();
+  });
+
+  test("resp.socket raw writes are unsupported over HTTP/2 and reset the stream", async () => {
+    createHandler({
+      id: randomUUID(),
+      version_id: "1",
+      name: "raw socket",
+      method: "GET",
+      path: "/h2-raw",
+      code: `resp.socket = "HTTP/1.1 200 OK\\r\\n\\r\\nraw";`,
+      order: 0,
+    });
+
+    // Same as above: the reset arrives before any HEADERS frame, so the client
+    // observes a clean 'end' with no `:status` rather than an error.
+    const result = await h2Request("/h2-raw");
+    expect(result.status).toBe(0);
+    expect(result.body).toBe("");
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    const event = getAllRequestEvents().find(
+      (e) => e.request_url === "/h2-raw",
+    );
+    expect(event).toBeDefined();
+    expect(event?.status).toBe("complete");
+    expect(event?.response_status ?? null).toBeNull();
+  });
+});
