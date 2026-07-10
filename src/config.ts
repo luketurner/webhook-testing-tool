@@ -68,6 +68,20 @@ export const SSL_KEY_PATH =
 export const DASHBOARD_SSL_ENABLED =
   process.env.WTT_DASHBOARD_SSL_ENABLED === "true";
 
+// HTTP/2 Configuration
+// AIDEV-NOTE: HTTP/2 needs its own TLS port because Bun cannot serve HTTP/1.1 and
+// HTTP/2 on one port: allowHTTP1 is ignored and ALPN advertises only h2.
+// See https://github.com/oven-sh/bun/issues/26721
+// This is independent of WTT_WEBHOOK_SSL_ENABLED, but still requires a certificate.
+export const WEBHOOK_H2_ENABLED = process.env.WTT_WEBHOOK_H2_ENABLED === "true";
+export const WEBHOOK_H2_PORT = parseInt(
+  process.env.WTT_WEBHOOK_H2_PORT || "3444",
+  10,
+);
+export const PUBLIC_WEBHOOK_H2_PORT = process.env.WTT_PUBLIC_WEBHOOK_H2_PORT
+  ? parseInt(process.env.WTT_PUBLIC_WEBHOOK_H2_PORT, 10)
+  : undefined;
+
 // ACME/Let's Encrypt Configuration
 export const ACME_ENABLED = process.env.WTT_ACME_ENABLED === "true";
 export const ACME_DOMAINS = process.env.WTT_ACME_DOMAINS

@@ -24,6 +24,8 @@ import {
   type Responder,
   type SentResponse,
 } from "./process-request";
+import type { Http2SecureServer } from "node:http2";
+import { startHttp2WebhookServer } from "./http2/server";
 
 // NOTE: Express is used for the webhook server instead of Bun.serve() because we want to
 // be able to inspect the final HTTP response sent to the client (including content-length, etc.)
@@ -156,22 +158,41 @@ export interface WebhookServerOptions {
     certPath: string;
     port: number;
   };
+  http2?: {
+    enabled: boolean;
+    port: number;
+  };
 }
 
 export interface WebhookServerResp {
   server: http.Server;
   httpsServer?: https.Server;
+  http2Server?: Http2SecureServer;
 }
 
 export async function startWebhookServer({
   port,
   ssl,
+  http2,
 }: WebhookServerOptions): Promise<WebhookServerResp> {
   return new Promise<WebhookServerResp>(async (resolve) => {
     // Start HTTP server
     const server: http.Server = app.listen(port, () => {
       console.log(`HTTP webhook server listening on port ${port}`);
     });
+
+    let http2Server: Http2SecureServer | undefined;
+    if (http2?.enabled) {
+      try {
+        http2Server = await startHttp2WebhookServer({
+          port: http2.port,
+          certPath: ssl.certPath,
+          keyPath: ssl.keyPath,
+        });
+      } catch (err) {
+        console.error("Failed to start HTTP/2 server:", err);
+      }
+    }
 
     // Start HTTPS server if enabled
     if (ssl.enabled) {
@@ -206,7 +227,7 @@ export async function startWebhookServer({
         const httpsServer = https.createServer(httpsOptions, app);
         httpsServer.listen(ssl.port, () => {
           console.log(`HTTPS webhook server listening on port ${ssl.port}`);
-          resolve({ server, httpsServer });
+          resolve({ server, httpsServer, http2Server });
         });
       } catch (err) {
         console.error("Failed to start HTTPS server:", err);
@@ -225,20 +246,20 @@ export async function startWebhookServer({
               console.log(
                 `HTTPS webhook server listening on port ${ssl.port} (using fallback certificate)`,
               );
-              resolve({ server, httpsServer });
+              resolve({ server, httpsServer, http2Server });
             });
           } catch (fallbackErr) {
             console.error("Failed to use fallback certificate:", fallbackErr);
             console.log("Continuing with HTTP only");
-            resolve({ server });
+            resolve({ server, http2Server });
           }
         } else {
           console.log("Continuing with HTTP only");
-          resolve({ server });
+          resolve({ server, http2Server });
         }
       }
     } else {
-      resolve({ server });
+      resolve({ server, http2Server });
     }
   });
 }

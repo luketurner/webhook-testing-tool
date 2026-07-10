@@ -4,6 +4,7 @@ import {
   TEST_KEY_PATH,
   TEST_PORT,
   TEST_SSL_PORT,
+  TEST_H2_PORT,
   TEST_TEMP_DIR,
 } from "./test-config";
 
@@ -13,15 +14,17 @@ import { beforeAll, afterAll, afterEach } from "bun:test";
 import { $ } from "bun";
 import http from "http";
 import https from "https";
+import type { Http2SecureServer } from "node:http2";
 import { assertGeneratedSelfSignedCert } from "./util/generate-cert";
 
 let server: http.Server;
 let httpsServer: https.Server;
+let http2Server: Http2SecureServer | undefined;
 
 beforeAll(async () => {
   await migrateDb();
   await assertGeneratedSelfSignedCert(TEST_CERT_PATH, TEST_KEY_PATH);
-  ({ server, httpsServer } = await startWebhookServer({
+  ({ server, httpsServer, http2Server } = await startWebhookServer({
     port: TEST_PORT,
     ssl: {
       enabled: true,
@@ -29,12 +32,17 @@ beforeAll(async () => {
       certPath: TEST_CERT_PATH,
       keyPath: TEST_KEY_PATH,
     },
+    http2: {
+      enabled: true,
+      port: TEST_H2_PORT,
+    },
   }));
 });
 
 afterAll(async () => {
   server.close();
   httpsServer?.close();
+  http2Server?.close();
   // // Clean up test certificates
   // Disabled because regenerating the certificates before each suite runs is kinda slow.
   // try {

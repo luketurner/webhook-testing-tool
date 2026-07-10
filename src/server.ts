@@ -26,6 +26,8 @@ import {
   ACME_ENABLED,
   TCP_PORT,
   DASHBOARD_SSL_ENABLED,
+  WEBHOOK_H2_ENABLED,
+  WEBHOOK_H2_PORT,
 } from "@/config";
 import { startDashboardServer } from "./dashboard/server";
 import { migrateDb } from "./db";
@@ -42,7 +44,10 @@ await migrateDb();
 await initializeAdminUser();
 
 // generate a self-signed cert if necessary
-if ((WEBHOOK_SSL_ENABLED && !ACME_ENABLED) || DASHBOARD_SSL_ENABLED) {
+if (
+  ((WEBHOOK_SSL_ENABLED || WEBHOOK_H2_ENABLED) && !ACME_ENABLED) ||
+  DASHBOARD_SSL_ENABLED
+) {
   await assertGeneratedSelfSignedCert(SSL_CERT_PATH, SSL_KEY_PATH);
 }
 
@@ -56,6 +61,10 @@ const webhookServer = await startWebhookServer({
     certPath: SSL_CERT_PATH,
     keyPath: SSL_KEY_PATH,
     port: WEBHOOK_SSL_PORT,
+  },
+  http2: {
+    enabled: WEBHOOK_H2_ENABLED,
+    port: WEBHOOK_H2_PORT,
   },
 });
 
