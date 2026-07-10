@@ -49,6 +49,33 @@
 - Does not support multi-user login. (Users are expected to deploy their own instance of `wtt` instead of sharing.)
 - Reliance on SQLite means horizontal scaling is tricky. I recommend running `wtt` with a single pod/container and SQLite stored in a persistent volume. You could probably make horizontal scaling work with [Litestream](https://litestream.io/) or something, but I haven't tried it.
 
+## Documentation
+
+These pages are also available as an in-app manual, from the **Documentation** menu in the dashboard sidebar.
+
+Receiving traffic:
+
+- [Webhook server](./src/docs/webhook-server.md) -- the HTTP listeners and what gets recorded.
+- [TLS](./src/docs/tls.md) -- self-signed certificates, your own certificates, and Let's Encrypt.
+- [HTTP/2](./src/docs/http2.md) -- serving `h2` and inspecting pseudo-headers, streams, and SETTINGS.
+- [TCP connections](./src/docs/tcp-connections.md) -- the raw TCP server.
+
+Working with requests:
+
+- [Sending requests](./src/docs/sending-requests.md) -- send a test request, or replay a captured one.
+- [Inspecting requests](./src/docs/inspecting-requests.md) -- payload encodings, JWTs, HMAC signatures, and sharing.
+
+Writing responses:
+
+- [Handlers](./src/docs/handlers.md) -- respond to HTTP requests with Typescript.
+- [TCP handlers](./src/docs/tcp-handlers.md) -- respond to TCP data with Typescript.
+- [MCP server](./src/docs/mcp.md) -- connect an AI agent to `wtt`.
+
+Reference:
+
+- [Configuration](./src/docs/configuration.md) -- every environment variable.
+- [Admin CLI](./src/docs/cli.md) -- reset the login, export the database.
+
 ## Quickstart
 
 1. Download the archive for your platform from the [latest release](https://github.com/luketurner/webhook-testing-tool/releases/latest).
@@ -127,76 +154,13 @@ Once deployed, you can access your app at the following URLs:
 
 ## Configuration
 
-`wtt` understands the following environment variables:
-
-| Variable | Default value | Notes |
-|-|-|-|
-| `BETTER_AUTH_SECRET` | N/A | Secret used by `better-auth` for securing dashboard authentication. This is NOT a password, it's used internally by the system. Should be set to a sufficiently random value for any production deployment. |
-| `WTT_DATA_DIR` | `"data"` | Path to the data directory. By default, all files (databases, certs, etc.) will be stored in this directory, although file locations can be overridden more granularly with other variables. |
-| `WTT_DB_FILE` | `"$WTT_DATA_DIR/data.sqlite"` | Path to the SQLite database to use. Database will be created if it does not already exist. |
-| `WTT_ADMIN_USERNAME` | `"admin@example.com"` | Configures the username for logging in to the admin dashboard. |
-| `WTT_ADMIN_PASSWORD` | `"admin123"` | Configures the password for logging in to the admin dashboard. STRONGLY recommend to override the default value. |
-| `WTT_EXCLUDE_HEADERS` | `""` | Comma-separated list of headers to exclude from logging for incoming HTTP requests. Used to e.g. remove headers added by a cloud reverse proxy. |
-| `WTT_ADMIN_PORT` | `"3001"` | Port used for the admin dashboard Web UI. |
-| `WTT_BASE_URL` | `"http://localhost:$WTT_ADMIN_PORT"` | Public base URL of the admin dashboard (falls back to `BETTER_AUTH_URL` if unset). Used as the OAuth issuer and token audience for the MCP server, so it must be set to the externally reachable dashboard URL when deploying behind a reverse proxy. |
-| `WTT_WEBHOOK_PORT` | `"3000"` | Port used for the HTTP (non-TLS-terminating) webhook server. |
-| `WTT_PUBLIC_WEBHOOK_PORT` | `""` | Public-facing port for incoming HTTP requests (used if WTT is deployed behind a reverse proxy that changes the port). Only affects documentation and generated URLs. |
-| `WTT_TCP_PORT` | `"3002"` | Port used for the raw TCP (non-TLS-terminating) server. |
-| `WTT_PUBLIC_TCP_PORT` | `""` | Public-facing port for incoming TCP connections (used if WTT is deployed behind a reverse proxy that changes the port). Only affects documentation and generated URLs. |
-| `WTT_DASHBOARD_SSL_ENABLED` | `"false"` | Set to `"true"` to enable (and require) HTTPS (TLS termination) for the dashboard server. Note the dashboard server currently only supports using self-signed (or BYO) certificates. |
-| `WTT_WEBHOOK_SSL_ENABLED` | `"false"` | Set to `"true"` to enable the HTTPS (TLS-terminating) webhook server. |
-| `WTT_WEBHOOK_SSL_PORT` | `"3443"` | Port used for the HTTPS server. |
-| `WTT_PUBLIC_WEBHOOK_SSL_PORT` | `""` | Public-facing port for incoming HTTPS requests (used if WTT is deployed behind a reverse proxy that changes the port or terminates TLS). Only affects documentation and generated URLs. |
-| `WTT_WEBHOOK_H2_ENABLED` | `"false"` | Set to `"true"` to enable the HTTP/2 (`h2` over TLS) webhook server. Requires a certificate, but does not require `WTT_WEBHOOK_SSL_ENABLED`. HTTP/2 listens on its own port because Bun cannot serve HTTP/1.1 and HTTP/2 on a single TLS port ([bun#26721](https://github.com/oven-sh/bun/issues/26721)). |
-| `WTT_WEBHOOK_H2_PORT` | `"3444"` | Port used for the HTTP/2 webhook server. |
-| `WTT_PUBLIC_WEBHOOK_H2_PORT` | `""` | Public-facing port for incoming HTTP/2 requests (used if WTT is deployed behind a reverse proxy that changes the port). Only affects documentation and generated URLs. |
-| `WTT_SSL_CERT_PATH` | `"$WTT_DATA_DIR/certs/cert.pem"` | Path to the SSL/TLS certificate to use for HTTPS if not using ACME/Let's Encrypt. |
-| `WTT_SSL_KEY_PATH` | `"$WTT_DATA_DIR/certs/key.pem"` | Path to the SSL/TLS private key to use for HTTPS if not using ACME/Let's Encrypt. |
-| `WTT_ACME_ENABLED` | `"false"` | Set to `"true"` to enable certificate retrieval via ACME/Let's Encrypt. |
-| `WTT_ACME_DOMAINS` | `""` | Comma-separated list of domains to request certificates for ACME/Let's Encrypt. |
-| `WTT_ACME_EMAIL` | `""` | Contact email for ACME/Let's Encrypt. |
-| `WTT_ACME_DIRECTORY` | `"https://acme-v02.api.letsencrypt.org/directory"` | Directory URL for ACME/Let's Encrypt. |
-| `WTT_ACME_CERT_PATH` | `"$WTT_DATA_DIR/acme-certs"` | Local directory that ACME certificates will be stored in. |
-| `WTT_ACME_STAGING` | `"false"` | Whether the ACME directory is a staging environment. |
-| `NODE_ENV` | `"development"` or `"production"` | Controls certain development features (e.g. hot-module reloading) and security checks. Note this is always set to `"production"` for release builds and cannot be changed. |
+`wtt` is configured exclusively via environment variables. Every variable, with its default, is documented in the [configuration manual page](./src/docs/configuration.md).
 
 ## Admin commands
 
-The `wtt` executable can also be used as a CLI tool to perform some database administration tasks, like resetting login information and exporting the DB. This can be useful if, for example, you forgot your admin username or password and need to reset it.
+The `wtt` executable doubles as a CLI tool for database administration tasks, like resetting login information and exporting the DB. This is how you get back in if you forget your admin username or password.
 
-```
-WTT Database Admin CLI
-
-Usage:
-  wtt                     (starts WTT server - default behavior)
-  wtt [command] [args...]
-
-Commands:
-  change-email <email>    Change admin user's email address
-                          Updates immediately (no confirmation email)
-
-  change-password         Change admin user's password (interactive prompt)
-                          Minimum 8 characters
-                          Must contain: uppercase, lowercase, number
-
-  export-db [path]        Export database to file for backup
-                          Default filename: backup-YYYY-MM-DDTHH-MM-SS.db
-
-  --help, help            Show this help message
-
-Examples:
-  # Change admin email to new address
-  wtt change-email admin@newdomain.com
-
-  # Change admin password (will prompt twice for confirmation)
-  wtt change-password
-
-  # Export database with automatic timestamp filename
-  wtt export-db
-
-  # Export database to specific location
-  wtt export-db /backups/wtt-2025-10-25.db
-```
+See the [admin CLI manual page](./src/docs/cli.md).
 
 ## Handlers
 
@@ -275,44 +239,6 @@ Then add the resulting key (in `/home/node/.ssh/id_ed25519.pub`) as a deploy key
 
 ## SSL/TLS Configuration
 
-`wtt` supports HTTPS connections with two certificate options:
+`wtt` terminates TLS on the webhook server, the HTTP/2 server, and the admin dashboard, using a self-signed certificate, a certificate you supply, or one obtained from Let's Encrypt over ACME. (ACME support is still a work in progress.)
 
-### Self-Signed Certificates (Default)
-
-By default, `wtt` uses self-signed certificates for HTTPS. Just set `WTT_WEBHOOK_SSL_ENABLED` and/or `WTT_DASHBOARD_SSL_ENABLED`, no additional configuration needed:
-
-```bash
-# Enable HTTPS w/self-signed cert for webhook server
-export WTT_WEBHOOK_SSL_ENABLED=true
-
-# Enable HTTPS w/self-signed cert for admin dashboard server
-export WTT_DASHBOARD_SSL_ENABLED=true
-```
-
-`wtt` will automatically generate a new self-signed cert on startup (requires `openssl` to be installed), or use an existing cert if already created.
-
-### Let's Encrypt Certificates (ACME)
-
-> [!WARNING]
-> ACME support is still a work in progress!
-
-
-For production deployments, `wtt` can automatically obtain and renew certificates from Let's Encrypt:
-
-```bash
-# Enable ACME
-export WTT_ACME_ENABLED=true
-export WTT_WEBHOOK_SSL_ENABLED=true
-
-# Configure your domain(s)
-export WTT_ACME_DOMAINS=example.com,www.example.com
-export WTT_ACME_EMAIL=admin@example.com
-
-# Optional: Use Let's Encrypt staging for testing
-export WTT_ACME_STAGING=true
-```
-
-**ACME Requirements:**
-
-- Your domain must point to your `wtt` instance
-- Port 80 must be accessible for HTTP-01 challenges
+See the [TLS manual page](./src/docs/tls.md).
