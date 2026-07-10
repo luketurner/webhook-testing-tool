@@ -130,6 +130,8 @@ This is useful for testing client behavior with:
 - Incomplete responses
 - Custom protocols over HTTP connections
 
+**Note:** `resp.socket` only works over HTTP/1.1. Raw bytes would corrupt HTTP/2's binary framing, so a request served on the [HTTP/2](./http2.md) port has its stream reset instead.
+
 ### Context Object (`ctx`)
 
 The context object provides additional request information and is **read-only**.

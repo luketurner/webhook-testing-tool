@@ -337,10 +337,10 @@ To test your TCP handler, you can use various TCP client tools:
 
 ```bash
 # Connect to TCP server
-echo "hello" | nc localhost 8888
+echo "hello" | nc localhost 3002
 
 # Interactive session
-nc localhost 8888
+nc localhost 3002
 # Type messages and press Enter
 ```
 
@@ -348,7 +348,7 @@ nc localhost 8888
 
 ```bash
 # Connect to TCP server
-telnet localhost 8888
+telnet localhost 3002
 # Type messages and press Enter
 ```
 
@@ -359,7 +359,7 @@ import socket
 
 # Create TCP client
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('localhost', 8888))
+sock.connect(('localhost', 3002))
 
 # Send data
 sock.send(b'hello\n')
@@ -376,7 +376,7 @@ sock.close()
 ```javascript
 const net = require('net');
 
-const client = net.createConnection({ port: 8888 }, () => {
+const client = net.createConnection({ port: 3002 }, () => {
   console.log('Connected to server');
   client.write('hello\n');
 });

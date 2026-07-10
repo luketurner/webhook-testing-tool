@@ -26,6 +26,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuSub,
   DropdownMenuSubContent,
@@ -39,6 +41,40 @@ import { TcpConnectionsSidebar } from "@/components/tcp-connections-sidebar";
 import { JWTInspector } from "@/components/jwt-inspector";
 import { seedRequests } from "@/util/seed";
 import { useQueryClient } from "@tanstack/react-query";
+
+const manualSections: { label: string; pages: [string, string][] }[] = [
+  {
+    label: "Receiving traffic",
+    pages: [
+      ["webhook-server", "Webhook server"],
+      ["tls", "TLS"],
+      ["http2", "HTTP/2"],
+      ["tcp-connections", "TCP connections"],
+    ],
+  },
+  {
+    label: "Working with requests",
+    pages: [
+      ["sending-requests", "Sending requests"],
+      ["inspecting-requests", "Inspecting requests"],
+    ],
+  },
+  {
+    label: "Writing responses",
+    pages: [
+      ["handlers", "Handlers"],
+      ["tcp-handlers", "TCP handlers"],
+      ["mcp", "MCP server"],
+    ],
+  },
+  {
+    label: "Reference",
+    pages: [
+      ["configuration", "Configuration"],
+      ["cli", "Admin CLI"],
+    ],
+  },
+];
 
 const navMain = [
   {
@@ -274,16 +310,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       >
                         About
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => handleOpenManual("handlers")}
-                      >
-                        Handlers
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => handleOpenManual("tcp-handlers")}
-                      >
-                        TCP Handlers
-                      </DropdownMenuItem>
+                      {manualSections.map(({ label, pages }) => (
+                        <React.Fragment key={label}>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuLabel>{label}</DropdownMenuLabel>
+                          {pages.map(([page, title]) => (
+                            <DropdownMenuItem
+                              key={page}
+                              onSelect={() => handleOpenManual(page)}
+                            >
+                              {title}
+                            </DropdownMenuItem>
+                          ))}
+                        </React.Fragment>
+                      ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </SidebarMenuItem>
