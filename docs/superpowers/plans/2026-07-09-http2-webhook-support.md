@@ -1608,8 +1608,15 @@ describe("HTTP/2 abort and raw-socket handling", () => {
       order: 0,
     });
 
-    // The client sees the stream reset (RST_STREAM), so the request rejects.
-    await expect(h2Request("/h2-abort")).rejects.toThrow();
+    // AIDEV-NOTE: A stream reset sent BEFORE any HEADERS frame does not reject on
+    // the client. Verified on both Bun 1.3.14 and Node v24: the request stream just
+    // emits 'end' with no `:status` and an empty body. The runtimes differ only in
+    // `rstCode` (Node reports 8 = NGHTTP2_CANCEL; Bun leaves it 0), so the reset
+    // *reason* is not portably assertable. Assert the portable observable instead:
+    // no response status was ever received.
+    const result = await h2Request("/h2-abort");
+    expect(result.status).toBe(0);
+    expect(result.body).toBe("");
 
     // Give the server a tick to persist the completed event.
     await new Promise((r) => setTimeout(r, 100));
@@ -1632,7 +1639,12 @@ describe("HTTP/2 abort and raw-socket handling", () => {
       order: 0,
     });
 
-    await expect(h2Request("/h2-raw")).rejects.toThrow();
+    // Same as above: the reset arrives before any HEADERS frame, so the client
+    // observes a clean 'end' with no `:status` rather than an error.
+    const result = await h2Request("/h2-raw");
+    expect(result.status).toBe(0);
+    expect(result.body).toBe("");
+
     await new Promise((r) => setTimeout(r, 100));
 
     const event = getAllRequestEvents().find((e) => e.request_url === "/h2-raw");
@@ -1648,7 +1660,7 @@ describe("HTTP/2 abort and raw-socket handling", () => {
 Run: `bun test src/webhook-server/http2/server.spec.ts -t "abort and raw-socket"`
 Expected: FAIL (2 tests).
 
-The stream does get reset (because Task 4's responder throws `Unsupported HTTP/2 response outcome` and `handleHttp2Stream`'s `.catch` calls `stream.close(NGHTTP2_INTERNAL_ERROR)`), so `rejects.toThrow()` may pass. The assertions on the persisted event are what fail: `processRequest` never reaches `updateRequestEvent`, so `event.status` is still `"running"`, not `"complete"`.
+The stream does get reset (Task 4's responder throws `Unsupported HTTP/2 response outcome`, and `handleHttp2Stream`'s `.catch` calls `stream.close(NGHTTP2_INTERNAL_ERROR)`), so the `result.status === 0` / empty-body assertions **already pass**. The assertions on the persisted event are what fail: `processRequest` never reaches `updateRequestEvent` because `send()` rejected, so `event.status` is still `"running"`, not `"complete"`.
 
 Confirm the failure message mentions `expected "complete", got "running"`. If instead you see `event` is `undefined`, the handler never ran — fix that before proceeding.
 
