@@ -4,7 +4,7 @@
 
 - HTTP/2 (`h2` over TLS) support for the webhook server on a dedicated port, enabled with `WTT_WEBHOOK_H2_ENABLED`.
 - The request event viewer shows HTTP/2 protocol details (ALPN, stream ID, weight, HEADERS frame flags, pseudo-headers, local/remote SETTINGS).
-- The request event viewer shows TLS details, which are captured on the HTTP/2 path.
+- The request event viewer shows TLS details. These are captured on the HTTP/2 path; they remain unavailable on the HTTP/1 path under Bun ([bun#16834](https://github.com/oven-sh/bun/issues/16834)).
 - Request events record `http_version`, shown as a badge in the request list.
 
 ---
