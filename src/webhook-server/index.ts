@@ -10,20 +10,20 @@ import bodyParser from "body-parser";
 import https from "https";
 import http from "http";
 import fs from "fs";
-import type { TLSSocket } from "tls";
 import { EXCLUDE_HEADER_MAP } from "@/config";
-import type { RequestEvent, TLSInfo } from "@/request-events/schema";
-import { randomUUID } from "@/util/uuid";
-import { now } from "@/util/datetime";
 import { fromObject } from "@/util/kv-list";
 import type { HttpMethod } from "@/util/http";
 import { fromBufferLike } from "@/util/base64";
-import { createRequestEvent, updateRequestEvent } from "@/request-events/model";
-import { appEvents } from "@/db/events";
-import { handleRequest } from "./handle-request";
-import { isAbortSocketError } from "./errors";
 import { acmeManager } from "@/acme-manager";
 import { ACME_ENABLED } from "@/config";
+import { extractTlsInfo } from "./tls-info";
+import {
+  processRequest,
+  EMPTY_SENT,
+  type NormalizedRequest,
+  type Responder,
+  type SentResponse,
+} from "./process-request";
 
 // NOTE: Express is used for the webhook server instead of Bun.serve() because we want to
 // be able to inspect the final HTTP response sent to the client (including content-length, etc.)
@@ -50,63 +50,12 @@ if (ACME_ENABLED) {
   });
 }
 
-// Function to extract TLS info from socket
-// NOTE: This does not work in Bun due to https://github.com/oven-sh/bun/issues/16834
-// Hopefully it'll start working someday!
-function extractTlsInfo(socket: any) {
-  if (!socket || !socket.encrypted) {
-    return null;
-  }
-
-  const tlsSocket = socket as TLSSocket;
-
-  try {
-    const tlsInfo: TLSInfo = {};
-
-    // Check if methods exist before calling them
-    if (typeof tlsSocket.getProtocol === "function") {
-      tlsInfo.protocol = tlsSocket.getProtocol();
-    }
-
-    if (typeof tlsSocket.getCipher === "function") {
-      tlsInfo.cipher = tlsSocket.getCipher();
-    }
-
-    if (typeof tlsSocket.getPeerCertificate === "function") {
-      const cert = tlsSocket.getPeerCertificate();
-      if (cert && Object.keys(cert).length > 0) {
-        tlsInfo.peerCertificate = {
-          subject: cert.subject,
-          issuer: cert.issuer,
-          valid_from: cert.valid_from,
-          valid_to: cert.valid_to,
-          fingerprint: cert.fingerprint,
-        };
-      }
-    }
-
-    if (typeof tlsSocket.isSessionReused === "function") {
-      tlsInfo.isSessionReused = tlsSocket.isSessionReused();
-    }
-
-    if (Object.keys(tlsInfo).length === 0) {
-      return null;
-    }
-
-    return tlsInfo;
-  } catch (err) {
-    console.error("Failed to extract TLS info:", err);
-    return null;
-  }
-}
-
-app.all("*", async (req: express.Request, res: express.Response) => {
+function normalizeExpressRequest(req: express.Request): NormalizedRequest {
   const headers = { ...req.headers };
   for (const header of Object.keys(headers)) {
     if (EXCLUDE_HEADER_MAP[header]) delete headers[header];
   }
 
-  // Extract query parameters from URL
   // AIDEV-NOTE: Query parameters are extracted using URL and URLSearchParams APIs
   // which automatically handles decoding. The base URL doesn't matter since we only
   // care about the query string portion of req.originalUrl.
@@ -114,34 +63,29 @@ app.all("*", async (req: express.Request, res: express.Response) => {
     req.originalUrl,
     `http://${req.headers.host || "localhost"}`,
   );
-  const queryParams = [...url.searchParams.entries()];
 
-  // Extract TLS info if connection is HTTPS
-  const tlsInfo = extractTlsInfo(req.socket);
-
-  const event: RequestEvent = {
-    id: randomUUID(),
-    type: "inbound",
-    status: "running",
-    request_url: url.pathname,
-    request_method: req.method as HttpMethod,
-    request_timestamp: now(),
-    request_body: Buffer.isBuffer(req.body) ? fromBufferLike(req.body) : null,
-    request_headers: fromObject(headers),
-    request_query_params: queryParams,
-    tls_info: tlsInfo,
+  return {
+    method: req.method as HttpMethod,
+    url: url.pathname,
+    headers: fromObject(headers as Record<string, string | string[]>),
+    queryParams: [...url.searchParams.entries()],
+    body: Buffer.isBuffer(req.body) ? fromBufferLike(req.body) : null,
+    httpVersion: req.httpVersion,
+    tlsInfo: extractTlsInfo(req.socket),
+    http2Info: null,
   };
+}
 
-  const createdEvent = createRequestEvent(event);
-  appEvents.emit("request:created", createdEvent);
-
-  // intercept response write so we can log the response info
+function createExpressResponder(
+  req: express.Request,
+  res: express.Response,
+): Responder {
+  // intercept response write so we can log the response info actually sent
   // ref. https://stackoverflow.com/a/50161321
-
   const oldWrite = res.write;
   const oldEnd = res.end;
-
   const chunks: Buffer[] = [];
+  let onSent: ((sent: SentResponse) => void) | null = null;
 
   res.write = (...restArgs) => {
     chunks.push(Buffer.from(restArgs[0]));
@@ -152,75 +96,55 @@ app.all("*", async (req: express.Request, res: express.Response) => {
     if (restArgs[0]) {
       chunks.push(Buffer.from(restArgs[0]));
     }
-    const body = Buffer.concat(chunks as any);
+    const body = Buffer.concat(chunks);
     const result = oldEnd.apply(res, restArgs);
 
-    const updatedEvent = updateRequestEvent({
-      id: event.id,
-      status: "complete",
-      response_status: res.statusCode,
-      response_status_message: res.statusMessage,
-      response_headers: fromObject(res.getHeaders()),
-      response_body: body.length > 0 ? fromBufferLike(body) : null,
-      response_timestamp: now(),
+    onSent?.({
+      status: res.statusCode,
+      // Express leaves statusMessage as "" for some codes; the schema requires min(1) or null.
+      statusMessage: res.statusMessage || null,
+      headers: fromObject(
+        res.getHeaders() as Record<string, string | string[]>,
+      ),
+      body: body.length > 0 ? body : null,
     });
-    appEvents.emit("request:updated", updatedEvent);
     return result;
   };
 
-  // TODO handle errors
-  const [error, response] = await handleRequest(event);
+  return {
+    send(outcome) {
+      return new Promise<SentResponse>((resolve) => {
+        // AIDEV-NOTE: Destroy the socket without sending any response.
+        if (outcome.kind === "abort") {
+          req.socket.destroy();
+          resolve(EMPTY_SENT);
+          return;
+        }
 
-  // AIDEV-NOTE: Handle AbortSocketError - destroy socket without sending response
-  if (error && isAbortSocketError(error)) {
-    // Destroy the socket without sending any response
-    req.socket.destroy();
-    const updatedEvent = updateRequestEvent({
-      id: event.id,
-      status: "complete",
-      response_status: null,
-      response_status_message: null,
-      response_headers: [],
-      response_body: null,
-      response_timestamp: now(),
-    });
-    appEvents.emit("request:updated", updatedEvent);
-    return;
-  }
+        // AIDEV-NOTE: Write raw data directly to the socket, bypassing HTTP.
+        if (outcome.kind === "raw") {
+          req.socket.write(outcome.data, "utf8");
+          req.socket.end(() => resolve(EMPTY_SENT));
+          return;
+        }
 
-  // AIDEV-NOTE: Handle raw socket data - write directly to socket and close
-  // When resp.socket is set, it bypasses normal HTTP response handling
-  const socketRawData = (response as any)?._socketRawData;
-  if (socketRawData) {
-    // Write raw data directly to the socket
-    req.socket.write(socketRawData, "utf8");
-    req.socket.end(() => {
-      const updatedEvent = updateRequestEvent({
-        id: event.id,
-        status: "complete",
-        response_status: null,
-        response_status_message: null,
-        response_headers: [],
-        response_body: null,
-        response_timestamp: now(),
+        onSent = resolve;
+        res.status(outcome.status);
+        for (const [k, v] of outcome.headers) {
+          res.set(k, v.toString());
+        }
+        res.send(
+          outcome.body === null ? { status: outcome.status } : outcome.body,
+        );
       });
-      appEvents.emit("request:updated", updatedEvent);
-    });
-    return;
-  }
+    },
+  };
+}
 
-  const responseStatus =
-    typeof response?.response_status === "number"
-      ? response.response_status
-      : 200;
-  res.status(responseStatus);
-  for (const [k, v] of response?.response_headers) {
-    res.set(k, v.toString());
-  }
-  res.send(
-    response?.response_body === null || response?.response_body === undefined
-      ? { status: responseStatus }
-      : Buffer.from(response.response_body, "base64"),
+app.all("*", async (req: express.Request, res: express.Response) => {
+  await processRequest(
+    normalizeExpressRequest(req),
+    createExpressResponder(req, res),
   );
 });
 

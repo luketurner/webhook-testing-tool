@@ -272,6 +272,34 @@ describe("Webhook Server Integration Tests", () => {
     }
   });
 
+  test("records http_version 1.1 for plain HTTP requests", async () => {
+    const response = await fetch(`${baseUrl}/http-version-check`);
+    expect(response.status).toBe(200);
+
+    const allEvents = getAllRequestEvents();
+    const event = allEvents.find(
+      (e) => e.request_url === "/http-version-check",
+    );
+    expect(event).toBeDefined();
+    expect(event?.http_version).toBe("1.1");
+    expect(event?.http2_info ?? null).toBeNull();
+  });
+
+  test("still records the actual response headers written by Express", async () => {
+    // AIDEV-NOTE: Guards the res.end interception. `content-length` is added by
+    // Express, not by the handler, so it only appears if we capture what was SENT.
+    const response = await fetch(`${baseUrl}/response-fidelity`);
+    expect(response.status).toBe(200);
+
+    const allEvents = getAllRequestEvents();
+    const event = allEvents.find((e) => e.request_url === "/response-fidelity");
+    expect(event).toBeDefined();
+    const headerNames = (event?.response_headers ?? []).map(([k]) =>
+      k.toLowerCase(),
+    );
+    expect(headerNames).toContain("content-length");
+  });
+
   test("Multiple requests create separate events", async () => {
     const requests = [
       fetch(`${baseUrl}/test1`),
