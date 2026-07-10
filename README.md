@@ -29,6 +29,7 @@
 - **:world_map: Admin dashboard**: Authenticated Web UI exposed on a separate port from the main webhook server.
 - **:card_file_box: Stores everything**: All requests and responses, handler execution state, etc. are stored in the SQLite DB and viewable in the dashboard.
 - **:shield: TLS Termination**: Supports TLS termination via self-signed certificate or Let's Encrypt ( :construction: WIP; TLS socket info not currently available in Bun. See [related issue](https://github.com/oven-sh/bun/issues/16834)).
+- **:incoming_envelope: HTTP/2 Support**: Supports inspecting h2 protocol (HTTP/2 over TLS) fields including pseudo-headers, settings, stream ID, etc.
 - **:art: Prettify payloads**: Display payloads in "pretty" mode (formatted and syntax highlighted -- XML/JSON/urlencoded only) or "raw" mode (exactly what you got).
 - **:mag: Multiple encodings**: Display payloads in multiple encodings: UTF8, Latin-1, base64, hex, and binary.
 - **:floppy_disk: Downloading**: Download payloads with automatic filetype detection (based on Content-Type).
