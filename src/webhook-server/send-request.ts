@@ -4,11 +4,24 @@ import { requestSchema, type HandlerRequest } from "./schema";
 
 export const LOCAL_WEBHOOK_URL = `http://localhost:${WEBHOOK_PORT}`;
 
+export function resolveTargetUrl(url: string, external: boolean): URL {
+  if (external) {
+    return new URL(url);
+  }
+  const target = new URL(url, LOCAL_WEBHOOK_URL);
+  if (target.origin !== new URL(LOCAL_WEBHOOK_URL).origin) {
+    throw new Error(
+      `Internal request escaped the local webhook origin: ${url}`,
+    );
+  }
+  return target;
+}
+
 export async function sendWebhookRequest(opts: HandlerRequest) {
-  const { url, method, body, headers, query } = requestSchema.parse(
+  const { url, method, body, headers, query, external } = requestSchema.parse(
     opts,
   ) as HandlerRequest;
-  const absoluteUrl = new URL(url, LOCAL_WEBHOOK_URL);
+  const absoluteUrl = resolveTargetUrl(url, external);
 
   // Add query parameters to URL
   if (query && query.length > 0) {
