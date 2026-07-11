@@ -247,6 +247,7 @@ describe("mcp/server", () => {
 
       const { isError, text } = await callTool(client, "send-http-request", {
         method: "POST",
+        external: true,
         // Absolute URL targeting the webhook server started by test-setup
         url: `http://localhost:${TEST_PORT}/mcp-send-test`,
         headers: [["Content-Type", "application/json"]],
@@ -271,8 +272,20 @@ describe("mcp/server", () => {
 
       const { isError } = await callTool(client, "send-http-request", {
         method: "GET",
+        external: true,
         // Discard port: nothing listens here
         url: "http://localhost:9/unreachable",
+      });
+      expect(isError).toBe(true);
+    });
+
+    test("send-http-request rejects an absolute URL when external is omitted", async () => {
+      const client = await connectClient();
+
+      const { isError } = await callTool(client, "send-http-request", {
+        method: "GET",
+        // external defaults to false (internal), which requires a path
+        url: "https://example.com/whatever",
       });
       expect(isError).toBe(true);
     });
