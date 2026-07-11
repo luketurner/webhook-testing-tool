@@ -135,23 +135,39 @@ export function useSendRequest() {
       const requestPromise = fetch("/api/requests/send", {
         method: "POST",
         body: JSON.stringify(processedRequest),
+      }).then(async (resp) => {
+        const data = await resp.json();
+        if (!resp.ok || data.status !== "ok") {
+          throw new Error(
+            data?.response
+              ? `${data.response.status} ${data.response.statusText}`
+              : `Request failed (${resp.status})`,
+          );
+        }
+        return data as {
+          status: "ok";
+          external: boolean;
+          response: {
+            status: number;
+            statusText: string;
+            headers: [string, string][];
+            body: string;
+          };
+        };
       });
+
       toast.promise(requestPromise, {
         loading: "Sending request...",
-        success: async (resp) => {
-          const webhookResponse = (await resp.json())?.response;
-          return {
-            message: `Request succeeded!`,
-            description: `${webhookResponse.status} ${webhookResponse.statusText}`,
-          };
-        },
-        error: (e) => {
-          return {
-            message: `Request failed!`,
-            description: `Error: ${e}`,
-          };
-        },
+        success: (data) => ({
+          message: `Request succeeded!`,
+          description: `${data.response.status} ${data.response.statusText}`,
+        }),
+        error: (e) => ({
+          message: `Request failed!`,
+          description: `Error: ${e}`,
+        }),
       });
+
       return requestPromise;
     },
     onSuccess: () => {

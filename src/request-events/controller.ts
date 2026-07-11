@@ -12,6 +12,7 @@ import {
   bulkArchiveRequestEvents,
 } from "./model";
 import { sendWebhookRequest } from "@/webhook-server/send-request";
+import { requestSchema, type HandlerRequest } from "@/webhook-server/schema";
 import { z } from "zod/v4";
 import { uuidSchema } from "@/util/uuid";
 import { timestampSchema } from "@/util/datetime";
@@ -44,10 +45,18 @@ export const requestEventController = {
   },
   "/api/requests/send": {
     POST: async (req) => {
-      const response = await sendWebhookRequest(await req.json());
+      const request = requestSchema.parse(await req.json()) as HandlerRequest;
+      const response = await sendWebhookRequest(request);
+      const body = Buffer.from(await response.arrayBuffer()).toString("base64");
       return Response.json({
         status: "ok",
-        response: { status: response.status, statusText: response.statusText },
+        external: request.external,
+        response: {
+          status: response.status,
+          statusText: response.statusText,
+          headers: [...response.headers.entries()],
+          body,
+        },
       });
     },
   },

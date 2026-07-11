@@ -1,4 +1,4 @@
-import { expect, test, describe, beforeEach } from "bun:test";
+import { expect, test, describe, beforeEach, afterAll } from "bun:test";
 import { requestEventController } from "./controller";
 import {
   createRequestEvent,
@@ -161,6 +161,39 @@ describe("request-events/controller", () => {
       expect(() => {
         requestEventController["/api/requests/:id"].GET(mockReq);
       }).toThrow();
+    });
+  });
+
+  describe("POST /api/requests/send", () => {
+    const server = Bun.serve({
+      port: 0,
+      fetch: () =>
+        new Response("ok", { status: 202, headers: { "x-echo": "1" } }),
+    });
+    afterAll(() => server.stop(true));
+
+    test("returns the full external response", async () => {
+      const mockReq = {
+        json: async () => ({
+          method: "GET",
+          url: `http://localhost:${server.port}/ext`,
+          external: true,
+          headers: [],
+          query: [],
+          body: null,
+        }),
+      } as any;
+
+      const response =
+        await requestEventController["/api/requests/send"].POST(mockReq);
+      const data = await response.json();
+
+      expect(data.status).toBe("ok");
+      expect(data.external).toBe(true);
+      expect(data.response.status).toBe(202);
+      expect(data.response.headers).toEqual(
+        expect.arrayContaining([["x-echo", "1"]]),
+      );
     });
   });
 
