@@ -1,16 +1,28 @@
 import { kvListSchema, type KVList } from "@/util/kv-list";
 import { requestEventSchema, type RequestEvent } from "@/request-events/schema";
 import { z } from "zod/v4";
-import { HTTP_METHODS } from "@/util/http";
+import { HTTP_METHODS, isAbsoluteHttpUrl, isAbsolutePath } from "@/util/http";
 import { parseBase64 } from "@/util/base64";
 
-export const requestSchema = z.object({
-  method: z.enum(HTTP_METHODS),
-  url: z.string().min(1),
-  headers: kvListSchema(z.string()),
-  query: kvListSchema(z.string()),
-  body: z.any(), // TODO
-});
+export const requestSchema = z
+  .object({
+    method: z.enum(HTTP_METHODS),
+    url: z.string().min(1),
+    external: z.boolean().default(false),
+    headers: kvListSchema(z.string()),
+    query: kvListSchema(z.string()),
+    body: z.any(), // TODO
+  })
+  // internal (external === false) must be an absolute path
+  .refine((value) => value.external || isAbsolutePath(value.url), {
+    path: ["url"],
+    message: "Enter an absolute path starting with /",
+  })
+  // external (external === true) must be a fully-qualified http(s) url
+  .refine((value) => !value.external || isAbsoluteHttpUrl(value.url), {
+    path: ["url"],
+    message: "Enter a fully-qualified http(s) URL",
+  });
 
 export const responseSchema = z.object({
   status: z.number(),
