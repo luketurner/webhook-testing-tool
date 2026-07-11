@@ -8,12 +8,12 @@ the local webhook server and a fully-qualified URL is sent to that host. The
 choice is invisible in the UI and easy to make by accident — typing a full URL
 silently sends the request off-box.
 
-Make the choice explicit and enforced: a checkbox in the dashboard, a matching
+Make the choice explicit and enforced: a toggle in the dashboard, a matching
 flag in the MCP tool, and validation that keeps each mode in its lane.
 
 ## Goals
 
-- A checkbox in the Test Request form toggles internal vs external.
+- A toggle in the Test Request form switches internal vs external.
 - Internal mode accepts an absolute path only (e.g. `/foo/bar`).
 - External mode requires a fully-qualified `http(s)` URL.
 - The MCP `send-http-request` tool gains a matching `external` flag.
@@ -106,7 +106,7 @@ base64-encoded before POST as it is now.
 ### 4. UI — `src/dashboard/pages/create-request-page.tsx`
 
 - Default values gain `external: false`.
-- A `Checkbox` field labeled "Send to an external URL".
+- A `Switch` field labeled "Send to an external URL".
 - The URL/path field is mode-aware:
   - internal: label "Path", placeholder `/`.
   - external: label "URL", placeholder `https://example.com/hook`, with a short
@@ -117,11 +117,8 @@ base64-encoded before POST as it is now.
   mutation result. The panel shows only for external sends; internal sends are
   inspected in the request log as before.
 
-Uses the shadcn `checkbox` component. It is not yet installed
-(`src/components/ui/` has `switch` but no `checkbox`), so add it with
-`bunx --bun shadcn@latest add checkbox`. If the generator's dependency install
-hangs in this devcontainer, add `@radix-ui/react-checkbox` to `package.json` and
-run `bun install` (known-hang workaround).
+Uses the shadcn `Switch` component already present at
+`src/components/ui/switch.tsx` — no new dependency to install.
 
 The response panel is a small reusable component in `src/components`
 (e.g. `http-response-view.tsx`) so it stays focused and could be reused later.
@@ -149,7 +146,7 @@ the tool description to note that external requests are **not** captured, so
 
 ### 6. Docs — `src/docs/sending-requests.md` (+ `mcp.md`)
 
-- Rewrite "Sending to other hosts": the checkbox selects the mode; internal
+- Rewrite "Sending to other hosts": the toggle selects the mode; internal
   wants a path, external wants a full URL; the two are enforced, not guessed.
 - Note the inline response panel for external sends and that they are not logged.
 - Update the MCP section to mention the `external` flag.
@@ -172,5 +169,3 @@ Functional tests, no mocks (per `CLAUDE.md`):
 - **Behavior change:** internal mode now rejects a full URL that previously would
   have been sent externally. This is the intended safety improvement and is
   documented.
-- **shadcn install hang:** mitigated by the `package.json` + `bun install`
-  fallback noted above.
