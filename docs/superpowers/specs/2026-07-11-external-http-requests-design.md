@@ -46,16 +46,18 @@ export const requestSchema = z
     query: kvListSchema(z.string()),
     body: z.any(), // TODO
   })
-  .superRefine((v, ctx) => {
-    if (v.external && !isAbsoluteHttpUrl(v.url)) {
-      ctx.addIssue({ code: "custom", path: ["url"], message: "Enter a fully-qualified http(s) URL" });
-    } else if (!v.external && !isAbsolutePath(v.url)) {
-      ctx.addIssue({ code: "custom", path: ["url"], message: "Enter an absolute path starting with /" });
-    }
+  .refine((v) => v.external || isAbsolutePath(v.url), {
+    path: ["url"],
+    message: "Enter an absolute path starting with /",
+  })
+  .refine((v) => !v.external || isAbsoluteHttpUrl(v.url), {
+    path: ["url"],
+    message: "Enter a fully-qualified http(s) URL",
   });
 ```
 
-`superRefine` gives each mode its own message on the `url` field.
+Two chained `.refine()` calls give each mode its own message on the `url` field;
+for a given mode only the relevant check can fail.
 
 Rules, implemented as small helpers (exported from this file or `src/util/http.ts`):
 
