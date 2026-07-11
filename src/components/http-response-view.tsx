@@ -13,7 +13,9 @@ function decodeBody(body: string): string {
   if (!body) return "";
   try {
     const bytes = Uint8Array.from(atob(body), (c) => c.charCodeAt(0));
-    return new TextDecoder().decode(bytes);
+    // fatal: true throws on invalid UTF-8 so binary bodies fall through to
+    // the catch below and render as base64 instead of mojibake.
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   } catch {
     return body;
   }

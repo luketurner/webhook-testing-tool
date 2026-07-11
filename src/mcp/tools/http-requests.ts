@@ -19,7 +19,7 @@ export function registerHttpRequestTools(server: McpServer) {
     {
       title: "Send HTTP request",
       description:
-        "Sends a test HTTP request. By default the request targets a path on the webhook server and is captured as a request event (use get-http-request afterwards to inspect the capture). Set external:true to send to an absolute URL on another host; external requests are not captured. Returns the HTTP response.",
+        "Sends a test HTTP request. By default the request targets a path on the webhook server and is captured as a request event (use get-http-request afterwards to inspect the capture). Set external:true to send to an absolute URL on another host; requests to other hosts are not captured (nothing routes them back through the webhook server), so get-http-request will not find them. Returns the HTTP response.",
       inputSchema: {
         method: z.enum(HTTP_METHODS).describe("HTTP method"),
         external: z

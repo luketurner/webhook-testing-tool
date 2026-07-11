@@ -40,6 +40,12 @@ describe("requestSchema external/internal validation", () => {
     ).toBe(false);
   });
 
+  test("internal rejects a backslash path", () => {
+    expect(
+      requestSchema.safeParse({ ...base, url: "/\\evil.com/x" }).success,
+    ).toBe(false);
+  });
+
   test("external accepts a full http(s) url", () => {
     expect(
       requestSchema.safeParse({ ...base, external: true, url: "https://x/y" })

@@ -21,6 +21,11 @@ describe("resolveTargetUrl", () => {
     const target = resolveTargetUrl("https://example.com/hook", true);
     expect(target.href).toBe("https://example.com/hook");
   });
+
+  test("internal path resolves against an injected base url", () => {
+    const target = resolveTargetUrl("/p", false, "http://localhost:12345");
+    expect(target.origin).toBe("http://localhost:12345");
+  });
 });
 
 describe("sendWebhookRequest external", () => {
@@ -68,5 +73,56 @@ describe("sendWebhookRequest external", () => {
     expect(received!.query).toBe("1");
     expect(received!.header).toBe("abc");
     expect(received!.body).toBe("hello");
+  });
+});
+
+describe("sendWebhookRequest internal", () => {
+  let received: {
+    method: string;
+    pathname: string;
+    query: string | null;
+    header: string | null;
+    body: string;
+  } | null = null;
+
+  const server = Bun.serve({
+    port: 0,
+    async fetch(req) {
+      const url = new URL(req.url);
+      received = {
+        method: req.method,
+        pathname: url.pathname,
+        query: url.searchParams.get("q"),
+        header: req.headers.get("x-test"),
+        body: await req.text(),
+      };
+      return new Response("pong", {
+        status: 201,
+        headers: { "x-echo": "1" },
+      });
+    },
+  });
+  afterAll(() => server.stop(true));
+
+  test("sends method, headers, query, and body to the local webhook server via an injected base url", async () => {
+    const request: HandlerRequest = {
+      method: "POST",
+      url: "/hook/path",
+      external: false,
+      headers: [["x-test", "abc"]],
+      query: [["q", "1"]],
+      body: Buffer.from("hi").toString("base64"),
+    };
+    const response = await sendWebhookRequest(
+      request,
+      `http://localhost:${server.port}`,
+    );
+    expect(response.status).toBe(201);
+    expect(received).not.toBeNull();
+    expect(received!.method).toBe("POST");
+    expect(received!.pathname).toBe("/hook/path");
+    expect(received!.query).toBe("1");
+    expect(received!.header).toBe("abc");
+    expect(received!.body).toBe("hi");
   });
 });
