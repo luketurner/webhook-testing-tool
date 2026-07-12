@@ -18,13 +18,13 @@ This is the fastest way to iterate on a handler: capture a real webhook once fro
 
 By default a request is **internal**: the path field takes an absolute path such as `/my-hook`, and `wtt` sends it to its own webhook server, where it is recorded and run through the matching [handlers](./handlers.md).
 
-Turn on **Send to an external URL** to send the request somewhere else. The field then takes a fully-qualified URL such as `https://example.com/hook`, and the request goes to that host. The two modes are enforced — an internal request must be a path, an external request must be a full URL — so you cannot send a request off-box by accident.
+Turn on **Send to an external URL** to send the request somewhere else. The field then takes a fully-qualified URL such as `https://example.com/hook`, and the request goes to that host. The two modes are enforced — an internal request must be a path, an external request must be a full URL.
 
-Requests to other hosts are **not** captured. Nothing routes them back through the webhook server, so `wtt` shows the response — status, headers, and body — on the page instead of in the request log. This also means `wtt` will send a request anywhere its own network can reach, which is worth remembering before exposing the dashboard.
+External requests are captured too, as **outbound** events. They appear in the request log with an **Outbound** badge, and you open one to see the request and the response `wtt` received, the same way you inspect an inbound request. A send that never connects is recorded as an errored outbound event. Because `wtt` will send a request anywhere its own network can reach, this is worth remembering before exposing the dashboard.
 
 ## From an AI agent
 
-The [MCP server](./mcp.md) exposes the same capability as `send-http-request`, taking a method, a path (or an absolute URL with `external: true`), optional headers and query parameters, and an optional base64-encoded body. It returns the response status, headers, and base64 body.
+The [MCP server](./mcp.md) exposes the same capability as `send-http-request`, taking a method, a path (or an absolute URL with `external: true`), optional headers and query parameters, and an optional base64-encoded body. Internal sends are captured as inbound events and external sends as outbound events, both inspectable with `get-http-request`. It returns the response status, headers, and base64 body.
 
 An agent can then call `get-http-request` to read back what `wtt` captured, including which handlers ran and what they logged. Sending a request and inspecting its handler executions is the loop an agent uses to debug a handler it just wrote.
 

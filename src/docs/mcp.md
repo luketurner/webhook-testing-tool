@@ -26,7 +26,7 @@ If the dashboard is deployed behind a reverse proxy, set the `WTT_BASE_URL` envi
 
 | Tool | Description |
 | --- | --- |
-| `send-http-request` | Send a test HTTP request to a path on the webhook server, or to an absolute URL with `external: true`. |
+| `send-http-request` | Send a test HTTP request to a path on the webhook server (captured as an inbound event) or to an absolute URL with `external: true` (captured as an outbound event). |
 | `list-http-requests` | List metadata for captured HTTP request events. |
 | `get-http-request` | Get a full request event, including payloads and handler executions. |
 | `archive-http-request` | Archive a request event. |
