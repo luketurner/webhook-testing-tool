@@ -139,20 +139,17 @@ export function useSendRequest() {
         const data = await resp.json();
         if (!resp.ok || data.status !== "ok") {
           throw new Error(
-            data?.response
-              ? `${data.response.status} ${data.response.statusText}`
-              : `Request failed (${resp.status})`,
+            data?.message ??
+              (data?.response
+                ? `${data.response.status} ${data.response.statusText}`
+                : `Request failed (${resp.status})`),
           );
         }
         return data as {
-          status: "ok";
+          status: string;
           external: boolean;
-          response: {
-            status: number;
-            statusText: string;
-            headers: [string, string][];
-            body: string;
-          };
+          event_id?: string;
+          response?: { status: number; statusText: string };
         };
       });
 
@@ -160,7 +157,9 @@ export function useSendRequest() {
         loading: "Sending request...",
         success: (data) => ({
           message: `Request succeeded!`,
-          description: `${data.response.status} ${data.response.statusText}`,
+          description: data.response
+            ? `${data.response.status} ${data.response.statusText}`
+            : "Sent",
         }),
         error: (e) => ({
           message: `Request failed!`,

@@ -12,6 +12,7 @@ import {
   bulkArchiveRequestEvents,
 } from "./model";
 import { sendWebhookRequest } from "@/webhook-server/send-request";
+import { captureOutboundRequest } from "@/webhook-server/capture-outbound-request";
 import { requestSchema, type HandlerRequest } from "@/webhook-server/schema";
 import { z } from "zod/v4";
 import { uuidSchema } from "@/util/uuid";
@@ -46,17 +47,34 @@ export const requestEventController = {
   "/api/requests/send": {
     POST: async (req) => {
       const request = requestSchema.parse(await req.json()) as HandlerRequest;
+      if (request.external) {
+        const { event, response } = await captureOutboundRequest(request);
+        if (!response) {
+          return Response.json(
+            {
+              status: "error",
+              external: true,
+              event_id: event.id,
+              message: "External request failed",
+            },
+            { status: 502 },
+          );
+        }
+        return Response.json({
+          status: "ok",
+          external: true,
+          event_id: event.id,
+          response: {
+            status: response.status,
+            statusText: response.statusText,
+          },
+        });
+      }
       const response = await sendWebhookRequest(request);
-      const body = Buffer.from(await response.arrayBuffer()).toString("base64");
       return Response.json({
         status: "ok",
-        external: request.external,
-        response: {
-          status: response.status,
-          statusText: response.statusText,
-          headers: [...response.headers.entries()],
-          body,
-        },
+        external: false,
+        response: { status: response.status, statusText: response.statusText },
       });
     },
   },
