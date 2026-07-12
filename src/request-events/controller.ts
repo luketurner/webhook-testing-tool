@@ -71,6 +71,7 @@ export const requestEventController = {
         });
       }
       const response = await sendWebhookRequest(request);
+      void response.body?.cancel();
       return Response.json({
         status: "ok",
         external: false,

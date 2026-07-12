@@ -36,20 +36,11 @@ export async function captureOutboundRequest(request: HandlerRequest): Promise<{
   const created = createRequestEvent(event);
   appEvents.emit("request:created", created);
 
+  let response: Response;
+  let body: string;
   try {
-    const response = await sendWebhookRequest(req);
-    const body = Buffer.from(await response.arrayBuffer()).toString("base64");
-    const updated = updateRequestEvent({
-      id: event.id,
-      status: "complete",
-      response_status: response.status,
-      response_status_message: response.statusText || null,
-      response_headers: [...response.headers.entries()],
-      response_body: parseBase64(body),
-      response_timestamp: now(),
-    });
-    appEvents.emit("request:updated", updated);
-    return { event: updated, response, body };
+    response = await sendWebhookRequest(req);
+    body = Buffer.from(await response.arrayBuffer()).toString("base64");
   } catch {
     const updated = updateRequestEvent({
       id: event.id,
@@ -59,4 +50,16 @@ export async function captureOutboundRequest(request: HandlerRequest): Promise<{
     appEvents.emit("request:updated", updated);
     return { event: updated, response: null, body: null };
   }
+
+  const updated = updateRequestEvent({
+    id: event.id,
+    status: "complete",
+    response_status: response.status,
+    response_status_message: response.statusText || null,
+    response_headers: [...response.headers.entries()],
+    response_body: parseBase64(body),
+    response_timestamp: now(),
+  });
+  appEvents.emit("request:updated", updated);
+  return { event: updated, response, body };
 }
