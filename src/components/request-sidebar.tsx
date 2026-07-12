@@ -273,6 +273,14 @@ export function RequestSidebar() {
                               H2
                             </Badge>
                           )}
+                          {request.type === "outbound" && (
+                            <Badge
+                              variant="outline"
+                              className="px-1 py-0 text-[10px]"
+                            >
+                              Outbound
+                            </Badge>
+                          )}
                           {isArchived && (
                             <Archive className="h-3 w-3 text-muted-foreground" />
                           )}
