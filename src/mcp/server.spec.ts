@@ -260,8 +260,10 @@ describe("mcp/server", () => {
       const response = JSON.parse(text);
       expect(response.status).toBe(200);
 
-      const captured = getAllRequestEventsMeta().find((event) =>
-        event.request_url.includes("/mcp-send-test"),
+      const captured = getAllRequestEventsMeta().find(
+        (event) =>
+          event.type === "outbound" &&
+          event.request_url.includes("/mcp-send-test"),
       );
       expect(captured).toBeDefined();
       expect(captured!.request_method).toBe("POST");

@@ -8,6 +8,7 @@ import {
 } from "@/request-events/model";
 import { getHandlerExecutionsByRequestId } from "@/handler-executions/model";
 import { sendWebhookRequest } from "@/webhook-server/send-request";
+import { captureOutboundRequest } from "@/webhook-server/capture-outbound-request";
 import { HTTP_METHODS } from "@/util/http";
 import { kvListSchema, parseKvList } from "@/util/kv-list";
 import { parseUUID } from "@/util/uuid";
@@ -19,7 +20,7 @@ export function registerHttpRequestTools(server: McpServer) {
     {
       title: "Send HTTP request",
       description:
-        "Sends a test HTTP request. By default the request targets a path on the webhook server and is captured as a request event (use get-http-request afterwards to inspect the capture). Set external:true to send to an absolute URL on another host; requests to other hosts are not captured (nothing routes them back through the webhook server), so get-http-request will not find them. Returns the HTTP response.",
+        "Sends a test HTTP request. By default (external:false) it targets a path on the webhook server and is captured as an inbound request event. Set external:true to send to an absolute http(s) URL on another host; external requests are captured as outbound request events. Either way, use get-http-request afterwards to inspect the capture. Returns the HTTP response.",
       inputSchema: {
         method: z.enum(HTTP_METHODS).describe("HTTP method"),
         external: z
@@ -51,14 +52,28 @@ export function registerHttpRequestTools(server: McpServer) {
       },
     },
     async ({ method, url, external, headers, query, body }) => {
-      const response = await sendWebhookRequest({
+      const request = {
         method,
         url,
         external,
         headers: parseKvList(headers ?? [], z.string()),
         query: parseKvList(query ?? [], z.string()),
         body,
-      });
+      };
+      if (external) {
+        const { response, body: responseBody } =
+          await captureOutboundRequest(request);
+        if (!response) {
+          return errorResult(`External request to ${url} failed`);
+        }
+        return jsonResult({
+          status: response.status,
+          statusText: response.statusText,
+          headers: [...response.headers.entries()],
+          body: responseBody ?? "",
+        });
+      }
+      const response = await sendWebhookRequest(request);
       return jsonResult({
         status: response.status,
         statusText: response.statusText,
