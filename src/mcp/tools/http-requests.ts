@@ -19,14 +19,20 @@ export function registerHttpRequestTools(server: McpServer) {
     {
       title: "Send HTTP request",
       description:
-        "Sends a test HTTP request to the webhook server. The request is captured as a request event and processed by matching handlers; use get-http-request afterwards to inspect the capture. Returns the HTTP response.",
+        "Sends a test HTTP request. By default the request targets a path on the webhook server and is captured as a request event (use get-http-request afterwards to inspect the capture). Set external:true to send to an absolute URL on another host; requests to other hosts are not captured (nothing routes them back through the webhook server), so get-http-request will not find them. Returns the HTTP response.",
       inputSchema: {
         method: z.enum(HTTP_METHODS).describe("HTTP method"),
+        external: z
+          .boolean()
+          .default(false)
+          .describe(
+            "Send to an external host. false (default) = a path on the webhook server; true = an absolute http(s) URL",
+          ),
         url: z
           .string()
           .min(1)
           .describe(
-            "Path to request on the webhook server (e.g. '/my-hook'), or an absolute URL",
+            "Path on the webhook server (e.g. '/my-hook') when external is false, or an absolute http(s) URL when external is true",
           ),
         headers: kvListSchema(z.string())
           .optional()
@@ -44,10 +50,11 @@ export function registerHttpRequestTools(server: McpServer) {
         openWorldHint: true,
       },
     },
-    async ({ method, url, headers, query, body }) => {
+    async ({ method, url, external, headers, query, body }) => {
       const response = await sendWebhookRequest({
         method,
         url,
+        external,
         headers: parseKvList(headers ?? [], z.string()),
         query: parseKvList(query ?? [], z.string()),
         body,

@@ -7,12 +7,15 @@ import { useSearchParams } from "react-router";
 import { CodeEditor } from "@/components/code-editor";
 import { KeyValuePairEditor } from "@/components/key-value-pair-editor";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { FormCard } from "@/components/form/form-card";
 import { HttpMethodSelect } from "@/components/form/http-method-select";
 import { TextFormField } from "@/components/form/form-fields";
+import { HttpResponseView } from "@/components/http-response-view";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -28,14 +31,16 @@ export const CreateRequestPage = () => {
     defaultValues: {
       method: (searchParams.get("method") as any) || "GET",
       url: searchParams.get("path") || "/",
+      external: false,
       body: null,
       headers: [],
       query: [],
     },
   });
-  const { mutate: sendRequest } = useSendRequest();
+  const sendRequestMutation = useSendRequest();
 
   const selectedMethod = form.watch("method");
+  const external = form.watch("external");
   const methodsWithoutBody = ["GET", "HEAD", "OPTIONS"];
   const bodyDisabled = methodsWithoutBody.includes(selectedMethod);
 
@@ -47,16 +52,22 @@ export const CreateRequestPage = () => {
 
   const handleSubmit = useCallback(
     (values: HandlerRequest) => {
-      sendRequest({
+      sendRequestMutation.mutate({
         method: values.method ?? "GET",
         body: values.body,
         headers: values.headers,
         query: values.query,
         url: values.url ?? "/",
+        external: values.external ?? false,
       });
     },
-    [sendRequest],
+    [sendRequestMutation],
   );
+
+  const sendResult = sendRequestMutation.data;
+  const externalResponse =
+    sendResult?.external === true ? sendResult.response : null;
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)}>
@@ -71,11 +82,34 @@ export const CreateRequestPage = () => {
               name="method"
               label="Method"
             />
+            <FormField
+              control={form.control}
+              name="external"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                  <div className="space-y-0.5">
+                    <FormLabel>Send to an external URL</FormLabel>
+                    <FormDescription>
+                      When on, enter a fully-qualified URL. External requests
+                      are sent anywhere the server can reach and are not
+                      captured in the request log.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
             <TextFormField
               control={form.control}
               name="url"
-              label="Path"
-              placeholder="/"
+              label={external ? "URL" : "Path"}
+              placeholder={external ? "https://example.com/hook" : "/"}
+              type={external ? "url" : "text"}
             />
             <FormField
               control={form.control}
@@ -131,6 +165,15 @@ export const CreateRequestPage = () => {
             <Button type="submit">Send</Button>
           </CardFooter>
         </FormCard>
+        {externalResponse && (
+          <HttpResponseView
+            className="mt-4"
+            status={externalResponse.status}
+            statusText={externalResponse.statusText}
+            headers={externalResponse.headers}
+            body={externalResponse.body}
+          />
+        )}
       </form>
     </Form>
   );

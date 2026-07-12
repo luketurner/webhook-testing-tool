@@ -7,7 +7,7 @@ export interface SeedRequest extends HandlerRequest {
 }
 
 async function createSeedRequests(): Promise<SeedRequest[]> {
-  const requests: SeedRequest[] = [];
+  const requests: Omit<SeedRequest, "external">[] = [];
 
   // Simple GET request
   requests.push({
@@ -391,7 +391,7 @@ async function createSeedRequests(): Promise<SeedRequest[]> {
     body: btoa(htmlPayload),
   });
 
-  return requests;
+  return requests.map((request) => ({ ...request, external: false }));
 }
 
 export const seedRequests = await createSeedRequests();
