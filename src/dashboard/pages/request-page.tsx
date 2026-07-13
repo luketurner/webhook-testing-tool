@@ -155,10 +155,12 @@ export const RequestPage = () => {
                   <RotateCcw className="mr-2 h-4 w-4" />
                   Resend request
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleCreateHandler}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create handler for request
-                </DropdownMenuItem>
+                {request.type !== "outbound" && (
+                  <DropdownMenuItem onClick={handleCreateHandler}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create handler for request
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   onClick={() => shareRequest.mutate(!request.shared_id)}
                   disabled={shareRequest.isPending}
