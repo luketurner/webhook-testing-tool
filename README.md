@@ -43,6 +43,7 @@
 - **:salt: TCP connections**: Accepts arbitrary TCP connections on a separate port. View all data sent/received on the connection in the dashboard.
     - **TCP Handler**: Write custom TCP handler logic using Typescript. Handler is called when data is received and can send data back.
 - **:robot: MCP Server**: Connect to `wtt` with your AI agent of choice to automate testing workflows. See [mcp.md](./src/docs/mcp.md).
+- **:loudspeaker: Send HTTP Requests**: In addition to receiving HTTP requests, `wtt` can also send requests to arbitrary URLs and log the response. See [sending-requests.md](./src/docs/sending-requests.md).
 
 ## Limitations
 
