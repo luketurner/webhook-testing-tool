@@ -11,6 +11,7 @@ import { TcpHandlerExecutionItem } from "@/components/tcp-handler-execution-item
 import type { TcpConnection } from "@/tcp-connections/schema";
 import type { TcpHandlerExecution } from "@/tcp-handler-executions/schema";
 import { Skeleton } from "@/components/ui/skeleton";
+import { base64ByteLength } from "@/util/base64";
 
 export const TcpConnectionPage = () => {
   const { id } = useParams();
@@ -117,14 +118,19 @@ export const TcpConnectionPage = () => {
                 Data Received
               </span>
               <span className="text-sm">
-                {connection.received_data ? connection.received_data.length : 0}{" "}
+                {connection.received_data
+                  ? base64ByteLength(connection.received_data)
+                  : 0}{" "}
                 bytes
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Data Sent</span>
               <span className="text-sm">
-                {connection.sent_data ? connection.sent_data.length : 0} bytes
+                {connection.sent_data
+                  ? base64ByteLength(connection.sent_data)
+                  : 0}{" "}
+                bytes
               </span>
             </div>
             {connection.open_timestamp && connection.closed_timestamp && (

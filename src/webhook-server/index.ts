@@ -170,6 +170,30 @@ export interface WebhookServerResp {
   http2Server?: Http2SecureServer;
 }
 
+/**
+ * Replace a running HTTPS server with a fresh one bound to the same port using
+ * a new certificate. Bun does not implement tls.Server#setSecureContext, so a
+ * live certificate rotation (e.g. after an ACME renewal) has to close the old
+ * listener and re-listen. Idle keep-alive sockets are released so close()
+ * completes promptly; in-flight requests are allowed to finish.
+ */
+export async function restartHttpsServer(
+  oldServer: https.Server,
+  port: number,
+  httpsOptions: https.ServerOptions,
+): Promise<https.Server> {
+  await new Promise<void>((resolve) => {
+    oldServer.close(() => resolve());
+    oldServer.closeIdleConnections?.();
+  });
+
+  const newServer = https.createServer(httpsOptions, app);
+  await new Promise<void>((resolve) => {
+    newServer.listen(port, () => resolve());
+  });
+  return newServer;
+}
+
 export async function startWebhookServer({
   port,
   ssl,

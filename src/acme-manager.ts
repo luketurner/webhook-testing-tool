@@ -85,18 +85,9 @@ export class AcmeManager {
       `Obtaining new certificate for domains: ${ACME_DOMAINS.join(", ")}`,
     );
 
-    // Generate certificate key
-    const certKeyPath = path.join(ACME_CERT_PATH, "cert.key");
-    let certKey: string;
-    try {
-      certKey = await fs.readFile(certKeyPath, "utf8");
-    } catch {
-      const key = await acme.crypto.createPrivateKey();
-      certKey = key.toString();
-      await fs.writeFile(certKeyPath, certKey);
-    }
-
-    // Create CSR
+    // Create CSR. createCsr mints the private key that is paired with the
+    // issued certificate and persisted below as key.pem, so we do not manage a
+    // separate certificate key here.
     const [key, csr] = await acme.crypto.createCsr({
       altNames: ACME_DOMAINS,
     });

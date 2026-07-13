@@ -31,7 +31,8 @@ import {
 } from "@/config";
 import { startDashboardServer } from "./dashboard/server";
 import { migrateDb } from "./db";
-import { startWebhookServer } from "./webhook-server";
+import { startWebhookServer, restartHttpsServer } from "./webhook-server";
+import { restartHttp2Server } from "./webhook-server/http2/server";
 import { initializeAdminUser } from "./auth/init-user";
 import { startTcpServer } from "./tcp-server";
 import { acmeManager } from "@/acme-manager";
@@ -68,8 +69,10 @@ const webhookServer = await startWebhookServer({
   },
 });
 
-// Schedule certificate renewal checks if ACME is enabled
-if (ACME_ENABLED && WEBHOOK_SSL_ENABLED) {
+// Schedule certificate renewal checks if ACME is enabled. Either TLS listener
+// (HTTPS or HTTP/2) can be the one holding the ACME certificate, so the
+// scheduler must run whenever ACME is on and at least one of them is enabled.
+if (ACME_ENABLED && (WEBHOOK_SSL_ENABLED || WEBHOOK_H2_ENABLED)) {
   console.log("Starting ACME certificate renewal scheduler");
 
   // Check for certificate renewal every 24 hours
@@ -81,18 +84,35 @@ if (ACME_ENABLED && WEBHOOK_SSL_ENABLED) {
 
         if (renewed) {
           console.log(
-            "Certificate renewed successfully. Restarting HTTPS server...",
+            "Certificate renewed successfully. Reloading TLS listeners...",
           );
 
-          // Restart HTTPS server with new certificate
+          // renewIfNeeded() has already written the new certificate to disk;
+          // this load returns it without another ACME round-trip.
+          const certInfo = await acmeManager.obtainCertificate();
+
+          // Rotate the certificate on each live TLS listener. Bun lacks
+          // tls.Server#setSecureContext, so each listener is re-created and
+          // re-listened on its existing port rather than left closed.
           if (webhookServer.httpsServer) {
-            webhookServer.httpsServer.close(() => {
-              console.log(
-                "HTTPS server closed, restarting with new certificate",
-              );
-              // The server will restart automatically on next request
-              // In production, you might want to implement a more sophisticated restart mechanism
-            });
+            webhookServer.httpsServer = await restartHttpsServer(
+              webhookServer.httpsServer,
+              WEBHOOK_SSL_PORT,
+              { key: certInfo.privateKey, cert: certInfo.certificate },
+            );
+            console.log("HTTPS listener restarted with renewed certificate");
+          }
+
+          if (webhookServer.http2Server) {
+            webhookServer.http2Server = await restartHttp2Server(
+              webhookServer.http2Server,
+              {
+                port: WEBHOOK_H2_PORT,
+                certPath: SSL_CERT_PATH,
+                keyPath: SSL_KEY_PATH,
+              },
+            );
+            console.log("HTTP/2 listener restarted with renewed certificate");
           }
         } else {
           console.log("Certificate renewal not needed yet");

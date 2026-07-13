@@ -8,7 +8,11 @@ export async function assertGeneratedSelfSignedCert(
   certPath: string,
   keyPath: string,
 ) {
-  if (!existsSync(certPath) && !existsSync(keyPath)) {
+  // Generate unless a complete pair already exists. If exactly one of the two
+  // files is present (a deleted key, an interrupted first run, a botched
+  // bring-your-own setup), regenerate both so we never leave startup to crash
+  // reading the missing half.
+  if (!existsSync(certPath) || !existsSync(keyPath)) {
     console.log(`Generating new self-signed certificate ${certPath}...`);
     await mkdir(dirname(certPath), { recursive: true });
     await mkdir(dirname(keyPath), { recursive: true });

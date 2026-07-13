@@ -62,10 +62,9 @@ Let's Encrypt always validates `http-01` by connecting to port 80 of your domain
 
 `wtt` treats a certificate as valid while it has more than 30 days to run. It checks 60 seconds after startup and every 24 hours thereafter, and requests a replacement when the certificate falls inside that window.
 
-Two limitations apply:
+When a renewal succeeds the new certificate takes effect immediately: `wtt` reloads it on every live TLS listener in place. Bun has no `setSecureContext`, so each listener is re-created and re-listened on its existing port — no restart is required.
 
-- **A renewal does not take effect until you restart.** After fetching a new certificate `wtt` closes the HTTPS listener and does not reopen it. Restart the process to serve the renewed certificate.
-- **The renewal check only runs when `WTT_WEBHOOK_SSL_ENABLED` is set.** An HTTP/2-only deployment obtains a certificate at startup but never schedules renewal for it. Enable the HTTPS listener too, or restart before every expiry.
+The renewal check runs whenever ACME is enabled and at least one TLS listener is on (`WTT_WEBHOOK_SSL_ENABLED` or `WTT_WEBHOOK_H2_ENABLED`), so an HTTP/2-only deployment is renewed too.
 
 ## Inspecting TLS on a request
 

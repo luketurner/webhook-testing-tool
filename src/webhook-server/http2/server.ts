@@ -55,3 +55,26 @@ export async function startHttp2WebhookServer({
     });
   });
 }
+
+/**
+ * Replace a running HTTP/2 server with a fresh one on the same port, picking up
+ * the current certificate (e.g. after an ACME renewal). Like the HTTPS path,
+ * Bun has no tls.Server#setSecureContext, so the certificate can only be
+ * rotated by closing the old listener and starting a new one. Idle sessions are
+ * released so close() completes promptly.
+ */
+export async function restartHttp2Server(
+  oldServer: Http2SecureServer,
+  options: Http2ServerOptions,
+): Promise<Http2SecureServer> {
+  await new Promise<void>((resolve) => {
+    oldServer.close(() => resolve());
+    // @types/node omits closeIdleConnections on Http2SecureServer even though
+    // Node and Bun both implement it (inherited from net.Server).
+    (
+      oldServer as { closeIdleConnections?: () => void }
+    ).closeIdleConnections?.();
+  });
+
+  return startHttp2WebhookServer(options);
+}
