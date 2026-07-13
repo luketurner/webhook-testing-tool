@@ -1,6 +1,9 @@
 import { describe, test, expect } from "bun:test";
-import { requestSchema } from "./schema";
+import { requestSchema, requestEventToHandlerRequest } from "./schema";
 import { isAbsolutePath, isAbsoluteHttpUrl } from "@/util/http";
+import type { RequestEvent } from "@/request-events/schema";
+import { randomUUID } from "@/util/uuid";
+import { now } from "@/util/datetime";
 
 const base = { method: "GET" as const, headers: [], query: [], body: null };
 
@@ -69,5 +72,58 @@ describe("requestSchema external/internal validation", () => {
     if (!result.success) {
       expect(result.error.issues[0]?.path).toEqual(["url"]);
     }
+  });
+});
+
+describe("requestEventToHandlerRequest", () => {
+  const baseEvent: RequestEvent = {
+    id: randomUUID(),
+    type: "inbound",
+    status: "complete",
+    request_method: "GET",
+    request_url: "/foo",
+    request_headers: [],
+    request_query_params: [],
+    request_body: null,
+    request_timestamp: now(),
+    response_status: 200,
+    response_status_message: "OK",
+    response_headers: [],
+    response_body: null,
+    response_timestamp: now(),
+  };
+
+  test("an outbound event with a full url resends as external without throwing", () => {
+    const outboundEvent: RequestEvent = {
+      ...baseEvent,
+      id: randomUUID(),
+      type: "outbound",
+      request_url: "https://example.com/hook",
+    };
+
+    let handlerRequest;
+    expect(() => {
+      handlerRequest = requestEventToHandlerRequest(outboundEvent);
+    }).not.toThrow();
+
+    expect(handlerRequest!.external).toBe(true);
+    expect(handlerRequest!.url).toBe("https://example.com/hook");
+  });
+
+  test("an inbound event with a path resends as internal without throwing", () => {
+    const inboundEvent: RequestEvent = {
+      ...baseEvent,
+      id: randomUUID(),
+      type: "inbound",
+      request_url: "/foo",
+    };
+
+    let handlerRequest;
+    expect(() => {
+      handlerRequest = requestEventToHandlerRequest(inboundEvent);
+    }).not.toThrow();
+
+    expect(handlerRequest!.external).toBe(false);
+    expect(handlerRequest!.url).toBe("/foo");
   });
 });

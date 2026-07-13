@@ -49,6 +49,7 @@ export function requestEventToHandlerRequest(
   return requestSchema.parse({
     method: event.request_method,
     url: event.request_url,
+    external: event.type === "outbound",
     headers: event.request_headers,
     query: event.request_query_params,
     body: event.request_body, // TODO -- try base64 decode

@@ -11,7 +11,6 @@ import { Switch } from "@/components/ui/switch";
 import { FormCard } from "@/components/form/form-card";
 import { HttpMethodSelect } from "@/components/form/http-method-select";
 import { TextFormField } from "@/components/form/form-fields";
-import { HttpResponseView } from "@/components/http-response-view";
 import {
   Form,
   FormControl,
@@ -64,10 +63,6 @@ export const CreateRequestPage = () => {
     [sendRequestMutation],
   );
 
-  const sendResult = sendRequestMutation.data;
-  const externalResponse =
-    sendResult?.external === true ? sendResult.response : null;
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)}>
@@ -91,8 +86,8 @@ export const CreateRequestPage = () => {
                     <FormLabel>Send to an external URL</FormLabel>
                     <FormDescription>
                       When on, enter a fully-qualified URL. External requests
-                      are sent anywhere the server can reach and are not
-                      captured in the request log.
+                      are sent anywhere the server can reach and captured in the
+                      log as outbound requests.
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -165,15 +160,6 @@ export const CreateRequestPage = () => {
             <Button type="submit">Send</Button>
           </CardFooter>
         </FormCard>
-        {externalResponse && (
-          <HttpResponseView
-            className="mt-4"
-            status={externalResponse.status}
-            statusText={externalResponse.statusText}
-            headers={externalResponse.headers}
-            body={externalResponse.body}
-          />
-        )}
       </form>
     </Form>
   );

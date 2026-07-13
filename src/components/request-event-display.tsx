@@ -39,6 +39,9 @@ export const RequestEventDisplay = ({
             {request.http_version && (
               <Badge variant="outline">HTTP/{request.http_version}</Badge>
             )}
+            {request.type === "outbound" && (
+              <Badge variant="outline">Outbound</Badge>
+            )}
             {titleActions}
           </CardTitle>
         </CardHeader>

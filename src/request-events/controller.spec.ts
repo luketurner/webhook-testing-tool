@@ -4,9 +4,10 @@ import {
   createRequestEvent,
   deleteRequestEvent,
   getAllRequestEvents,
+  getRequestEvent,
 } from "./model";
 import type { RequestEvent } from "./schema";
-import { randomUUID } from "@/util/uuid";
+import { randomUUID, parseUUID } from "@/util/uuid";
 import { now } from "@/util/datetime";
 import { parseBase64 } from "@/util/base64";
 
@@ -172,7 +173,7 @@ describe("request-events/controller", () => {
     });
     afterAll(() => server.stop(true));
 
-    test("returns the full external response", async () => {
+    test("captures an external send as an outbound event and returns its id", async () => {
       const mockReq = {
         json: async () => ({
           method: "GET",
@@ -191,9 +192,36 @@ describe("request-events/controller", () => {
       expect(data.status).toBe("ok");
       expect(data.external).toBe(true);
       expect(data.response.status).toBe(202);
-      expect(data.response.headers).toEqual(
-        expect.arrayContaining([["x-echo", "1"]]),
-      );
+      expect(typeof data.event_id).toBe("string");
+
+      const stored = getRequestEvent(parseUUID(data.event_id));
+      expect(stored.type).toBe("outbound");
+      expect(stored.status).toBe("complete");
+      expect(stored.response_status).toBe(202);
+    });
+
+    test("captures a failed external send as an error event (502)", async () => {
+      const mockReq = {
+        json: async () => ({
+          method: "GET",
+          url: "http://localhost:9/unreachable",
+          external: true,
+          headers: [],
+          query: [],
+          body: null,
+        }),
+      } as any;
+
+      const response =
+        await requestEventController["/api/requests/send"].POST(mockReq);
+      expect(response.status).toBe(502);
+      const data = await response.json();
+      expect(data.status).toBe("error");
+      expect(typeof data.event_id).toBe("string");
+
+      const stored = getRequestEvent(parseUUID(data.event_id));
+      expect(stored.type).toBe("outbound");
+      expect(stored.status).toBe("error");
     });
   });
 
