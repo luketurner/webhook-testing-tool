@@ -1,8 +1,11 @@
 # Changelog
 
-## Unreleased
+## 2.10.0 (2026-07-13)
 
+- Added first-class support for outgoing HTTP requests (to arbitrary URLs) being sent from HTTP sending UI. Outgoing requests are also recorded in the DB.
 - Reworked in-app documentation content and design.
+- Fixed a few bugs with TLS cert renewal and self-signed cert generation.
+- Fixed incorrectly reported byte count length for TCP connections.
 
 ---
 
