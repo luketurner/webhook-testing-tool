@@ -1,22 +1,37 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { SSEContext, useSSE } from "@/util/hooks/use-sse";
+import { requestEventMetaSchema } from "@/request-events/schema";
+import {
+  prependRequestToCache,
+  updateRequestInCache,
+} from "@/request-events/request-cache";
 
 export function SSEProvider({ children }) {
   const queryClient = useQueryClient();
 
-  // Set up SSE connection for real-time updates
   const state = useSSE({
     url: `/api/events/stream`,
     onEvent: (event) => {
-      if (
-        event.type === "request:created" ||
-        event.type === "request:updated" ||
+      if (event.type === "request:created") {
+        const parsed = requestEventMetaSchema.safeParse(event.payload);
+        if (parsed.success) {
+          prependRequestToCache(queryClient, parsed.data);
+        } else {
+          queryClient.invalidateQueries({ queryKey: ["requests"] });
+        }
+      } else if (event.type === "request:updated") {
+        const parsed = requestEventMetaSchema.safeParse(event.payload);
+        if (parsed.success) {
+          updateRequestInCache(queryClient, parsed.data);
+        } else {
+          queryClient.invalidateQueries({ queryKey: ["requests"] });
+        }
+      } else if (
         event.type === "request:archived" ||
         event.type === "request:unarchived" ||
         event.type === "request:deleted"
       ) {
-        console.log("event", event.type, event.payload);
-        // Invalidate and refetch the requests list to get the latest data
+        // User-initiated, low-frequency: a targeted refetch is fine.
         queryClient.invalidateQueries({ queryKey: ["requests"] });
       } else if (
         event.type === "tcp_connection:created" ||
@@ -27,8 +42,6 @@ export function SSEProvider({ children }) {
         event.type === "tcp_connection:unarchived" ||
         event.type === "tcp_connection:deleted"
       ) {
-        console.log("event", event.type, event.payload);
-        // Invalidate and refetch the TCP connections list to get the latest data
         queryClient.invalidateQueries({ queryKey: ["tcp-connections"] });
       }
     },
