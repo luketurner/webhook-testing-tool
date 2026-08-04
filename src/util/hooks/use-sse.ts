@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
+import type { RequestEventMeta } from "@/request-events/schema";
 
 export interface SSEEvent {
   type:
@@ -16,10 +17,12 @@ export interface SSEEvent {
     | "tcp_connection:archived"
     | "tcp_connection:unarchived"
     | "tcp_connection:deleted";
-  payload?: {
-    id: string;
-    status?: string;
-  };
+  payload?:
+    | RequestEventMeta
+    | {
+        id: string;
+        status?: string;
+      };
 }
 
 export interface SSEOptions {
