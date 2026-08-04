@@ -30,6 +30,7 @@ import * as migration14 from "./migrations/1760319000000_add_archived_timestamp_
 import * as migration15 from "./migrations/1760320000000_add_cascade_to_foreign_keys";
 import * as migration16 from "./migrations/1783209600000_add_oauth_provider_tables";
 import * as migration17 from "./migrations/1783296000000_add_http2_columns";
+import * as migration18 from "./migrations/1785000000000_add_requests_timestamp_index";
 
 // Load all migrations
 const migrations: MigrationDefn[] = [
@@ -50,6 +51,10 @@ const migrations: MigrationDefn[] = [
   { name: "1760320000000_add_cascade_to_foreign_keys", ...migration15 },
   { name: "1783209600000_add_oauth_provider_tables", ...migration16 },
   { name: "1783296000000_add_http2_columns", ...migration17 },
+  {
+    name: "1785000000000_add_requests_timestamp_index",
+    ...migration18,
+  },
 ];
 
 await mkdir(dirname(DB_FILE), { recursive: true });
