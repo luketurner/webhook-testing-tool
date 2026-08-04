@@ -1,19 +1,22 @@
 import { useResourceList, useServerUrls } from "@/dashboard/hooks";
+import { useInfiniteRequests } from "@/request-events/use-infinite-requests";
 import { DataSection } from "@/components/data-section";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router";
 import { Plus } from "lucide-react";
-import type { RequestEventMeta } from "@/request-events/schema";
 import type { Handler } from "@/handlers/schema";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 
 export const HomePage = () => {
-  const { data: requests } = useResourceList<RequestEventMeta>("requests");
+  const { data: requestsData } = useInfiniteRequests({
+    includeArchived: false,
+    search: "",
+  });
   const { data: handlers } = useResourceList<Handler>("handlers");
   const { httpUrl, httpsUrl, h2Url, tcpHost } = useServerUrls();
 
-  const recentRequests = requests?.slice(0, 5) || [];
+  const recentRequests = requestsData?.pages[0]?.events.slice(0, 5) ?? [];
   const activeHandlers =
     handlers?.filter((h) => h.code && h.code.trim() !== "") || [];
 
