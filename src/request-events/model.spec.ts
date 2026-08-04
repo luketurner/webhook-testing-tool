@@ -6,6 +6,7 @@ import {
   getRequestEventMeta,
   getAllRequestEvents,
   getAllRequestEventsMeta,
+  getRequestEventsPage,
   deleteRequestEvent,
 } from "./model";
 import type { RequestEvent, RequestId } from "./schema";
@@ -227,6 +228,114 @@ describe("request-events/model", () => {
         expect(meta).not.toHaveProperty("response_headers");
         expect(meta).not.toHaveProperty("response_body");
       });
+    });
+  });
+
+  describe("getRequestEventsPage()", () => {
+    function seed(count: number, base: Partial<RequestEvent> = {}) {
+      // Distinct, descending-friendly timestamps; created oldest-first.
+      const created: RequestEvent[] = [];
+      for (let i = 0; i < count; i++) {
+        created.push(
+          createRequestEvent({
+            ...testRequestEvent,
+            id: randomUUID(),
+            request_timestamp: now(),
+            request_url: `/seed-${i}`,
+            request_method: "GET",
+            status: "complete",
+            ...base,
+          }),
+        );
+      }
+      return created;
+    }
+
+    test("returns at most `limit` events, newest first", () => {
+      seed(5);
+      const page = getRequestEventsPage({ limit: 2 });
+      expect(page.events).toHaveLength(2);
+      expect(page.total).toBeGreaterThanOrEqual(5);
+      expect(page.nextCursor).not.toBeNull();
+      // newest-first: timestamps are non-increasing
+      expect(page.events[0].request_timestamp).toBeGreaterThanOrEqual(
+        page.events[1].request_timestamp,
+      );
+    });
+
+    test("cursor pagination covers every row with no overlap or skip", () => {
+      seed(7);
+      const seen = new Set<string>();
+      let cursor: string | null = null;
+      let pages = 0;
+      do {
+        const page = getRequestEventsPage({ limit: 3, cursor });
+        for (const e of page.events) {
+          expect(seen.has(e.id)).toBe(false); // no duplicates across pages
+          seen.add(e.id);
+        }
+        cursor = page.nextCursor;
+        pages++;
+        expect(pages).toBeLessThan(20); // guard against infinite loop
+      } while (cursor);
+      expect(seen.size).toBeGreaterThanOrEqual(7);
+    });
+
+    test("paginates correctly when timestamps collide", () => {
+      const ts = now();
+      seed(5, { request_timestamp: ts }); // all identical timestamps
+      const seen = new Set<string>();
+      let cursor: string | null = null;
+      do {
+        const page = getRequestEventsPage({ limit: 2, cursor });
+        for (const e of page.events) {
+          expect(seen.has(e.id)).toBe(false);
+          seen.add(e.id);
+        }
+        cursor = page.nextCursor;
+      } while (cursor);
+      expect(seen.size).toBeGreaterThanOrEqual(5);
+    });
+
+    test("nextCursor is null on the final page", () => {
+      seed(2);
+      const page = getRequestEventsPage({ limit: 100 });
+      expect(page.nextCursor).toBeNull();
+    });
+
+    test("excludes archived rows unless includeArchived", () => {
+      const [visible] = seed(1, { request_url: "/active-row" });
+      const [archived] = seed(1, {
+        request_url: "/archived-row",
+        archived_timestamp: now(),
+      });
+
+      const active = getRequestEventsPage({ limit: 100 });
+      const activeIds = active.events.map((e) => e.id);
+      expect(activeIds).toContain(visible.id);
+      expect(activeIds).not.toContain(archived.id);
+
+      const all = getRequestEventsPage({ limit: 100, includeArchived: true });
+      const allIds = all.events.map((e) => e.id);
+      expect(allIds).toContain(archived.id);
+    });
+
+    test("filters by search across method, url, and status", () => {
+      const [match] = seed(1, {
+        request_url: "/unique-search-target",
+        request_method: "DELETE",
+      });
+      seed(3, { request_url: "/other", request_method: "GET" });
+
+      const byUrl = getRequestEventsPage({
+        limit: 100,
+        search: "unique-search",
+      });
+      expect(byUrl.events.map((e) => e.id)).toContain(match.id);
+      expect(byUrl.total).toBe(1);
+
+      const byMethod = getRequestEventsPage({ limit: 100, search: "delete" });
+      expect(byMethod.events.map((e) => e.id)).toContain(match.id);
     });
   });
 
