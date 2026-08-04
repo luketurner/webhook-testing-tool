@@ -1,6 +1,6 @@
 import "@/server-only";
 import {
-  getAllRequestEventsMeta,
+  getRequestEventsPage,
   getRequestEvent,
   updateRequestEvent,
   getRequestEventBySharedId,
@@ -17,6 +17,8 @@ import { requestSchema, type HandlerRequest } from "@/webhook-server/schema";
 import { z } from "zod/v4";
 import { uuidSchema } from "@/util/uuid";
 import { timestampSchema } from "@/util/datetime";
+
+const limitSchema = z.coerce.number().int().positive().max(200).catch(50);
 
 const bulkDeleteBodySchema = z.object({
   ids: z.array(uuidSchema).optional().default([]),
@@ -37,7 +39,12 @@ export const requestEventController = {
       const url = new URL(req.url);
       const includeArchived =
         url.searchParams.get("includeArchived") === "true";
-      return Response.json(getAllRequestEventsMeta(includeArchived));
+      const search = url.searchParams.get("search") ?? undefined;
+      const cursor = url.searchParams.get("cursor") ?? undefined;
+      const limit = limitSchema.parse(url.searchParams.get("limit") ?? 50);
+      return Response.json(
+        getRequestEventsPage({ limit, cursor, includeArchived, search }),
+      );
     },
     DELETE: (req) => {
       const count = clearRequestEvents();

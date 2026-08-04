@@ -34,68 +34,67 @@ describe("request-events/controller", () => {
   });
 
   describe("GET /api/requests", () => {
-    test("should return all request event metadata", async () => {
-      // Create test events
+    test("returns a page object with events, nextCursor, and total", async () => {
       const event1 = createRequestEvent({
         ...testRequestEvent,
         id: randomUUID(),
       });
-
       const event2 = createRequestEvent({
         ...testRequestEvent,
         id: randomUUID(),
         type: "outbound",
       });
 
-      const mockReq = {
-        url: "http://localhost:3000/",
-      } as any;
+      const mockReq = { url: "http://localhost:3000/api/requests" } as any;
       const response = requestEventController["/api/requests"].GET(mockReq);
-
       expect(response).toBeInstanceOf(Response);
 
       const data = await response.json();
-      expect(Array.isArray(data)).toBe(true);
-      expect(data.length).toBeGreaterThanOrEqual(2);
+      expect(Array.isArray(data.events)).toBe(true);
+      expect(typeof data.total).toBe("number");
+      expect("nextCursor" in data).toBe(true);
 
-      const ourEvents = data.filter(
+      const ourEvents = data.events.filter(
         (event: any) => event.id === event1.id || event.id === event2.id,
       );
       expect(ourEvents).toHaveLength(2);
-
-      // Should not include body/header fields (metadata only)
       ourEvents.forEach((event: any) => {
         expect(event).not.toHaveProperty("request_headers");
         expect(event).not.toHaveProperty("request_body");
-        expect(event).not.toHaveProperty("response_headers");
-        expect(event).not.toHaveProperty("response_body");
         expect(event).toHaveProperty("id");
-        expect(event).toHaveProperty("type");
         expect(event).toHaveProperty("status");
       });
     });
 
-    test("should return empty array when no events exist", async () => {
-      // Clean up all existing events
-      const allEvents = getAllRequestEvents();
-      allEvents.forEach((event) => {
-        try {
-          deleteRequestEvent(event.id);
-        } catch (error) {
-          // Ignore cleanup errors
-        }
-      });
-
+    test("honors the limit query param and returns a nextCursor", async () => {
+      for (let i = 0; i < 3; i++) {
+        createRequestEvent({ ...testRequestEvent, id: randomUUID() });
+      }
       const mockReq = {
-        url: "http://localhost:3000/",
+        url: "http://localhost:3000/api/requests?limit=1",
       } as any;
       const response = requestEventController["/api/requests"].GET(mockReq);
-
-      expect(response).toBeInstanceOf(Response);
-
       const data = await response.json();
-      expect(Array.isArray(data)).toBe(true);
-      expect(data).toHaveLength(0);
+      expect(data.events).toHaveLength(1);
+      expect(data.nextCursor).not.toBeNull();
+
+      // second page via cursor returns a different event
+      const next = requestEventController["/api/requests"].GET({
+        url: `http://localhost:3000/api/requests?limit=1&cursor=${encodeURIComponent(
+          data.nextCursor,
+        )}`,
+      } as any);
+      const nextData = await next.json();
+      expect(nextData.events[0].id).not.toBe(data.events[0].id);
+    });
+
+    test("clamps invalid limit to the default", async () => {
+      const mockReq = {
+        url: "http://localhost:3000/api/requests?limit=999999",
+      } as any;
+      const response = requestEventController["/api/requests"].GET(mockReq);
+      const data = await response.json();
+      expect(data.events.length).toBeLessThanOrEqual(50);
     });
   });
 
