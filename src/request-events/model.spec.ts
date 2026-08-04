@@ -337,6 +337,20 @@ describe("request-events/model", () => {
       const byMethod = getRequestEventsPage({ limit: 100, search: "delete" });
       expect(byMethod.events.map((e) => e.id)).toContain(match.id);
     });
+
+    test("treats % and _ in search as literal characters, not SQL wildcards", () => {
+      const [literalMatch] = seed(1, {
+        request_url: "/discount-50%-off",
+      });
+      const [decoyMatch] = seed(1, {
+        request_url: "/discount-5000-off",
+      });
+
+      const page = getRequestEventsPage({ limit: 100, search: "50%" });
+      const ids = page.events.map((e) => e.id);
+      expect(ids).toContain(literalMatch.id);
+      expect(ids).not.toContain(decoyMatch.id);
+    });
   });
 
   describe("updateRequestEvent()", () => {

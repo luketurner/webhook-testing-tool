@@ -1,5 +1,6 @@
 import "@/server-only";
 
+import { z } from "zod/v4";
 import {
   keysForInsertFields,
   keysForInsertValues,
@@ -116,9 +117,10 @@ export function getRequestEventsPage(
   const trimmedSearch = search?.trim();
   if (trimmedSearch) {
     filterConditions.push(
-      "(request_method LIKE $search OR request_url LIKE $search OR status LIKE $search OR CAST(response_status AS TEXT) LIKE $search)",
+      "(request_method LIKE $search ESCAPE '\\' OR request_url LIKE $search ESCAPE '\\' OR status LIKE $search ESCAPE '\\' OR CAST(response_status AS TEXT) LIKE $search ESCAPE '\\')",
     );
-    filterParams.search = `%${trimmedSearch}%`;
+    const escaped = trimmedSearch.replace(/[\\%_]/g, (c) => `\\${c}`);
+    filterParams.search = `%${escaped}%`;
   }
 
   const pageConditions = [...filterConditions];
@@ -149,9 +151,13 @@ export function getRequestEventsPage(
     .all({ ...pageParams, limit })
     .map((v) => requestEventMetaSchema.parse(v));
 
-  const totalRow = db
-    .query(`select count(*) as count from "${tableName}" ${filterWhere};`)
-    .get({ ...filterParams }) as { count: number };
+  const totalRow = z
+    .object({ count: z.number() })
+    .parse(
+      db
+        .query(`select count(*) as count from "${tableName}" ${filterWhere};`)
+        .get({ ...filterParams }),
+    );
 
   const last = events[events.length - 1];
   const nextCursor =
