@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+## 2.11.0 (2026-08-06)
 
+- Removes max width clamp for request and TCP connection pages.
+- Whacks a variety of bugs relating to using browser features only available in secure contexts -- crypto.randomUUID, navigator.clipboard, and crypto.subtle -- which break when using the site over unencrypted HTTP (e.g. via tailscale).
 - Fixed the dashboard freezing with large numbers of stored requests (#3). The
   request list is now paginated, virtualized, and loaded via infinite scroll,
   search runs server-side across all requests, and real-time updates patch the
