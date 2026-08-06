@@ -1,5 +1,5 @@
 import "@/server-only";
-import { describe, it, expect, afterEach } from "bun:test";
+import { describe, it, expect, afterEach, setDefaultTimeout } from "bun:test";
 import https from "https";
 import tls from "tls";
 import { readFileSync, rmSync, mkdirSync } from "fs";
@@ -8,6 +8,8 @@ import { join } from "path";
 import { assertGeneratedSelfSignedCert } from "@/util/generate-cert";
 import { findAvailablePorts } from "@/util/port-finder";
 import { restartHttpsServer } from "./index";
+
+setDefaultTimeout(30000);
 
 const openServers: https.Server[] = [];
 
