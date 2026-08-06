@@ -67,7 +67,7 @@ export const CreateRequestPage = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)}>
         <FormCard
-          className="mt-4"
+          className="mt-4 max-w-6xl"
           title="Test Request"
           description={<>Sends a test request from your browser.</>}
         >

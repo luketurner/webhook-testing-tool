@@ -81,7 +81,7 @@ export function UserManagementPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 max-w-6xl">
         <div className="mb-4">
           <h1 className="text-3xl font-bold mb-2">User Management</h1>
           <p className="text-muted-foreground">
@@ -104,7 +104,7 @@ export function UserManagementPage() {
 
   if (error) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 max-w-6xl">
         <div className="mb-4">
           <h1 className="text-3xl font-bold mb-2">User Management</h1>
           <p className="text-muted-foreground">
@@ -137,7 +137,7 @@ export function UserManagementPage() {
     : "Unknown";
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-6xl">
       <div className="mb-4">
         <h1 className="text-3xl font-bold mb-2">User Management</h1>
         <p className="text-muted-foreground">
