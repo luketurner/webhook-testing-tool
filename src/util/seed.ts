@@ -6,7 +6,7 @@ export interface SeedRequest extends HandlerRequest {
   name: string;
 }
 
-async function createSeedRequests(): Promise<SeedRequest[]> {
+function createSeedRequests(): SeedRequest[] {
   const requests: Omit<SeedRequest, "external">[] = [];
 
   // Simple GET request
@@ -109,12 +109,8 @@ async function createSeedRequests(): Promise<SeedRequest[]> {
     pusher: { name: "testuser", email: "test@example.com" },
     secret: githubSecret, // Include secret for testing verification
   });
-  const githubSha1 = await generateHMACSignature(
-    githubPayload,
-    githubSecret,
-    "sha1",
-  );
-  const githubSha256 = await generateHMACSignature(
+  const githubSha1 = generateHMACSignature(githubPayload, githubSecret, "sha1");
+  const githubSha256 = generateHMACSignature(
     githubPayload,
     githubSecret,
     "sha256",
@@ -143,7 +139,7 @@ async function createSeedRequests(): Promise<SeedRequest[]> {
     commits: [{ message: "Test commit", author: { name: "developer" } }],
     secret: giteaSecret, // Include secret for testing verification
   });
-  const giteaSha256 = await generateHMACSignature(
+  const giteaSha256 = generateHMACSignature(
     giteaPayload,
     giteaSecret,
     "sha256",
@@ -170,7 +166,7 @@ async function createSeedRequests(): Promise<SeedRequest[]> {
     timestamp: 1640995200,
     secret: hmacSecret, // Include secret for testing verification
   });
-  const hmacSignature = await generateHMACSignature(
+  const hmacSignature = generateHMACSignature(
     hmacPayload,
     hmacSecret,
     "sha256",
@@ -195,16 +191,12 @@ async function createSeedRequests(): Promise<SeedRequest[]> {
     message: "Hello from custom service",
     secret: customSecret, // Include secret for testing verification
   });
-  const customSha512 = await generateHMACSignature(
+  const customSha512 = generateHMACSignature(
     customPayload,
     customSecret,
     "sha512",
   );
-  const customSha1 = await generateHMACSignature(
-    customPayload,
-    customSecret,
-    "sha1",
-  );
+  const customSha1 = generateHMACSignature(customPayload, customSecret, "sha1");
 
   requests.push({
     id: "custom_signature",
@@ -394,4 +386,4 @@ async function createSeedRequests(): Promise<SeedRequest[]> {
   return requests.map((request) => ({ ...request, external: false }));
 }
 
-export const seedRequests = await createSeedRequests();
+export const seedRequests = createSeedRequests();

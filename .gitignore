@@ -10,3 +10,4 @@ dist
 *.compiled.css
 data/
 .wt/worktrees
+.superpowers

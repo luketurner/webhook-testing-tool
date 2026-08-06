@@ -7,9 +7,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { RequestEvent } from "@/request-events/schema";
+import { copyToClipboard } from "@/util/clipboard";
 import { headerNameDisplay } from "@/util/http";
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface CopyResponseModalProps {
   request: RequestEvent;
@@ -48,13 +50,12 @@ export const CopyResponseModal = ({
   };
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(generateRawResponse());
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy:", err);
+    if (!(await copyToClipboard(generateRawResponse()))) {
+      toast.error("Failed to copy to clipboard");
+      return;
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
