@@ -2,6 +2,14 @@
 
 `wtt` stores every request and response in full — headers, query, and raw body bytes — and the dashboard exists to make sense of them. This page covers what the request view can do.
 
+## Finding requests
+
+The sidebar lists captured requests newest-first and loads them in pages as you
+scroll, so a database with thousands of events stays responsive. The search box
+filters across the method, URL, status, and response code of every stored
+request — not just the ones currently loaded — and new requests appear at the
+top of the list in real time as they arrive.
+
 ## Payloads
 
 Bodies are stored as raw bytes, so the viewer has to decide how to show them. Two controls decide that.

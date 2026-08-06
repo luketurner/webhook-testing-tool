@@ -7,7 +7,8 @@ import {
   MoreVertical,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router";
-import { useState, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { DateDisplay } from "@/components/date-display";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -15,8 +16,6 @@ import { toast } from "sonner";
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,9 +40,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useResourceList } from "@/dashboard/hooks";
+import { useInfiniteRequests } from "@/request-events/use-infinite-requests";
+import { useDebouncedValue } from "@/util/hooks/use-debounced-value";
 import { useSSEContext } from "@/util/hooks/use-sse";
-import type { RequestEventMeta } from "@/request-events/schema";
+
+// Fetch the next page once the last rendered row is within this many rows of
+// the end of the loaded list, so more data arrives before the user hits bottom.
+const FETCH_NEXT_PAGE_THRESHOLD = 5;
 
 export function RequestSidebar() {
   const [showArchived, setShowArchived] = useState(() => {
@@ -53,10 +56,53 @@ export function RequestSidebar() {
   const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
   const navigate = useNavigate();
 
-  const { data: requests, isLoading: requestsLoading } =
-    useResourceList<RequestEventMeta>("requests", {
-      includeArchived: showArchived,
-    });
+  const debouncedSearch = useDebouncedValue(searchQuery, 250);
+
+  const {
+    data,
+    isLoading: requestsLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useInfiniteRequests({
+    includeArchived: showArchived,
+    search: debouncedSearch,
+  });
+
+  const events = data?.pages.flatMap((page) => page.events) ?? [];
+  const hasRequests = events.length > 0;
+
+  const scrollParentRef = useRef<HTMLDivElement>(null);
+  const rowVirtualizer = useVirtualizer({
+    count: events.length,
+    getScrollElement: () => scrollParentRef.current,
+    estimateSize: () => 84,
+    overscan: 8,
+  });
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
+
+  // Depend on stable primitives (the last rendered row index) rather than the
+  // virtualItems array, which is a fresh reference every render — otherwise the
+  // effect reruns constantly and can fire redundant fetchNextPage() calls.
+  const lastVisibleIndex = virtualItems.at(-1)?.index ?? -1;
+
+  useEffect(() => {
+    if (
+      lastVisibleIndex >= events.length - FETCH_NEXT_PAGE_THRESHOLD &&
+      hasNextPage &&
+      !isFetchingNextPage
+    ) {
+      fetchNextPage();
+    }
+  }, [
+    lastVisibleIndex,
+    events.length,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  ]);
+
   const { connectionState } = useSSEContext();
   const queryClient = useQueryClient();
 
@@ -106,28 +152,6 @@ export function RequestSidebar() {
     },
   });
 
-  const filteredRequests = useMemo(() => {
-    if (!requests || !searchQuery.trim()) {
-      return requests;
-    }
-
-    const query = searchQuery.toLowerCase().trim();
-    return requests.filter((request) => {
-      const methodMatch = request.request_method.toLowerCase().includes(query);
-      const urlMatch = request.request_url.toLowerCase().includes(query);
-      const statusMatch = request.status.toLowerCase().includes(query);
-      const responseStatusMatch = request.response_status
-        ?.toString()
-        .includes(query);
-
-      return methodMatch || urlMatch || statusMatch || responseStatusMatch;
-    });
-  }, [requests, searchQuery]);
-
-  const activeRequestsCount = useMemo(() => {
-    return requests?.filter((r) => !r.archived_timestamp).length || 0;
-  }, [requests]);
-
   return (
     <>
       <Sidebar
@@ -160,22 +184,18 @@ export function RequestSidebar() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     onClick={() => archiveAllMutation.mutate()}
-                    disabled={
-                      archiveAllMutation.isPending || activeRequestsCount === 0
-                    }
+                    disabled={archiveAllMutation.isPending || !hasRequests}
                   >
                     <Archive className="mr-2 h-4 w-4" />
-                    Archive All ({activeRequestsCount})
+                    Archive All
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setDeleteAllDialogOpen(true)}
-                    disabled={
-                      deleteAllMutation.isPending || activeRequestsCount === 0
-                    }
+                    disabled={deleteAllMutation.isPending || !hasRequests}
                     className="text-destructive"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Delete All ({activeRequestsCount})
+                    Delete All
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -214,35 +234,40 @@ export function RequestSidebar() {
           </div>
         </SidebarHeader>
         <SidebarContent>
-          <SidebarGroup className="px-0">
-            <SidebarGroupContent>
-              {requestsLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex flex-col gap-2 border-b p-4 last:border-b-0"
-                  >
-                    <div className="flex w-full items-center gap-2">
-                      <Skeleton className="h-4 w-16" />
-                      <Skeleton className="ml-auto h-3 w-12" />
-                    </div>
-                    <Skeleton className="h-4 w-full" />
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-3 w-16" />
-                      <Skeleton className="h-3 w-8" />
-                    </div>
+          <div ref={scrollParentRef} className="h-full overflow-auto">
+            {requestsLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col gap-2 border-b p-4 last:border-b-0"
+                >
+                  <div className="flex w-full items-center gap-2">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="ml-auto h-3 w-12" />
                   </div>
-                ))
-              ) : requests && requests.length === 0 ? (
-                <EmptyState message="No requests yet. Send a request to get started." />
-              ) : filteredRequests &&
-                filteredRequests.length === 0 &&
-                searchQuery.trim() ? (
-                <EmptyState
-                  message={`No requests found matching "${searchQuery}"`}
-                />
-              ) : (
-                filteredRequests?.map((request) => {
+                  <Skeleton className="h-4 w-full" />
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-3 w-8" />
+                  </div>
+                </div>
+              ))
+            ) : events.length === 0 && debouncedSearch.trim() ? (
+              <EmptyState
+                message={`No requests found matching "${debouncedSearch}"`}
+              />
+            ) : events.length === 0 ? (
+              <EmptyState message="No requests yet. Send a request to get started." />
+            ) : (
+              <div
+                style={{
+                  height: `${rowVirtualizer.getTotalSize()}px`,
+                  width: "100%",
+                  position: "relative",
+                }}
+              >
+                {virtualItems.map((virtualRow) => {
+                  const request = events[virtualRow.index];
                   const statusColor =
                     request.status === "complete"
                       ? "text-green-600"
@@ -253,7 +278,16 @@ export function RequestSidebar() {
                   return (
                     <div
                       key={request.id}
-                      className={`border-b last:border-b-0 hover:bg-sidebar-accent group ${
+                      data-index={virtualRow.index}
+                      ref={rowVirtualizer.measureElement}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                      className={`border-b hover:bg-sidebar-accent group ${
                         isArchived ? "opacity-60" : ""
                       }`}
                     >
@@ -310,10 +344,15 @@ export function RequestSidebar() {
                       </NavLink>
                     </div>
                   );
-                })
-              )}
-            </SidebarGroupContent>
-          </SidebarGroup>
+                })}
+              </div>
+            )}
+            {isFetchingNextPage && (
+              <div className="text-muted-foreground p-4 text-center text-xs">
+                Loading more…
+              </div>
+            )}
+          </div>
         </SidebarContent>
       </Sidebar>
 
@@ -326,9 +365,8 @@ export function RequestSidebar() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete All Requests</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete {activeRequestsCount} active request
-              {activeRequestsCount !== 1 ? "s" : ""}. This action cannot be
-              undone.
+              This will permanently delete all active requests. This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

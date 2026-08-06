@@ -1,5 +1,6 @@
 import "@/server-only";
 
+import { z } from "zod/v4";
 import {
   keysForInsertFields,
   keysForInsertValues,
@@ -18,6 +19,7 @@ import { jsonFieldToSql } from "@/util/json";
 import { base64FieldToSql } from "@/util/base64";
 import { broadcastEvent } from "@/db/events";
 import { now } from "@/util/datetime";
+import { decodeRequestCursor, encodeRequestCursor } from "./cursor";
 
 const tableName = "requests";
 
@@ -83,6 +85,90 @@ export function getAllRequestEventsMeta(
     )
     .all()
     .map((v) => requestEventMetaSchema.parse(v));
+}
+
+export interface RequestEventPage {
+  events: RequestEventMeta[];
+  nextCursor: string | null;
+  total: number;
+}
+
+export interface GetRequestEventsPageOptions {
+  limit: number;
+  cursor?: string | null;
+  includeArchived?: boolean;
+  search?: string | null;
+}
+
+export function getRequestEventsPage(
+  options: GetRequestEventsPageOptions,
+): RequestEventPage {
+  const { limit, cursor, includeArchived = false, search } = options;
+
+  // Filter conditions (archived scope + search) are shared by the page query
+  // and the total count. The cursor predicate applies ONLY to the page query.
+  const filterConditions: string[] = [];
+  const filterParams: Record<string, any> = {};
+
+  if (!includeArchived) {
+    filterConditions.push("archived_timestamp IS NULL");
+  }
+
+  const trimmedSearch = search?.trim();
+  if (trimmedSearch) {
+    filterConditions.push(
+      "(request_method LIKE $search ESCAPE '\\' OR request_url LIKE $search ESCAPE '\\' OR status LIKE $search ESCAPE '\\' OR CAST(response_status AS TEXT) LIKE $search ESCAPE '\\')",
+    );
+    const escaped = trimmedSearch.replace(/[\\%_]/g, (c) => `\\${c}`);
+    filterParams.search = `%${escaped}%`;
+  }
+
+  const pageConditions = [...filterConditions];
+  const pageParams: Record<string, any> = { ...filterParams };
+
+  if (cursor) {
+    const decoded = decodeRequestCursor(cursor);
+    pageConditions.push(
+      "(request_timestamp < $cursorTs OR (request_timestamp = $cursorTs AND id < $cursorId))",
+    );
+    pageParams.cursorTs = decoded.request_timestamp;
+    pageParams.cursorId = decoded.id;
+  }
+
+  const filterWhere = filterConditions.length
+    ? `WHERE ${filterConditions.join(" AND ")}`
+    : "";
+  const pageWhere = pageConditions.length
+    ? `WHERE ${pageConditions.join(" AND ")}`
+    : "";
+
+  const events = db
+    .query(
+      `select ${keysForSelect(
+        requestEventMetaSchema,
+      )} from "${tableName}" ${pageWhere} order by request_timestamp desc, id desc limit $limit;`,
+    )
+    .all({ ...pageParams, limit })
+    .map((v) => requestEventMetaSchema.parse(v));
+
+  const totalRow = z
+    .object({ count: z.number() })
+    .parse(
+      db
+        .query(`select count(*) as count from "${tableName}" ${filterWhere};`)
+        .get({ ...filterParams }),
+    );
+
+  const last = events[events.length - 1];
+  const nextCursor =
+    events.length === limit && last
+      ? encodeRequestCursor({
+          request_timestamp: last.request_timestamp,
+          id: last.id,
+        })
+      : null;
+
+  return { events, nextCursor, total: totalRow.count };
 }
 
 export function createRequestEvent(request: RequestEvent): RequestEvent {

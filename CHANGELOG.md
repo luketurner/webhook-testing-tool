@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Fixed the dashboard freezing with large numbers of stored requests (#3). The
+  request list is now paginated, virtualized, and loaded via infinite scroll,
+  search runs server-side across all requests, and real-time updates patch the
+  list instead of refetching everything.
+
+---
+
 ## 2.10.0 (2026-07-13)
 
 - Added first-class support for outgoing HTTP requests (to arbitrary URLs) being sent from HTTP sending UI. Outgoing requests are also recorded in the DB.

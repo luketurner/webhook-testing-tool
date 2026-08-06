@@ -1,6 +1,6 @@
 import "@/server-only";
 import {
-  getAllRequestEventsMeta,
+  getRequestEventsPage,
   getRequestEvent,
   updateRequestEvent,
   getRequestEventBySharedId,
@@ -11,12 +11,21 @@ import {
   unarchiveRequestEvent,
   bulkArchiveRequestEvents,
 } from "./model";
+import { decodeRequestCursor } from "./cursor";
 import { sendWebhookRequest } from "@/webhook-server/send-request";
 import { captureOutboundRequest } from "@/webhook-server/capture-outbound-request";
 import { requestSchema, type HandlerRequest } from "@/webhook-server/schema";
 import { z } from "zod/v4";
 import { uuidSchema } from "@/util/uuid";
 import { timestampSchema } from "@/util/datetime";
+
+const DEFAULT_LIMIT = 50;
+const MAX_LIMIT = 200;
+
+// Parse a positive integer, defaulting to DEFAULT_LIMIT for missing/invalid
+// input. The caller clamps the result to MAX_LIMIT so oversized values scale
+// down monotonically rather than snapping back to the default.
+const limitSchema = z.coerce.number().int().positive().catch(DEFAULT_LIMIT);
 
 const bulkDeleteBodySchema = z.object({
   ids: z.array(uuidSchema).optional().default([]),
@@ -37,7 +46,26 @@ export const requestEventController = {
       const url = new URL(req.url);
       const includeArchived =
         url.searchParams.get("includeArchived") === "true";
-      return Response.json(getAllRequestEventsMeta(includeArchived));
+      const search = url.searchParams.get("search") ?? undefined;
+      const cursor = url.searchParams.get("cursor") ?? undefined;
+
+      // Reject a malformed cursor with a 400 rather than letting the decode
+      // throw bubble up to a 500.
+      if (cursor !== undefined) {
+        try {
+          decodeRequestCursor(cursor);
+        } catch {
+          return Response.json({ error: "Invalid cursor" }, { status: 400 });
+        }
+      }
+
+      const limit = Math.min(
+        limitSchema.parse(url.searchParams.get("limit") ?? DEFAULT_LIMIT),
+        MAX_LIMIT,
+      );
+      return Response.json(
+        getRequestEventsPage({ limit, cursor, includeArchived, search }),
+      );
     },
     DELETE: (req) => {
       const count = clearRequestEvents();

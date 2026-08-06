@@ -16,6 +16,7 @@ import { userManagementController } from "@/user-management/controller";
 import { withAuth } from "@/auth/middleware";
 import { getRequestEventBySharedId } from "@/request-events/model";
 import { appEvents } from "@/db/events";
+import { requestEventMetaSchema } from "@/request-events/schema";
 import type { BunRequest } from "bun";
 import {
   DEV,
@@ -186,7 +187,7 @@ function sseEndpoint(req: BunRequest, server: Bun.Server<undefined>) {
             controller.enqueue(
               `data: ${JSON.stringify({
                 type: "request:created",
-                payload: { id: event.id, status: event.status },
+                payload: requestEventMetaSchema.parse(event),
               })}\n\n`,
             );
           } catch (error) {
@@ -199,7 +200,7 @@ function sseEndpoint(req: BunRequest, server: Bun.Server<undefined>) {
             controller.enqueue(
               `data: ${JSON.stringify({
                 type: "request:updated",
-                payload: { id: event.id, status: event.status },
+                payload: requestEventMetaSchema.parse(event),
               })}\n\n`,
             );
           } catch (error) {
