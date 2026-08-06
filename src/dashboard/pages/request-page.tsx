@@ -19,6 +19,7 @@ import {
 import type { HandlerExecution } from "@/handler-executions/schema";
 import type { RequestEvent } from "@/request-events/schema";
 import { requestEventToHandlerRequest } from "@/webhook-server/schema";
+import { copyToClipboard } from "@/util/clipboard";
 import {
   Copy,
   MoreHorizontal,
@@ -62,13 +63,18 @@ export const RequestPage = () => {
 
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ["requests", id] });
 
       if (data.shared) {
         const fullUrl = `${window.location.origin}/#${data.shareUrl}`;
-        navigator.clipboard.writeText(fullUrl);
-        toast.success("Share link copied to clipboard!");
+        // The execCommand fallback needs transient user activation, which has
+        // expired by the time this runs, so show the link if copying fails.
+        if (await copyToClipboard(fullUrl)) {
+          toast.success("Share link copied to clipboard!");
+        } else {
+          toast.success("Share link created", { description: fullUrl });
+        }
       } else {
         toast.success("Sharing disabled");
       }

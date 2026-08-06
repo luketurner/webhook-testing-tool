@@ -9,9 +9,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useServerUrls } from "@/dashboard/hooks";
 import type { RequestEvent } from "@/request-events/schema";
+import { copyToClipboard } from "@/util/clipboard";
 import { headerNameDisplay } from "@/util/http";
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface CopyRequestModalProps {
   request: RequestEvent;
@@ -118,13 +120,12 @@ export const CopyRequestModal = ({
   };
 
   const handleCopy = async (text: string, tab: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedTab(tab);
-      setTimeout(() => setCopiedTab(null), 2000);
-    } catch (err) {
-      console.error("Failed to copy:", err);
+    if (!(await copyToClipboard(text))) {
+      toast.error("Failed to copy to clipboard");
+      return;
     }
+    setCopiedTab(tab);
+    setTimeout(() => setCopiedTab(null), 2000);
   };
 
   return (

@@ -16,11 +16,13 @@ import {
 } from "@/components/ui/dialog";
 import { Download, FileText, Package, Maximize2, Copy } from "lucide-react";
 import { useState, useEffect } from "react";
+import { copyToClipboard } from "@/util/clipboard";
 import { getExtensionFromMimeType } from "@/util/mime";
 import { QueryParamsTable } from "@/components/display/query-params-table";
 import type { KVList } from "@/util/kv-list";
 import { formatXml, getContentFormat } from "@/util/xml";
 import { cn } from "@/util/ui";
+import { toast } from "sonner";
 
 const ENCODINGS = [
   { value: "utf8", label: "UTF-8" },
@@ -248,8 +250,12 @@ export const PayloadDisplay = ({
     URL.revokeObjectURL(url);
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(decodedContent);
+  const handleCopy = async () => {
+    if (await copyToClipboard(decodedContent)) {
+      toast.success(`${title} copied to clipboard`);
+    } else {
+      toast.error("Failed to copy to clipboard");
+    }
   };
 
   if (!content) {

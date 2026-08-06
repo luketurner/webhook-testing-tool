@@ -1,3 +1,21 @@
+import { hmac } from "@noble/hashes/hmac.js";
+import { sha256, sha512 } from "@noble/hashes/sha2.js";
+import { sha1 } from "@noble/hashes/legacy.js";
+import { bytesToHex, type CHash } from "@noble/hashes/utils.js";
+
+/**
+ * Hash implementations keyed by normalized algorithm name.
+ *
+ * These come from @noble/hashes rather than SubtleCrypto because
+ * `crypto.subtle` is only available in a secure context, and the dashboard is
+ * commonly served over plain HTTP on a LAN or tailnet hostname.
+ */
+const hashFunctions: Record<string, CHash | undefined> = {
+  "SHA-1": sha1,
+  "SHA-256": sha256,
+  "SHA-512": sha512,
+};
+
 // HMAC-related types and interfaces
 export interface IParsedSignature {
   signatureType:
@@ -183,11 +201,7 @@ export async function verifyHMACSignature(
   }
 
   try {
-    const expectedSignature = await generateHMACSignature(
-      payload,
-      secret,
-      algorithm,
-    );
+    const expectedSignature = generateHMACSignature(payload, secret, algorithm);
 
     // Use timing-safe comparison
     const actualSig = parsedSignature.signature.toLowerCase();
@@ -221,13 +235,13 @@ export async function verifyHMACSignature(
  * @param algorithm The HMAC algorithm (sha1, sha256, sha512)
  * @returns The hex-encoded signature
  */
-export async function generateHMACSignature(
+export function generateHMACSignature(
   payload: string | Uint8Array,
   secret: string,
   algorithm: string,
-): Promise<string> {
-  const normalizedAlgorithm = normalizeAlgorithm(algorithm.toUpperCase());
-  if (!normalizedAlgorithm) {
+): string {
+  const hash = hashFunctions[normalizeAlgorithm(algorithm) ?? ""];
+  if (!hash) {
     throw new Error(`Unsupported algorithm: ${algorithm}`);
   }
   const encoder = new TextEncoder();
@@ -235,23 +249,11 @@ export async function generateHMACSignature(
   const payloadData =
     typeof payload === "string" ? encoder.encode(payload) : payload;
 
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw",
-    keyData,
-    { name: "HMAC", hash: normalizedAlgorithm },
-    false,
-    ["sign"],
-  );
-
-  const signature = await crypto.subtle.sign("HMAC", cryptoKey, payloadData);
-
-  // Convert ArrayBuffer to hex string
-  const hashArray = Array.from(new Uint8Array(signature));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  return bytesToHex(hmac(hash, keyData, payloadData));
 }
 
 /**
- * Normalizes algorithm names to SubtleCrypto format
+ * Normalizes algorithm names to their canonical hyphenated form
  */
 export function normalizeAlgorithm(algorithm: string): string | null {
   const normalized = algorithm.toUpperCase();
