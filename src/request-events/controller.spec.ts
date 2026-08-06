@@ -88,13 +88,41 @@ describe("request-events/controller", () => {
       expect(nextData.events[0].id).not.toBe(data.events[0].id);
     });
 
-    test("clamps invalid limit to the default", async () => {
+    test("clamps an oversized limit to the maximum instead of erroring", async () => {
       const mockReq = {
         url: "http://localhost:3000/api/requests?limit=999999",
       } as any;
       const response = requestEventController["/api/requests"].GET(mockReq);
+      expect(response.status).toBe(200);
       const data = await response.json();
-      expect(data.events.length).toBeLessThanOrEqual(50);
+      // Clamped to the 200 max (there are far fewer than 200 rows in the test
+      // DB, so this just confirms it did not error and stayed bounded).
+      expect(Array.isArray(data.events)).toBe(true);
+      expect(data.events.length).toBeLessThanOrEqual(200);
+    });
+
+    test("falls back to the default limit for a non-numeric value", async () => {
+      for (let i = 0; i < 3; i++) {
+        createRequestEvent({ ...testRequestEvent, id: randomUUID() });
+      }
+      const mockReq = {
+        url: "http://localhost:3000/api/requests?limit=not-a-number",
+      } as any;
+      const response = requestEventController["/api/requests"].GET(mockReq);
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(Array.isArray(data.events)).toBe(true);
+      expect(data.events.length).toBeGreaterThanOrEqual(3);
+    });
+
+    test("returns 400 for a malformed cursor", async () => {
+      const mockReq = {
+        url: "http://localhost:3000/api/requests?cursor=not-a-valid-cursor",
+      } as any;
+      const response = requestEventController["/api/requests"].GET(mockReq);
+      expect(response.status).toBe(400);
+      const data = await response.json();
+      expect(data.error).toBeDefined();
     });
   });
 

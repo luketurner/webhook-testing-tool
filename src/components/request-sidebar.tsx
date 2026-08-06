@@ -44,6 +44,10 @@ import { useInfiniteRequests } from "@/request-events/use-infinite-requests";
 import { useDebouncedValue } from "@/util/hooks/use-debounced-value";
 import { useSSEContext } from "@/util/hooks/use-sse";
 
+// Fetch the next page once the last rendered row is within this many rows of
+// the end of the loaded list, so more data arrives before the user hits bottom.
+const FETCH_NEXT_PAGE_THRESHOLD = 5;
+
 export function RequestSidebar() {
   const [showArchived, setShowArchived] = useState(() => {
     return localStorage.getItem("showArchivedRequests") === "true";
@@ -66,8 +70,7 @@ export function RequestSidebar() {
   });
 
   const events = data?.pages.flatMap((page) => page.events) ?? [];
-  const total = data?.pages[0]?.total ?? 0;
-  const activeRequestsCount = total;
+  const hasRequests = events.length > 0;
 
   const scrollParentRef = useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
@@ -79,14 +82,21 @@ export function RequestSidebar() {
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 
+  // Depend on stable primitives (the last rendered row index) rather than the
+  // virtualItems array, which is a fresh reference every render — otherwise the
+  // effect reruns constantly and can fire redundant fetchNextPage() calls.
+  const lastVisibleIndex = virtualItems.at(-1)?.index ?? -1;
+
   useEffect(() => {
-    const last = virtualItems[virtualItems.length - 1];
-    if (!last) return;
-    if (last.index >= events.length - 1 && hasNextPage && !isFetchingNextPage) {
+    if (
+      lastVisibleIndex >= events.length - FETCH_NEXT_PAGE_THRESHOLD &&
+      hasNextPage &&
+      !isFetchingNextPage
+    ) {
       fetchNextPage();
     }
   }, [
-    virtualItems,
+    lastVisibleIndex,
     events.length,
     hasNextPage,
     isFetchingNextPage,
@@ -174,22 +184,18 @@ export function RequestSidebar() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     onClick={() => archiveAllMutation.mutate()}
-                    disabled={
-                      archiveAllMutation.isPending || activeRequestsCount === 0
-                    }
+                    disabled={archiveAllMutation.isPending || !hasRequests}
                   >
                     <Archive className="mr-2 h-4 w-4" />
-                    Archive All ({activeRequestsCount})
+                    Archive All
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setDeleteAllDialogOpen(true)}
-                    disabled={
-                      deleteAllMutation.isPending || activeRequestsCount === 0
-                    }
+                    disabled={deleteAllMutation.isPending || !hasRequests}
                     className="text-destructive"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Delete All ({activeRequestsCount})
+                    Delete All
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -359,9 +365,8 @@ export function RequestSidebar() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete All Requests</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete {activeRequestsCount} active request
-              {activeRequestsCount !== 1 ? "s" : ""}. This action cannot be
-              undone.
+              This will permanently delete all active requests. This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

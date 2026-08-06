@@ -1,11 +1,19 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import type { RequestEventMeta } from "./schema";
+import { z } from "zod/v4";
+import { requestEventMetaSchema } from "./schema";
 
-export interface RequestEventPageResponse {
-  events: RequestEventMeta[];
-  nextCursor: string | null;
-  total: number;
-}
+// Validate the API response shape so an endpoint regression fails fast here
+// rather than surfacing as a confusing error deep in the render tree.
+export const requestEventPageResponseSchema = z.object({
+  events: z.array(requestEventMetaSchema),
+  nextCursor: z.string().nullable(),
+  total: z.number(),
+});
+
+// Derived from the schema so the runtime contract and the type never drift.
+export type RequestEventPageResponse = z.infer<
+  typeof requestEventPageResponseSchema
+>;
 
 const PAGE_SIZE = 50;
 
@@ -27,7 +35,7 @@ export function useInfiniteRequests(options: {
       if (!resp.ok) {
         throw new Error(`Failed to load requests (${resp.status})`);
       }
-      return resp.json();
+      return requestEventPageResponseSchema.parse(await resp.json());
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
